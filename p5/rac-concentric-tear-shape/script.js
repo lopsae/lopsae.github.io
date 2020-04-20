@@ -93,6 +93,13 @@ rac.Angle.prototype.negative = function() {
   return new rac.Angle(-this.value);
 };
 
+rac.Angle.prototype.distance = function(other, clockwise = true) {
+  let offset = other.add(this.negative());
+  return clockwise
+    ? offset
+    : offset.negative();
+};
+
 rac.Angle.prototype.radians = function() {
   return this.value * TWO_PI;
 };
@@ -268,12 +275,9 @@ rac.Segment.prototype.relativeArc = function(relativeAngle, clockwise = true) {
 rac.Segment.prototype.segmentToRelativeAngle = function(
   relativeAngle, distance, clockwise = true)
 {
-  var angle;
-  if (clockwise) {
-    angle = this.reverseAngle().add(relativeAngle);
-  } else {
-    angle = this.reverseAngle().add(relativeAngle.negative());
-  }
+  var angle = clockwise
+    ? this.reverseAngle().add(relativeAngle)
+    : this.reverseAngle().add(relativeAngle.negative());
   return this.end.segmentToAngle(angle, distance);
 };
 
@@ -286,6 +290,33 @@ rac.Segment.prototype.oppositeWithHyp = function(hypotenuse, clockwise = true) {
   var hypSegment = this.reverse()
     .segmentToRelativeAngle(angle, hypotenuse, !clockwise);
   return this.end.segmentToPoint(hypSegment.end);
+};
+
+rac.Segment.prototype.arcOfSegmentsToAngle = function(
+  segmentCount,
+  angle = this.angle(),
+  clockwise = true)
+{
+  let angleDistance = this.angle().distance(angle, clockwise);
+  let arcPartAngleValue = angleDistance.value == 0
+    ? 1 / segmentCount
+    : angleDistance.value / segmentCount;
+
+  let arcPartAngle = new rac.Angle(arcPartAngleValue);
+  if (!clockwise) {
+    arcPartAngle = arcPartAngle.negative();
+  }
+
+  let lastRay = this;
+  let segments = [];
+  for (var count = 1; count <= segmentCount; count++) {
+    let currentAngle = lastRay.angle().add(arcPartAngle);
+    let currentRay = this.start.segmentToAngle(currentAngle, this.length());
+    segments.push(new rac.Segment(lastRay.end, currentRay.end));
+    lastRay = currentRay;
+  }
+
+  return segments;
 };
 
 rac.Segment.prototype.bisector = function(length, clockwise = true) {
@@ -419,7 +450,31 @@ function draw() {
   let bezierStart = new rac.Point(200, 50);
   bezierStart.segmentToAngle(rac.Angle.se, 150).draw()
     .bezierCentralAnchor(100, false).draw(highlight);
-    // .bisector(100, false).draw(highlight);
+
+  let distancePoint = new rac.Point(350, 50);
+  let distanceTarget = rac.Angle.ese;
+  let distanceSegment = distancePoint
+    .segmentToAngle(rac.Angle.se, 150).draw();
+  distancePoint.segmentToAngle(distanceTarget, 120).draw();
+  distancePoint.segmentToAngle(
+    distanceSegment.angle().distance(distanceTarget, true),
+    100).draw(highlight);
+  distancePoint.segmentToAngle(
+    distanceSegment.angle().distance(distanceTarget, false),
+    100).draw(highlight);
+
+  let segmentsArcBase = new rac.Point(500, 50)
+    .segmentToAngle(rac.Angle.se, 150).draw();
+  let segmentsArcCenter = segmentsArcBase
+    .bisector(segmentsArcBase.length()/2).draw()
+    .end;
+   segmentsArcCenter.segmentToPoint(segmentsArcBase.end).draw()
+    .arcOfSegmentsToAngle(3, rac.Angle.n, false)
+    .forEach(function(item, index, array) {
+      item.draw(highlight);
+    });
+
+
 
 
 
