@@ -504,6 +504,8 @@ function draw() {
   // Slope centers orbit arc
   center.segmentToAngle(rac.Angle.wsw, radius * 3).draw()
     .arc(rac.Angle.ese).draw();
+  center.segmentToAngle(rac.Angle.up, radius)
+    .end.arc(radius*2).draw();
   center.segmentToAngle(rac.Angle.up, radius*2).draw()
     .end.arc(radius).draw();
 
