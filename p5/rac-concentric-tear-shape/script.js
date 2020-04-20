@@ -82,9 +82,10 @@ rac.Angle.zero = new rac.Angle(0.0);
 rac.Angle.square = new rac.Angle(1/4);
 rac.Angle.inverse = new rac.Angle(1/2);
 
-rac.Angle.eight = new rac.Angle(1/8);
-rac.Angle.quarter = new rac.Angle(1/4);
 rac.Angle.half = new rac.Angle(1/2);
+rac.Angle.quarter = new rac.Angle(1/4);
+rac.Angle.eight = new rac.Angle(1/8);
+
 
 rac.Angle.n = new rac.Angle(3/4);
 rac.Angle.e = new rac.Angle(0/4);
@@ -352,13 +353,13 @@ function draw() {
   var columnCenterLeft = center.addX(-radius*2);
   center.segmentToPoint(columnCenterLeft).draw()
     .segmentExtending(radius/5).draw();
-  columnCenterLeft.arc(radius, rac.Angle.n, rac.Angle.nw, true).draw();
+  columnCenterLeft.arc(radius).draw();
 
   // Slope centers right column
   var columnCenterRight = center.addX(radius*2);
   center.segmentToPoint(columnCenterRight).draw()
     .segmentExtending(radius/5).draw();
-  columnCenterRight.arc(radius, rac.Angle.n, rac.Angle.ne, false).draw();
+  columnCenterRight.arc(radius).draw();
 
   // Ray to slope center left
   var columnLeft = center.segmentToPoint(columnCenterLeft)
