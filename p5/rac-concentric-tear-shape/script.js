@@ -3,21 +3,36 @@
 // Ruler and Compass
 var rac = rac || {};
 
-rac.Stroke = function(r, g, b, alpha = 1, weight = 1) {
+
+rac.Color = function(r, g, b, alpha = 1) {
   this.r = r;
   this.g = g;
   this.b = b;
   this.alpha = alpha;
+}
+
+rac.Color.prototype.copy = function () {
+  return new rac.Color(this.r, this.g, this.b, this.alpha);
+}
+
+
+rac.Color.prototype.applyBackground = function() {
+  background(this.r * 255, this.g * 255, this.b * 255);
+}
+
+
+rac.Stroke = function(color, weight = 1) {
+  this.color = color;
   this.weight = weight;
 }
 
 rac.Stroke.prototype.copy = function() {
-  return new rac.Stroke(this.r, this.g, this.b, this.alpha, this.weight);
+  return new rac.Stroke(this.color.copy(), this.weight);
 }
 
 rac.Stroke.prototype.withAlpha = function(alpha) {
   var copy = this.copy();
-  copy.alpha = alpha;
+  copy.color.alpha = alpha;
   return copy;
 }
 
@@ -28,7 +43,11 @@ rac.Stroke.prototype.withWeight = function(weight) {
 }
 
 rac.Stroke.prototype.apply = function() {
-  stroke(this.r * 255, this.g * 255, this.b * 255, this.alpha * 255);
+  stroke(
+    this.color.r * 255,
+    this.color.g * 255,
+    this.color.b * 255,
+    this.color.alpha * 255);
   strokeWeight(this.weight);
 }
 
@@ -306,7 +325,6 @@ rac.Arc.prototype.withRadius = function(radius) {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  background("#111111");
   noLoop();
   noStroke();
   noFill();
@@ -314,11 +332,28 @@ function setup() {
 
 
 function draw() {
-  var mainStroke = new rac.Stroke(1, 0, 0);
+  // Color schemes
+  let colors = {
+    light: {
+      background: new rac.Color(0.9, 0.9, 0.9), // whiteish
+      stroke:     new rac.Color(0.7, 0.3, 0.3, 0.5), // rose pink,
+      highlight:  new rac.Color(1.0, 0.0, 1.0, 0.8) // magenta
+    },
+    dark: {
+      background: new rac.Color(0.1, 0.1, 0.1), // blackish
+      stroke:     new rac.Color(0.9, 0.2, 0.2, 0.5), // red,
+      highlight:  new rac.Color(0.0, 1.0, 1.0, 0.8)// cyan
+    }
+  };
+
+  let colorScheme = colors.dark;
+  colorScheme.background.applyBackground();
+
+  var mainStroke = new rac.Stroke(colorScheme.stroke, 2);
   mainStroke.apply();
 
-  // RAC testing
-  var highlight = new rac.Stroke(0, 1, 1, 0.8, 5);
+  // Testing highlight
+  var highlight = new rac.Stroke(colorScheme.highlight, 5);
 
   // Center of the tear circle
   var center = new rac.Point(windowWidth/2, windowHeight*2/3);
