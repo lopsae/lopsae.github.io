@@ -9,38 +9,38 @@ rac.Color = function(r, g, b, alpha = 1) {
   this.g = g;
   this.b = b;
   this.alpha = alpha;
-}
+};
 
 rac.Color.prototype.copy = function () {
   return new rac.Color(this.r, this.g, this.b, this.alpha);
-}
+};
 
 
 rac.Color.prototype.applyBackground = function() {
   background(this.r * 255, this.g * 255, this.b * 255);
-}
+};
 
 
 rac.Stroke = function(color, weight = 1) {
   this.color = color;
   this.weight = weight;
-}
+};
 
 rac.Stroke.prototype.copy = function() {
   return new rac.Stroke(this.color.copy(), this.weight);
-}
+};
 
 rac.Stroke.prototype.withAlpha = function(alpha) {
   var copy = this.copy();
   copy.color.alpha = alpha;
   return copy;
-}
+};
 
 rac.Stroke.prototype.withWeight = function(weight) {
   var copy = this.copy();
   copy.weight = weight;
   return copy;
-}
+};
 
 rac.Stroke.prototype.apply = function() {
   stroke(
@@ -49,25 +49,25 @@ rac.Stroke.prototype.apply = function() {
     this.color.b * 255,
     this.color.alpha * 255);
   strokeWeight(this.weight);
-}
+};
 
 
 rac.Angle = function(value) {
   this.set(value);
-}
+};
 
 rac.Angle.fromRadians = function(radians) {
   return new rac.Angle(radians / TWO_PI);
-}
+};
 
 rac.Angle.fromPoint = function(point) {
   return rac.Angle.fromRadians(Math.atan2(point.y, point.x));
-}
+};
 
 rac.Angle.fromSegment = function(segment) {
   var point = segment.end.add(segment.start.negative());
   return rac.Angle.fromPoint(point);
-}
+};
 
 rac.Angle.prototype.set = function(value) {
   this.value = value % 1;
@@ -75,7 +75,7 @@ rac.Angle.prototype.set = function(value) {
     this.value = (this.value + 1) % 1;
   }
   return this;
-}
+};
 
 rac.Angle.prototype.add = function(other) {
   if (other instanceof rac.Angle) {
@@ -83,19 +83,19 @@ rac.Angle.prototype.add = function(other) {
   }
 
   return new rac.Angle(this.value + other);
-}
+};
 
 rac.Angle.prototype.inverse = function() {
   return this.add(rac.Angle.inverse);
-}
+};
 
 rac.Angle.prototype.negative = function() {
   return new rac.Angle(-this.value);
-}
+};
 
 rac.Angle.prototype.radians = function() {
   return this.value * TWO_PI;
-}
+};
 
 rac.Angle.zero = new rac.Angle(0.0);
 rac.Angle.square = new rac.Angle(1/4);
@@ -147,57 +147,62 @@ rac.Point.prototype.draw = function(stroke = undefined) {
   point(this.x, this.y);
   pop();
   return this;
-}
+};
+
+rac.Point.prototype.vertex = function() {
+  vertex(this.x, this.y);
+  return this;
+};
 
 rac.Point.prototype.add = function(other) {
   return new rac.Point(
     this.x + other.x,
     this.y + other.y);
-}
+};
 
 rac.Point.prototype.addX = function(x) {
   return new rac.Point(
     this.x + x,
     this.y);
-}
+};
 
 rac.Point.prototype.addY = function(y) {
   return new rac.Point(
     this.x,
     this.y + y);
-}
+};
 
 
 rac.Point.prototype.negative = function() {
   return new rac.Point(-this.x, -this.y);
-}
+};
 
 rac.Point.prototype.distance = function(other) {
   var x = Math.pow((other.x - this.x), 2);
   var y = Math.pow((other.y - this.y), 2);
   return Math.sqrt(x+y);
-}
+};
 
 rac.Point.prototype.segmentToPoint = function(point) {
   return new rac.Segment(this, point);
-}
+};
 
 rac.Point.prototype.segmentToAngle = function(angle, distance) {
   var distanceX = distance * Math.cos(angle.radians());
   var distanceY = distance * Math.sin(angle.radians());
   let end = new rac.Point(this.x + distanceX, this.y + distanceY);
   return new rac.Segment(this, end);
-}
+};
 
 rac.Point.prototype.arc = function(radius, start = rac.Angle.zero, end = start, clockwise = true) {
   return new rac.Arc(this, radius, start, end, clockwise);
-}
+};
 
 
 rac.Segment = function(start, end) {
   this.start = start;
   this.end = end;
-}
+};
 
 rac.Segment.prototype.draw = function(stroke = undefined) {
   push();
@@ -208,23 +213,29 @@ rac.Segment.prototype.draw = function(stroke = undefined) {
        this.end.x,   this.end.y);
   pop();
   return this;
-}
+};
+
+rac.Segment.prototype.middle = function() {
+  return new rac.Point(
+    this.start.x + (this.end.x - this.start.x) /2,
+    this.start.y + (this.end.y - this.start.y) /2);
+};
 
 rac.Segment.prototype.length = function() {
   return this.start.distance(this.end);
-}
+};
 
 rac.Segment.prototype.angle = function() {
   return rac.Angle.fromSegment(this);
-}
+};
 
 rac.Segment.prototype.reverseAngle = function() {
   return rac.Angle.fromSegment(this).inverse();
-}
+};
 
 rac.Segment.prototype.reverse = function() {
   return new rac.Segment(this.end, this.start);
-}
+};
 
 rac.Segment.prototype.arc = function(
   end = rac.Angle.fromSegment(this),
@@ -234,11 +245,11 @@ rac.Segment.prototype.arc = function(
     this.start, this.length(),
     rac.Angle.fromSegment(this), end,
     clockwise);
-}
+};
 
 rac.Segment.prototype.segmentExtending = function(distance) {
   return this.end.segmentToAngle(this.angle(), distance);
-}
+};
 
 rac.Segment.prototype.relativeArc = function(relativeAngle, clockwise = true) {
   var arcStart = this.angle();
@@ -252,7 +263,7 @@ rac.Segment.prototype.relativeArc = function(relativeAngle, clockwise = true) {
     this.start, this.length(),
     arcStart, arcEnd,
     clockwise);
-}
+};
 
 rac.Segment.prototype.segmentToRelativeAngle = function(
   relativeAngle, distance, clockwise = true)
@@ -264,9 +275,9 @@ rac.Segment.prototype.segmentToRelativeAngle = function(
     angle = this.reverseAngle().add(relativeAngle.negative());
   }
   return this.end.segmentToAngle(angle, distance);
-}
+};
 
-rac.Segment.prototype.perpendicularWithHyp = function(hypotenuse, clockwise = true) {
+rac.Segment.prototype.oppositeWithHyp = function(hypotenuse, clockwise = true) {
   // cos = ady / hyp
   // acos can error if hypotenuse is smaller that length
   var radians = Math.acos(this.length() / hypotenuse);
@@ -275,10 +286,29 @@ rac.Segment.prototype.perpendicularWithHyp = function(hypotenuse, clockwise = tr
   var hypSegment = this.reverse()
     .segmentToRelativeAngle(angle, hypotenuse, !clockwise);
   return this.end.segmentToPoint(hypSegment.end);
-}
+};
+
+rac.Segment.prototype.bisector = function(length, clockwise = true) {
+  let angle = clockwise
+    ? this.angle().add(rac.Angle.square)
+    : this.angle().add(rac.Angle.square.negative());
+  return this.middle().segmentToAngle(angle, length);
+};
+
+rac.Segment.prototype.bezierCentralAnchor = function(distance, clockwise = true) {
+  let bisector = this.bisector(distance, clockwise);
+  return new rac.Bezier(
+    this.start, bisector.end,
+    bisector.end, this.end);
+};
 
 
-rac.Arc = function(center, radius, start = rac.Angle.zero, end = start, clockwise = true) {
+rac.Arc = function(
+  center, radius,
+  start = rac.Angle.zero,
+  end = start,
+  clockwise = true)
+{
   this.center = center;
   this.radius = radius;
   this.start = start;
@@ -322,6 +352,27 @@ rac.Arc.prototype.withRadius = function(radius) {
 }
 
 
+rac.Bezier = function(start, startAnchor, endAnchor, end) {
+  this.start = start;
+  this.startAnchor = startAnchor;
+  this.endAnchor = endAnchor;
+  this.end = end;
+};
+
+rac.Bezier.prototype.draw = function(stroke = undefined) {
+  push();
+  if (stroke !== undefined) {
+    stroke.apply();
+  }
+  bezier(
+    this.start.x, this.start.y,
+    this.startAnchor.x, this.startAnchor.y,
+    this.endAnchor.x, this.endAnchor.y,
+    this.end.x, this.end.y);
+  pop();
+};
+
+
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -354,6 +405,23 @@ function draw() {
 
   // Testing highlight
   var highlight = new rac.Stroke(colorScheme.highlight, 5);
+
+
+  // Testing shape formation
+  // MAIC
+  beginShape();
+  (new rac.Point(50, 50)).draw(highlight).vertex();
+  (new rac.Point(100, 50)).draw(highlight).vertex();
+  (new rac.Point(150, 100)).draw(highlight).vertex();
+  (new rac.Point(150, 150)).draw(highlight).vertex();
+  endShape();
+
+  let bezierStart = new rac.Point(200, 50);
+  bezierStart.segmentToAngle(rac.Angle.se, 150).draw()
+    .bezierCentralAnchor(100, false).draw(highlight);
+    // .bisector(100, false).draw(highlight);
+
+
 
   // Center of the tear circle
   var center = new rac.Point(windowWidth/2, windowHeight*2/3);
@@ -398,7 +466,7 @@ function draw() {
 
   // Ray to slope center left
   var columnLeft = center.segmentToPoint(columnCenterLeft)
-    .perpendicularWithHyp(radius*3, false).draw();
+    .oppositeWithHyp(radius*3, false).draw();
   var slopeCenterLeft = columnLeft.end;
   columnLeft.segmentExtending(radius/5).draw();
   center.segmentToPoint(slopeCenterLeft).draw()
@@ -406,7 +474,7 @@ function draw() {
 
   // Ray to slope center right
   var columnRight = center.segmentToPoint(columnCenterRight)
-    .perpendicularWithHyp(radius*3, true).draw();
+    .oppositeWithHyp(radius*3, true).draw();
   var slopeCenterRight = columnRight.end;
   columnRight.segmentExtending(radius/5).draw();
   center.segmentToPoint(slopeCenterRight).draw()
