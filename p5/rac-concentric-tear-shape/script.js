@@ -52,8 +52,8 @@ rac.Stroke.prototype.apply = function() {
 };
 
 
-rac.Angle = function(value) {
-  this.set(value);
+rac.Angle = function(turn) {
+  this.set(turn);
 };
 
 rac.Angle.fromRadians = function(radians) {
@@ -69,11 +69,13 @@ rac.Angle.fromSegment = function(segment) {
   return rac.Angle.fromPoint(point);
 };
 
-rac.Angle.prototype.set = function(value) {
-  this.value = value % 1;
-  if (this.value < 0) {
-    this.value = (this.value + 1) % 1;
+rac.Angle.prototype.set = function(turn) {
+  this.turn = turn % 1;
+  if (this.turn < 0) {
+    this.turn = (this.turn + 1) % 1;
   }
+  // TODO: delete once unused
+  this.value = turn;
   return this;
 };
 
@@ -304,33 +306,6 @@ rac.Segment.prototype.oppositeWithHyp = function(hypotenuse, clockwise = true) {
   return this.end.segmentToPoint(hypSegment.end);
 };
 
-rac.Segment.prototype.arcOfSegmentsToAngle = function(
-  segmentCount,
-  angle = this.angle(),
-  clockwise = true)
-{
-  let angleDistance = this.angle().distance(angle, clockwise);
-  let arcPartAngleValue = angleDistance.value == 0
-    ? 1 / segmentCount
-    : angleDistance.value / segmentCount;
-
-  let arcPartAngle = new rac.Angle(arcPartAngleValue);
-  if (!clockwise) {
-    arcPartAngle = arcPartAngle.negative();
-  }
-
-  let lastRay = this;
-  let segments = [];
-  for (var count = 1; count <= segmentCount; count++) {
-    let currentAngle = lastRay.angle().add(arcPartAngle);
-    let currentRay = this.start.segmentToAngle(currentAngle, this.length());
-    segments.push(new rac.Segment(lastRay.end, currentRay.end));
-    lastRay = currentRay;
-  }
-
-  return segments;
-};
-
 rac.Segment.prototype.bisector = function(length, clockwise = true) {
   let angle = clockwise
     ? this.angle().add(rac.Angle.square)
@@ -394,13 +369,48 @@ rac.Arc.prototype.withRadius = function(radius) {
   return copy;
 }
 
+rac.Arc.prototype.arcLength = function() {
+  return this.start.distance(this.end, this.clockwise);
+};
+
+rac.Arc.prototype.startPoint = function() {
+  return this.center.segmentToAngle(this.start, this.radius).end;
+};
+
 rac.Arc.prototype.endPoint = function() {
   return this.center.segmentToAngle(this.end, this.radius).end;
+};
+
+rac.Arc.prototype.startSegment = function() {
+  return new rac.Segment(this.center, this.startPoint());
 };
 
 rac.Arc.prototype.endSegment = function() {
   return new rac.Segment(this.endPoint(), this.center);
 };
+
+rac.Arc.prototype.divideToSegments = function(segmentCount) {
+  let arcLength = this.arcLength();
+  let partTurn = arcLength.turn == 0
+    ? 1 / segmentCount
+    : arcLength.turn / segmentCount;
+
+  let partAngle = new rac.Angle(partTurn);
+  if (!this.clockwise) {
+    partAngle = partAngle.negative();
+  }
+
+  let lastRay = this.startSegment();
+  let segments = [];
+  for (var count = 1; count <= segmentCount; count++) {
+    let currentAngle = lastRay.angle().add(partAngle);
+    let currentRay = this.center.segmentToAngle(currentAngle, this.radius);
+    segments.push(new rac.Segment(lastRay.end, currentRay.end));
+    lastRay = currentRay;
+  }
+
+  return segments;
+}
 
 
 rac.Bezier = function(start, startAnchor, endAnchor, end) {
@@ -540,7 +550,7 @@ function draw() {
 
   // Bezier formation centers
   let bezierStroke = new rac.Stroke(colorScheme.bezier, 7);
-  let totalBezierTests = 3;
+  let totalBezierTests = 4;
   let bezierCenters = [];
   for (let index = 0; index < totalBezierTests; index++) {
     let spacing = radius/2;
@@ -603,29 +613,33 @@ function draw() {
     .relativeArc(distanceOriginAngle.distance(distanceTargetAngle).mult(2))
     .draw().draw(bezierStroke)
     .endSegment().segmentToMiddle().draw();
-  // distanceCenter.segmentToAngle(distanceOriginAngle, radius/2)
-  //   .relativeArc(distanceOriginAngle.distance(distanceTargetAngle), false)
-  //   .draw(bezierStroke);
-  // let distanceBetween = distanceOriginAngle.distance()
 
-  // distanceCenter.segmentToAngle(distanceTargetAngle, 120).draw();
-  // distanceCenter.segmentToAngle(
-  //   distanceOriginSegment.angle().distance(distanceTargetAngle, true),
-  //   100).draw(highlight);
-  // distanceCenter.segmentToAngle(
-  //   distanceOriginSegment.angle().distance(distanceTargetAngle, false),
-  //   100).draw(highlight);
 
-  let segmentsArcBase = new rac.Point(500, 50)
-    .segmentToAngle(rac.Angle.se, 150).draw();
-  let segmentsArcCenter = segmentsArcBase
-    .bisector(segmentsArcBase.length()/2).draw()
-    .end;
-   segmentsArcCenter.segmentToPoint(segmentsArcBase.end).draw()
-    .arcOfSegmentsToAngle(3, rac.Angle.n, false)
-    .forEach(function(item, index, array) {
-      item.draw(highlight);
+  // Arc of segments
+  let segmentArcsCenter = bezierCenters[2];
+  segmentArcsCenter
+    .segmentToAngle(rac.Angle.s, radius).draw()
+    .arc(rac.Angle.e, false).draw()
+    .divideToSegments(4).forEach(function(item) {
+      item.draw(bezierStroke);
     });
+
+  segmentArcsCenter
+    .segmentToAngle(rac.Angle.e, radius*(2/3)).draw()
+    .arc(rac.Angle.sse).draw()
+    .divideToSegments(3).forEach(function(item) {
+      item.draw(bezierStroke);
+    });
+
+  // MAGIC
+  // Arc of segments
+  let segmentsArcRadius = bezierCenters[3]
+    .segmentToAngle(rac.Angle.e, radius).draw();
+  segmentsArcRadius.arc(rac.Angle.s).draw()
+    .divideToSegments(3).forEach(function(item) {
+      item.draw(bezierStroke);
+    });
+
 
   console.log(`👑 ~finis coronat opus ${Date.now()}`);
 }
