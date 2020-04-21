@@ -74,21 +74,19 @@ rac.Angle.prototype.set = function(turn) {
   if (this.turn < 0) {
     this.turn = (this.turn + 1) % 1;
   }
-  // TODO: delete once unused
-  this.value = turn;
   return this;
 };
 
 rac.Angle.prototype.add = function(other) {
   if (other instanceof rac.Angle) {
-    return new rac.Angle(this.value + other.value);
+    return new rac.Angle(this.turn + other.turn);
   }
 
-  return new rac.Angle(this.value + other);
+  return new rac.Angle(this.turn + other);
 };
 
 rac.Angle.prototype.mult = function(factor) {
-  return new rac.Angle(this.value * factor);
+  return new rac.Angle(this.turn * factor);
 };
 
 rac.Angle.prototype.inverse = function() {
@@ -96,7 +94,7 @@ rac.Angle.prototype.inverse = function() {
 };
 
 rac.Angle.prototype.negative = function() {
-  return new rac.Angle(-this.value);
+  return new rac.Angle(-this.turn);
 };
 
 rac.Angle.prototype.distance = function(other, clockwise = true) {
@@ -107,7 +105,7 @@ rac.Angle.prototype.distance = function(other, clockwise = true) {
 };
 
 rac.Angle.prototype.radians = function() {
-  return this.value * TWO_PI;
+  return this.turn * TWO_PI;
 };
 
 rac.Angle.zero = new rac.Angle(0.0);
