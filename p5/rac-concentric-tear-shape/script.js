@@ -1,7 +1,9 @@
 "use strict";
 
+
 // Ruler and Compass
-var rac = rac || {};
+let rac;
+rac = rac ?? {};
 
 
 rac.Color = function(r, g, b, alpha = 1) {
@@ -31,13 +33,13 @@ rac.Stroke.prototype.copy = function() {
 };
 
 rac.Stroke.prototype.withAlpha = function(alpha) {
-  var copy = this.copy();
+  let copy = this.copy();
   copy.color.alpha = alpha;
   return copy;
 };
 
 rac.Stroke.prototype.withWeight = function(weight) {
-  var copy = this.copy();
+  let copy = this.copy();
   copy.weight = weight;
   return copy;
 };
@@ -65,7 +67,7 @@ rac.Angle.fromPoint = function(point) {
 };
 
 rac.Angle.fromSegment = function(segment) {
-  var point = segment.end.add(segment.start.negative());
+  let point = segment.end.add(segment.start.negative());
   return rac.Angle.fromPoint(point);
 };
 
@@ -189,8 +191,8 @@ rac.Point.prototype.negative = function() {
 };
 
 rac.Point.prototype.distance = function(other) {
-  var x = Math.pow((other.x - this.x), 2);
-  var y = Math.pow((other.y - this.y), 2);
+  let x = Math.pow((other.x - this.x), 2);
+  let y = Math.pow((other.y - this.y), 2);
   return Math.sqrt(x+y);
 };
 
@@ -199,8 +201,8 @@ rac.Point.prototype.segmentToPoint = function(point) {
 };
 
 rac.Point.prototype.segmentToAngle = function(angle, distance) {
-  var distanceX = distance * Math.cos(angle.radians());
-  var distanceY = distance * Math.sin(angle.radians());
+  let distanceX = distance * Math.cos(angle.radians());
+  let distanceY = distance * Math.sin(angle.radians());
   let end = new rac.Point(this.x + distanceX, this.y + distanceY);
   return new rac.Segment(this, end);
 };
@@ -271,8 +273,8 @@ rac.Segment.prototype.segmentToRatio = function(ratio) {
 };
 
 rac.Segment.prototype.relativeArc = function(relativeAngle, clockwise = true) {
-  var arcStart = this.angle();
-  var arcEnd;
+  let arcStart = this.angle();
+  let arcEnd;
   if (clockwise) {
     arcEnd = arcStart.add(relativeAngle);
   } else {
@@ -287,7 +289,7 @@ rac.Segment.prototype.relativeArc = function(relativeAngle, clockwise = true) {
 rac.Segment.prototype.segmentToRelativeAngle = function(
   relativeAngle, distance, clockwise = true)
 {
-  var angle = clockwise
+  let angle = clockwise
     ? this.reverseAngle().add(relativeAngle)
     : this.reverseAngle().add(relativeAngle.negative());
   return this.end.segmentToAngle(angle, distance);
@@ -296,10 +298,10 @@ rac.Segment.prototype.segmentToRelativeAngle = function(
 rac.Segment.prototype.oppositeWithHyp = function(hypotenuse, clockwise = true) {
   // cos = ady / hyp
   // acos can error if hypotenuse is smaller that length
-  var radians = Math.acos(this.length() / hypotenuse);
-  var angle = rac.Angle.fromRadians(radians);
+  let radians = Math.acos(this.length() / hypotenuse);
+  let angle = rac.Angle.fromRadians(radians);
 
-  var hypSegment = this.reverse()
+  let hypSegment = this.reverse()
     .segmentToRelativeAngle(angle, hypotenuse, !clockwise);
   return this.end.segmentToPoint(hypSegment.end);
 };
@@ -347,8 +349,8 @@ rac.Arc.prototype.draw = function(stroke = undefined) {
     stroke.apply();
   }
 
-  var start = this.start;
-  var end = this.end;
+  let start = this.start;
+  let end = this.end;
   if (!this.clockwise) {
     start = this.end;
     end = this.start;
@@ -362,7 +364,7 @@ rac.Arc.prototype.draw = function(stroke = undefined) {
 }
 
 rac.Arc.prototype.withRadius = function(radius) {
-  var copy = this.copy();
+  let copy = this.copy();
   copy.radius = radius;
   return copy;
 }
@@ -400,7 +402,7 @@ rac.Arc.prototype.divideToSegments = function(segmentCount) {
 
   let lastRay = this.startSegment();
   let segments = [];
-  for (var count = 1; count <= segmentCount; count++) {
+  for (let count = 1; count <= segmentCount; count++) {
     let currentAngle = lastRay.angle().add(partAngle);
     let currentRay = this.center.segmentToAngle(currentAngle, this.radius);
     segments.push(new rac.Segment(lastRay.end, currentRay.end));
@@ -503,23 +505,23 @@ function draw() {
   let colorScheme = colors.dark;
   colorScheme.background.applyBackground();
 
-  var mainStroke = new rac.Stroke(colorScheme.stroke, 2);
+  let mainStroke = new rac.Stroke(colorScheme.stroke, 2);
   mainStroke.apply();
 
   // Testing highlight
-  var highlight = new rac.Stroke(colorScheme.highlight, 5);
+  let highlight = new rac.Stroke(colorScheme.highlight, 5);
 
 
   // Center of the tear circle
-  var center = new rac.Point(windowWidth/2, windowHeight/2);
+  let center = new rac.Point(windowWidth/2, windowHeight/2);
   // Radius of tear main arc
-  var radius = 100;
+  let radius = 100;
   // Width of the concentric circles
-  var concentricWidth = 20;
+  let concentricWidth = 20;
 
   // Last step is draw if its width would be greater that zero
-  var concentricCount = Math.ceil(radius/concentricWidth) -1;
-  var smallestRadius = concentricCount > 0
+  let concentricCount = Math.ceil(radius/concentricWidth) -1;
+  let smallestRadius = concentricCount > 0
     ? radius - concentricCount * concentricWidth
     : radius;
 
@@ -528,8 +530,8 @@ function draw() {
     .arc().draw();
 
   // Main concentric arcs
-  for(var index = 1; index <= concentricCount; index++) {
-    var concentricRadius = radius - concentricWidth * index;
+  for(let index = 1; index <= concentricCount; index++) {
+    let concentricRadius = radius - concentricWidth * index;
     center.arc(concentricRadius).draw();
   }
 
@@ -542,29 +544,29 @@ function draw() {
     .end.arc(radius).draw();
 
   // Slope centers left column
-  var columnCenterLeft = center.addX(-radius*2);
+  let columnCenterLeft = center.addX(-radius*2);
   center.segmentToPoint(columnCenterLeft).draw()
     .segmentExtending(radius/5).draw();
   columnCenterLeft.arc(radius).draw();
 
   // Slope centers right column
-  var columnCenterRight = center.addX(radius*2);
+  let columnCenterRight = center.addX(radius*2);
   center.segmentToPoint(columnCenterRight).draw()
     .segmentExtending(radius/5).draw();
   columnCenterRight.arc(radius).draw();
 
   // Ray to slope center left
-  var columnLeft = center.segmentToPoint(columnCenterLeft)
+  let columnLeft = center.segmentToPoint(columnCenterLeft)
     .oppositeWithHyp(radius*3, false).draw();
-  var slopeCenterLeft = columnLeft.end;
+  let slopeCenterLeft = columnLeft.end;
   columnLeft.segmentExtending(radius/5).draw();
   center.segmentToPoint(slopeCenterLeft).draw()
     .segmentExtending(radius/5).draw();
 
   // Ray to slope center right
-  var columnRight = center.segmentToPoint(columnCenterRight)
+  let columnRight = center.segmentToPoint(columnCenterRight)
     .oppositeWithHyp(radius*3, true).draw();
-  var slopeCenterRight = columnRight.end;
+  let slopeCenterRight = columnRight.end;
   columnRight.segmentExtending(radius/5).draw();
   center.segmentToPoint(slopeCenterRight).draw()
     .segmentExtending(radius/5).draw();
@@ -578,8 +580,8 @@ function draw() {
     .relativeArc(new rac.Angle(3/8), true).draw();
 
   // Slope concentric arcs
-  for(var index = 1; index <= concentricCount; index++) {
-    var concentricRadius = radius*2 + concentricWidth * index;
+  for(let index = 1; index <= concentricCount; index++) {
+    let concentricRadius = radius*2 + concentricWidth * index;
 
     slopeCenterLeft.arc(concentricRadius,
       rac.Angle.s.add(-1/32), rac.Angle.e.add(-1/32), false).draw();
