@@ -67,8 +67,7 @@ rac.Angle.fromPoint = function(point) {
 };
 
 rac.Angle.fromSegment = function(segment) {
-  let point = segment.end.add(segment.start.negative());
-  return rac.Angle.fromPoint(point);
+  return segment.start.angleToPoint(segment.end);
 };
 
 rac.Angle.prototype.set = function(turn) {
@@ -99,6 +98,7 @@ rac.Angle.prototype.negative = function() {
   return new rac.Angle(-this.turn);
 };
 
+// TODO: rename arcDistance?
 rac.Angle.prototype.distance = function(other, clockwise = true) {
   let offset = other.add(this.negative());
   return clockwise
@@ -190,6 +190,12 @@ rac.Point.prototype.negative = function() {
   return new rac.Point(-this.x, -this.y);
 };
 
+rac.Point.prototype.angleToPoint = function(other) {
+  let offset = other.add(this.negative());
+  return rac.Angle.fromPoint(offset);
+};
+
+// TODO: rename distanceToPoint
 rac.Point.prototype.distance = function(other) {
   let x = Math.pow((other.x - this.x), 2);
   let y = Math.pow((other.y - this.y), 2);
@@ -492,7 +498,7 @@ function draw() {
       background: new rac.Color(0.9, 0.9, 0.9), // whiteish
       stroke:     new rac.Color(0.7, 0.3, 0.3, 0.5), // rose pink,
       highlight:  new rac.Color(1.0, 0.0, 1.0, 0.8), // magenta
-      bezier:     new rac.Color(1.0, 0.0, 1.0, 0.4) // magenta
+      bezier:     new rac.Color(0.9, 0.5, 0.5, 0.3) // rose pink
     },
     dark: {
       background: new rac.Color(0.1, 0.1, 0.1), // blackish
@@ -502,7 +508,7 @@ function draw() {
     }
   };
 
-  let colorScheme = colors.dark;
+  let colorScheme = colors.light;
   colorScheme.background.applyBackground();
 
   let mainStroke = new rac.Stroke(colorScheme.stroke, 2);
@@ -588,6 +594,25 @@ function draw() {
     slopeCenterRight.arc(concentricRadius,
       rac.Angle.s.add(1/32), rac.Angle.w.add(1/32), true).draw();
   }
+
+  // Tear shape
+  let marker = new rac.Stroke(new rac.Color(0, 0, 0), 3);
+  center.arc(radius,
+    center.angleToPoint(slopeCenterLeft),
+    center.angleToPoint(slopeCenterRight),
+    false)
+    .draw(marker);
+  slopeCenterLeft.arc(slopeCenterLeft.distance(center) - radius,
+    slopeCenterLeft.angleToPoint(center),
+    slopeCenterLeft.angleToPoint(slopeCenterRight),
+    false)
+    .draw(marker);
+  slopeCenterRight.arc(slopeCenterRight.distance(center) - radius,
+    slopeCenterRight.angleToPoint(center),
+    slopeCenterRight.angleToPoint(slopeCenterLeft),
+    true)
+    .draw(marker);
+
 
 
   // Bezier formation centers
