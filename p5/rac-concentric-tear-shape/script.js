@@ -412,6 +412,38 @@ rac.Arc.prototype.divideToSegments = function(segmentCount) {
   return segments;
 }
 
+rac.Arc.prototype.divideToBeziers = function(bezierCount) {
+  let arcLength = this.arcLength();
+  let partTurn = arcLength.turn == 0
+    ? 1 / bezierCount
+    : arcLength.turn / bezierCount;
+
+  // length of tangent:
+  // https://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%C3%A9zier-curves
+  let parsPerTurn = 1 / partTurn;
+  let tangent = this.radius * (4/3) * Math.tan(PI/(parsPerTurn*2));
+
+  let beziers = [];
+  let segments = this.divideToSegments(bezierCount);
+  segments.forEach(function(item) {
+    let startRay = new rac.Segment(this.center, item.start);
+    let endRay = new rac.Segment(this.center, item.end);
+
+    let startAnchor = startRay
+      .segmentToRelativeAngle(rac.Angle.square, tangent, !this.clockwise)
+      .end;
+    let endAnchor = endRay
+      .segmentToRelativeAngle(rac.Angle.square, tangent, this.clockwise)
+      .end;
+
+    beziers.push(new rac.Bezier(
+      startRay.end, startAnchor,
+      endAnchor, endRay.end));
+  }, this);
+
+  return beziers;
+};
+
 
 rac.Bezier = function(start, startAnchor, endAnchor, end) {
   this.start = start;
@@ -430,6 +462,16 @@ rac.Bezier.prototype.draw = function(stroke = undefined) {
     this.startAnchor.x, this.startAnchor.y,
     this.endAnchor.x, this.endAnchor.y,
     this.end.x, this.end.y);
+  pop();
+};
+
+rac.Bezier.prototype.drawAnchors = function(stroke = undefined) {
+  push();
+  if (stroke !== undefined) {
+    stroke.apply();
+  }
+  this.start.segmentToPoint(this.startAnchor).draw();
+  this.end.segmentToPoint(this.endAnchor).draw();
   pop();
 };
 
@@ -562,6 +604,7 @@ function draw() {
 
   // Manual bezier
   // Tangent for 4 point
+  // https://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%C3%A9zier-curves
   let fourPointTangent = radius * (4/3) * Math.tan(PI/(4*2));
   let manualBezierCenter = bezierCenters[0];
   let manualBezierArcSegment = manualBezierCenter
@@ -633,10 +676,20 @@ function draw() {
 
   // MAGIC
   // Arc of segments
-  let segmentsArcRadius = bezierCenters[3]
-    .segmentToAngle(rac.Angle.e, radius).draw();
-  segmentsArcRadius.arc(rac.Angle.s).draw()
-    .divideToSegments(3).forEach(function(item) {
+  let bezierArcCenter = bezierCenters[3];
+  let bezierArc = bezierArcCenter
+    .segmentToAngle(rac.Angle.e, radius).draw()
+    .arc(rac.Angle.s).draw();
+  bezierArc
+    .divideToBeziers(1).forEach(function(item) {
+      item.drawAnchors();
+      item.draw(bezierStroke);
+    });
+  bezierArc.endPoint().segmentToPoint(bezierArcCenter)
+    .segmentToRatio(1/3).draw()
+    .end.segmentToPoint(bezierArcCenter).reverse()
+    .arc(rac.Angle.nne, false).draw()
+    .divideToBeziers(2).forEach(function(item) {
       item.draw(bezierStroke);
     });
 
