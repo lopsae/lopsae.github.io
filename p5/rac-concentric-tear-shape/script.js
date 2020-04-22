@@ -110,14 +110,13 @@ rac.Angle.prototype.radians = function() {
   return this.turn * TWO_PI;
 };
 
-rac.Angle.zero = new rac.Angle(0.0);
-rac.Angle.square = new rac.Angle(1/4);
+rac.Angle.zero =    new rac.Angle(0.0);
+rac.Angle.square =  new rac.Angle(1/4);
 rac.Angle.inverse = new rac.Angle(1/2);
 
-rac.Angle.half = new rac.Angle(1/2);
+rac.Angle.half =    new rac.Angle(1/2);
 rac.Angle.quarter = new rac.Angle(1/4);
-rac.Angle.eight = new rac.Angle(1/8);
-
+rac.Angle.eighth =  new rac.Angle(1/8);
 
 rac.Angle.n = new rac.Angle(3/4);
 rac.Angle.e = new rac.Angle(0/4);
@@ -748,26 +747,27 @@ function draw() {
   let circOneCenter = bezierCenters[4].addX(radius);
   let circTwoCenter = bezierCenters[4].addY(radius);
   let circOne = circOneCenter
-    .segmentToAngle(rac.Angle.w, radius*7/8).draw()
-    .relativeArc(rac.Angle.quarter, false).draw();
+    .segmentToAngle(rac.Angle.w, radius*8/9).draw()
+    .relativeArc(rac.Angle.eighth, false).draw();
   let circTwo = circTwoCenter
-    .segmentToAngle(rac.Angle.n, radius*3/4).draw()
+    .segmentToAngle(rac.Angle.n, radius*4/5).draw()
     .relativeArc(rac.Angle.quarter, true).draw();
   // https://mathworld.wolfram.com/Circle-CircleIntersection.html
   // x = (d^2 - r^2 + R^2) / (d*2)
-  let distance = circOneCenter.distanceToPoint(circTwoCenter);
+  let distance = circTwoCenter.distanceToPoint(circOneCenter);
   let distanceToChord =
-    (Math.pow(distance, 2) - Math.pow(circTwo.radius, 2) + Math.pow(circOne.radius, 2))
+    (Math.pow(distance, 2) - Math.pow(circOne.radius, 2) + Math.pow(circTwo.radius, 2))
     / (distance * 2);
-  let rayToChord = circOneCenter.segmentToPoint(circTwoCenter)
-    .withLength(distanceToChord).draw();
+  let rayToChord = circTwoCenter
+    .segmentToPoint(circOneCenter).draw()
+    .withLength(distanceToChord).draw(bezierStroke);
 
   // a = 1/d sqrt|(-d+r-R)(-d-r+R)(-d+r+R)(d+r+R)
   let chordLength = (1 / distance) * Math.sqrt(
-    (-distance + circTwo.radius - circOne.radius) *
-    (-distance - circTwo.radius + circOne.radius) *
-    (-distance + circTwo.radius + circOne.radius) *
-    (distance + circTwo.radius + circOne.radius));
+    (-distance + circOne.radius - circTwo.radius) *
+    (-distance - circOne.radius + circTwo.radius) *
+    (-distance + circOne.radius + circTwo.radius) *
+    (distance + circOne.radius + circTwo.radius));
   rayToChord.segmentPerpendicular()
     .withLength(chordLength/2)
     .reverse().segmentToRatio(2)
