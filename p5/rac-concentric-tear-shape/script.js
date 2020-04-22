@@ -194,12 +194,6 @@ rac.Point.prototype.angleToPoint = function(other) {
   return rac.Angle.fromPoint(offset);
 };
 
-// TODO: delete
-rac.Point.prototype.distance = function(other) {
-  console.trace("Point.distance deprecated");
-  return this.distanceToPoint(other);
-};
-
 rac.Point.prototype.distanceToPoint = function(other) {
   let x = Math.pow((other.x - this.x), 2);
   let y = Math.pow((other.y - this.y), 2);
@@ -255,7 +249,7 @@ rac.Segment.prototype.middle = function() {
 };
 
 rac.Segment.prototype.length = function() {
-  return this.start.distance(this.end);
+  return this.start.distanceToPoint(this.end);
 };
 
 rac.Segment.prototype.angle = function() {
@@ -624,12 +618,12 @@ function draw() {
     center.angleToPoint(slopeCenterRight),
     false)
     .draw(marker);
-  slopeCenterLeft.arc(slopeCenterLeft.distance(center) - radius,
+  slopeCenterLeft.arc(slopeCenterLeft.distanceToPoint(center) - radius,
     slopeCenterLeft.angleToPoint(center),
     slopeCenterLeft.angleToPoint(slopeCenterRight),
     false)
     .draw(marker);
-  slopeCenterRight.arc(slopeCenterRight.distance(center) - radius,
+  slopeCenterRight.arc(slopeCenterRight.distanceToPoint(center) - radius,
     slopeCenterRight.angleToPoint(center),
     slopeCenterRight.angleToPoint(slopeCenterLeft),
     true)
