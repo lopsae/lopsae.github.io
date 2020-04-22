@@ -195,11 +195,22 @@ rac.Point.prototype.angleToPoint = function(other) {
   return rac.Angle.fromPoint(offset);
 };
 
-// TODO: rename distanceToPoint
+// TODO: delete
 rac.Point.prototype.distance = function(other) {
+  console.trace("Point.distance deprecated");
+  return this.distanceToPoint(other);
+};
+
+rac.Point.prototype.distanceToPoint = function(other) {
   let x = Math.pow((other.x - this.x), 2);
   let y = Math.pow((other.y - this.y), 2);
   return Math.sqrt(x+y);
+};
+
+rac.Point.prototype.pointPerpendicular = function(clockwise = true) {
+  return clockwise
+    ? new rac.Point(-this.y, this.x)
+    : new rac.Point(this.y, -this.x);
 };
 
 rac.Point.prototype.segmentToPoint = function(point) {
@@ -232,6 +243,10 @@ rac.Segment.prototype.draw = function(stroke = undefined) {
        this.end.x,   this.end.y);
   pop();
   return this;
+};
+
+rac.Segment.prototype.withLength = function(newLength) {
+  return this.start.segmentToAngle(this.angle(), newLength);
 };
 
 rac.Segment.prototype.middle = function() {
@@ -276,6 +291,12 @@ rac.Segment.prototype.segmentToMiddle = function() {
 
 rac.Segment.prototype.segmentToRatio = function(ratio) {
   return this.start.segmentToAngle(this.angle(), this.length() * ratio);
+};
+
+rac.Segment.prototype.segmentPerpendicular = function(clockwise = true) {
+  let offset = this.start.add(this.end.negative());
+  let newEnd = this.end.add(offset.pointPerpendicular(clockwise));
+  return this.end.segmentToPoint(newEnd);
 };
 
 rac.Segment.prototype.relativeArc = function(relativeAngle, clockwise = true) {
@@ -497,18 +518,20 @@ function draw() {
     light: {
       background: new rac.Color(0.9, 0.9, 0.9), // whiteish
       stroke:     new rac.Color(0.7, 0.3, 0.3, 0.5), // rose pink,
+      marker:     new rac.Color( .1,  .1,  .1), // blackish
       highlight:  new rac.Color(1.0, 0.0, 1.0, 0.8), // magenta
       bezier:     new rac.Color(0.9, 0.5, 0.5, 0.3) // rose pink
     },
     dark: {
       background: new rac.Color(0.1, 0.1, 0.1), // blackish
       stroke:     new rac.Color(0.9, 0.2, 0.2, 0.5), // red,
+      marker:     new rac.Color( .9,  .9,  .9), // whiteish
       highlight:  new rac.Color(0.0, 1.0, 1.0, 0.8),// cyan
       bezier:     new rac.Color(0.7, 0.3, 0.3, 0.3) // rose pink
     }
   };
 
-  let colorScheme = colors.light;
+  let colorScheme = colors.dark;
   colorScheme.background.applyBackground();
 
   let mainStroke = new rac.Stroke(colorScheme.stroke, 2);
@@ -519,7 +542,7 @@ function draw() {
 
 
   // Center of the tear circle
-  let center = new rac.Point(windowWidth/2, windowHeight/2);
+  let center = new rac.Point(windowWidth/2, windowHeight*3/7);
   // Radius of tear main arc
   let radius = 100;
   // Width of the concentric circles
@@ -596,7 +619,7 @@ function draw() {
   }
 
   // Tear shape
-  let marker = new rac.Stroke(new rac.Color(0, 0, 0), 3);
+  let marker = new rac.Stroke(colorScheme.marker, 3);
   center.arc(radius,
     center.angleToPoint(slopeCenterLeft),
     center.angleToPoint(slopeCenterRight),
@@ -614,17 +637,19 @@ function draw() {
     .draw(marker);
 
 
-
   // Bezier formation centers
   let bezierStroke = new rac.Stroke(colorScheme.bezier, 7);
-  let totalBezierTests = 4;
+  let totalBezierTests = 6;
+  let totalBezierColumns = 4;
   let bezierCenters = [];
   for (let index = 0; index < totalBezierTests; index++) {
     let spacing = radius/2;
-    let bezierTestsWidth = (radius + spacing)*totalBezierTests - spacing;
+    var row = Math.floor(index/totalBezierColumns);
+    var col = index % totalBezierColumns;
+    let bezierTestsWidth = (radius+spacing) * totalBezierColumns - spacing;
     bezierCenters.push(center
-      .addX(-bezierTestsWidth/2 + (radius+spacing) * index)
-      .addY(radius*2));
+      .addX(-bezierTestsWidth/2 + (radius+spacing) * col)
+      .addY(radius*2 + (radius+spacing) * row));
   }
 
   // Manual bezier
@@ -699,8 +724,8 @@ function draw() {
       item.draw(bezierStroke);
     });
 
-  // MAGIC
-  // Arc of segments
+
+  // Arc of Beziers magic
   let bezierArcCenter = bezierCenters[3];
   let bezierArc = bezierArcCenter
     .segmentToAngle(rac.Angle.e, radius).draw()
@@ -717,6 +742,36 @@ function draw() {
     .divideToBeziers(2).forEach(function(item) {
       item.draw(bezierStroke);
     });
+
+
+  // Intersection of circles
+  let circOneCenter = bezierCenters[4].addX(radius);
+  let circTwoCenter = bezierCenters[4].addY(radius);
+  let circOne = circOneCenter
+    .segmentToAngle(rac.Angle.w, radius*7/8).draw()
+    .relativeArc(rac.Angle.quarter, false).draw();
+  let circTwo = circTwoCenter
+    .segmentToAngle(rac.Angle.n, radius*3/4).draw()
+    .relativeArc(rac.Angle.quarter, true).draw();
+  // https://mathworld.wolfram.com/Circle-CircleIntersection.html
+  // x = (d^2 - r^2 + R^2) / (d*2)
+  let distance = circOneCenter.distanceToPoint(circTwoCenter);
+  let distanceToChord =
+    (Math.pow(distance, 2) - Math.pow(circTwo.radius, 2) + Math.pow(circOne.radius, 2))
+    / (distance * 2);
+  let rayToChord = circOneCenter.segmentToPoint(circTwoCenter)
+    .withLength(distanceToChord).draw();
+
+  // a = 1/d sqrt|(-d+r-R)(-d-r+R)(-d+r+R)(d+r+R)
+  let chordLength = (1 / distance) * Math.sqrt(
+    (-distance + circTwo.radius - circOne.radius) *
+    (-distance - circTwo.radius + circOne.radius) *
+    (-distance + circTwo.radius + circOne.radius) *
+    (distance + circTwo.radius + circOne.radius));
+  rayToChord.segmentPerpendicular()
+    .withLength(chordLength/2)
+    .reverse().segmentToRatio(2)
+    .draw();
 
 
   console.log(`👑 ~finis coronat opus ${Date.now()}`);
