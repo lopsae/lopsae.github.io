@@ -58,6 +58,17 @@ rac.Angle = function(turn) {
   this.set(turn);
 };
 
+rac.Angle.from = function(something) {
+  if (something instanceof rac.Angle) {
+    return something;
+  }
+  if (typeof something === "number") {
+    return new rac.Angle(something);
+  }
+
+  throw rac.Error.invalidObjectToConvert;
+}
+
 rac.Angle.fromRadians = function(radians) {
   return new rac.Angle(radians / TWO_PI);
 };
@@ -166,10 +177,20 @@ rac.Point.prototype.vertex = function() {
   return this;
 };
 
-rac.Point.prototype.add = function(other) {
-  return new rac.Point(
+rac.Point.prototype.add = function(other, y = undefined) {
+  if (other instanceof rac.Point && y === undefined) {
+    return new rac.Point(
     this.x + other.x,
     this.y + other.y);
+  }
+
+  if (typeof other === "number" && typeof y === "number") {
+    return new rac.Point(
+      this.x + other,
+      this.y + y);
+  }
+
+  throw rac.Error.invalidParameterCombination;
 };
 
 rac.Point.prototype.addX = function(x) {
@@ -210,7 +231,8 @@ rac.Point.prototype.segmentToPoint = function(point) {
   return new rac.Segment(this, point);
 };
 
-rac.Point.prototype.segmentToAngle = function(angle, distance) {
+rac.Point.prototype.segmentToAngle = function(someAngle, distance) {
+  let angle = rac.Angle.from(someAngle);
   let distanceX = distance * Math.cos(angle.radians());
   let distanceY = distance * Math.sin(angle.radians());
   let end = new rac.Point(this.x + distanceX, this.y + distanceY);
@@ -496,6 +518,12 @@ rac.Bezier.prototype.drawAnchors = function(stroke = undefined) {
 };
 
 
+rac.Error = {
+  invalidParameterCombination: "Invalid parameter combination",
+  invalidObjectToConvert: "Invalid object to convert"
+};
+
+
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -737,9 +765,35 @@ function draw() {
     });
 
 
+  // Test angle inside arc
+  let insideTestCenter = bezierCenters[4];
+  insideTestCenter = insideTestCenter.add(radius/2, radius/2);
+  let ccwTestArc = insideTestCenter.segmentToAngle(rac.Angle.se, radius*2/5).draw()
+    .arc(rac.Angle.nw, false).draw();
+  ccwTestArc.endSegment().segmentToRatio(1/3).draw();
+
+  [insideTestCenter.segmentToAngle(1/4+1/32, ccwTestArc.radius),
+  insideTestCenter.segmentToAngle(0, ccwTestArc.radius),
+  insideTestCenter.segmentToAngle(-1/4+1/32, ccwTestArc.radius)]
+    .forEach(function(item) {
+      item.draw();
+    });
+
+  let cwTestArc = insideTestCenter.segmentToAngle(rac.Angle.sw, radius/2).draw()
+    .arc(rac.Angle.ese, true).draw();
+  cwTestArc.endSegment().segmentToRatio(1/3).draw();
+
+  [insideTestCenter.segmentToAngle(1/4-1/32, cwTestArc.radius),
+  insideTestCenter.segmentToAngle(1/2-1/64, cwTestArc.radius),
+  insideTestCenter.segmentToAngle(-1/4-1/32, cwTestArc.radius)]
+    .forEach(function(item) {
+      item.draw();
+    });
+
+
   // Intersection of circles
-  let circOneCenter = bezierCenters[4].addX(radius);
-  let circTwoCenter = bezierCenters[4].addY(radius);
+  let circOneCenter = bezierCenters[5].addX(radius);
+  let circTwoCenter = bezierCenters[5].addY(radius);
   let circOne = circOneCenter
     .segmentToAngle(rac.Angle.w, radius*8/9).draw()
     .relativeArc(rac.Angle.eighth, false).draw();
