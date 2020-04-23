@@ -65,6 +65,9 @@ rac.Angle.from = function(something) {
   if (typeof something === "number") {
     return new rac.Angle(something);
   }
+  if (something instanceof rac.Segment) {
+    return something.angle();
+  }
 
   throw rac.Error.invalidObjectToConvert;
 }
@@ -410,6 +413,23 @@ rac.Arc.prototype.withRadius = function(radius) {
   copy.radius = radius;
   return copy;
 }
+
+rac.Arc.prototype.containsAngle = function(someAngle) {
+  let angle = rac.Angle.from(someAngle);
+  if (this.start.turn == this.end.turn) {
+    return true;
+  }
+
+  if (this.clockwise) {
+    let offset = angle.add(this.start.negative());
+    let endOffset = this.end.add(this.start.negative());
+    return offset.turn <= endOffset.turn;
+  } else {
+    let offset = angle.add(this.end.negative());
+    let startOffset = this.start.add(this.end.negative());
+    return offset.turn <= startOffset.turn;
+  }
+};
 
 rac.Arc.prototype.arcLength = function() {
   return this.start.distance(this.end, this.clockwise);
@@ -773,10 +793,13 @@ function draw() {
   ccwTestArc.endSegment().segmentToRatio(1/3).draw();
 
   [insideTestCenter.segmentToAngle(1/4+1/32, ccwTestArc.radius),
-  insideTestCenter.segmentToAngle(0, ccwTestArc.radius),
+  insideTestCenter.segmentToAngle(-1/64, ccwTestArc.radius),
   insideTestCenter.segmentToAngle(-1/4+1/32, ccwTestArc.radius)]
     .forEach(function(item) {
       item.draw();
+      if (ccwTestArc.containsAngle(item)) {
+        item.draw(bezierStroke);
+      }
     });
 
   let cwTestArc = insideTestCenter.segmentToAngle(rac.Angle.sw, radius/2).draw()
@@ -784,10 +807,13 @@ function draw() {
   cwTestArc.endSegment().segmentToRatio(1/3).draw();
 
   [insideTestCenter.segmentToAngle(1/4-1/32, cwTestArc.radius),
-  insideTestCenter.segmentToAngle(1/2-1/64, cwTestArc.radius),
+  insideTestCenter.segmentToAngle(1/2+1/64, cwTestArc.radius),
   insideTestCenter.segmentToAngle(-1/4-1/32, cwTestArc.radius)]
     .forEach(function(item) {
       item.draw();
+      if (cwTestArc.containsAngle(item)) {
+        item.draw(bezierStroke);
+      }
     });
 
 
