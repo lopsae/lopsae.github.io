@@ -431,6 +431,43 @@ rac.Arc.prototype.containsAngle = function(someAngle) {
   }
 };
 
+rac.Arc.prototype.intersectionWithArc = function(other) {
+  // https://mathworld.wolfram.com/Circle-CircleIntersection.html
+  // R=this, r=other
+
+  let distance = this.center.distanceToPoint(other.center);
+  if (distance == 0) { return []; }
+
+  // distanceToChord = (d^2 - r^2 + R^2) / (d*2)
+  let distanceToChord = (
+      Math.pow(distance, 2)
+    - Math.pow(other.radius, 2)
+    + Math.pow(this.radius, 2)
+    ) / (distance * 2);
+
+  // a = 1/d sqrt|(-d+r-R)(-d-r+R)(-d+r+R)(d+r+R)
+  let chordLength = (1 / distance) * Math.sqrt(
+      (-distance + other.radius - this.radius)
+    * (-distance - other.radius + this.radius)
+    * (-distance + other.radius + this.radius)
+    * (distance + other.radius + this.radius));
+
+  let rayToChord = this.center.segmentToPoint(other.center)
+    .withLength(distanceToChord);
+  let chord = rayToChord.segmentPerpendicular(this.clockwise)
+    .withLength(chordLength/2)
+    .reverse()
+    .segmentToRatio(2);
+
+  let intersections = [chord.start, chord.end].filter(function(item) {
+    return this.containsAngle(this.center.segmentToPoint(item))
+      && other.containsAngle(other.center.segmentToPoint(item));
+  }, this);
+
+  return intersections;
+
+};
+
 rac.Arc.prototype.arcLength = function() {
   return this.start.distance(this.end, this.clockwise);
 };
@@ -846,6 +883,10 @@ function draw() {
     .withLength(chordLength/2)
     .reverse().segmentToRatio(2)
     .draw();
+
+    circTwo.intersectionWithArc(circOne).forEach(function(item) {
+      rayToChord.end.segmentToPoint(item).draw(bezierStroke);
+    });
 
 
   console.log(`👑 ~finis coronat opus ${Date.now()}`);
