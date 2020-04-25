@@ -416,6 +416,12 @@ rac.Arc.prototype.withRadius = function(radius) {
   return copy;
 }
 
+rac.Arc.prototype.withEndTowardsPoint = function(point) {
+  let copy = this.copy();
+  copy.end = this.center.angleToPoint(point);
+  return copy;
+};
+
 rac.Arc.prototype.containsAngle = function(someAngle) {
   let angle = rac.Angle.from(someAngle);
   if (this.start.turn == this.end.turn) {
@@ -744,6 +750,31 @@ function draw() {
     slopeCenterRight.angleToPoint(slopeCenterLeft),
     true)
     .draw(marker);
+
+  for(let index = 1; index <= concentricCount; index++) {
+    let centerConcentricRadius = radius - concentricWidth * index;
+    let slopeConcentricRadius = radius*2 + concentricWidth * index;
+
+    center.arc(centerConcentricRadius,
+      center.angleToPoint(slopeCenterLeft),
+      center.angleToPoint(slopeCenterRight),
+      false)
+      .draw(marker);
+
+    let slopeLeft = slopeCenterLeft.arc(slopeConcentricRadius,
+      slopeCenterLeft.angleToPoint(center),
+      rac.Angle.e,
+      false);
+    let slopeRight = slopeCenterRight.arc(slopeConcentricRadius,
+      slopeCenterRight.angleToPoint(center),
+      rac.Angle.w,
+      true);
+    let slopeIntersection = slopeLeft
+      .intersectionPointsWithArc(slopeRight)[0];
+
+    slopeLeft.withEndTowardsPoint(slopeIntersection).draw(marker);
+    slopeRight.withEndTowardsPoint(slopeIntersection).draw(marker);
+  }
 
 
   // Bezier formation centers
