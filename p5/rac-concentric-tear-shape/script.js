@@ -433,6 +433,7 @@ rac.Arc.prototype.containsAngle = function(someAngle) {
   }
 };
 
+// Returns chord regardless of actual intersection.
 rac.Arc.prototype.intersectionChord = function(other) {
   // https://mathworld.wolfram.com/Circle-CircleIntersection.html
   // R=this, r=other
@@ -462,7 +463,31 @@ rac.Arc.prototype.intersectionChord = function(other) {
     .segmentToRatio(2);
 };
 
-rac.Arc.prototype.intersectionsWithArc = function(other) {
+// Returns intersecting arc limited by current arc, but not limited by
+// `other`. Returned arc will overlay `this`, but may not overlay `other`.
+rac.Arc.prototype.intersectionArc = function(other) {
+  let chord = this.intersectionChord(other);
+  if (chord === null) { return null; }
+
+  let startAngle = this.center.angleToPoint(chord.start);
+  let endAngle = this.center.angleToPoint(chord.end);
+
+  if (!this.containsAngle(startAngle)) {
+    startAngle = this.start;
+  }
+  if (!this.containsAngle(endAngle)) {
+    endAngle = this.end;
+  }
+
+  return new rac.Arc(
+    this.center, this.radius,
+    startAngle,
+    endAngle,
+    this.clockwise);
+};
+
+// Returns only intersecting points.
+rac.Arc.prototype.intersectionPointsWithArc = function(other) {
   let chord = this.intersectionChord(other);
   if (chord === null) { return []; }
 
@@ -862,18 +887,21 @@ function draw() {
 
   // Intersection of circles
   let circOneCenter = bezierCenters[5].addX(radius);
-  let circTwoCenter = bezierCenters[5].add(radius/4, radius*3/4);
-  circOneCenter.segmentToPoint(circTwoCenter).draw();
+  let circTwoCenter = circOneCenter
+    .segmentToAngle(rac.Angle.sw, radius).draw()
+    .end;
+    //.add(radius/4, radius*3/4);
+  // circOneCenter.segmentToPoint(circTwoCenter).draw();
   let circOne = circOneCenter
     .segmentToAngle(rac.Angle.w, radius).draw()
     .relativeArc(rac.Angle.eighth, false).draw();
   let circTwo = circTwoCenter
-    .segmentToAngle(rac.Angle.nw, radius*2/5).draw()
-    .relativeArc(rac.Angle.half, true).draw();
+    .segmentToAngle(rac.Angle.wnw, radius*2/5).draw()
+    .arc(rac.Angle.sse, true).draw();
 
   let intersectionChord = circTwo.intersectionChord(circOne).draw();
-  intersectionChord.segmentExtending(radius/5).draw().draw(bezierStroke);
-  circTwo.intersectionsWithArc(circOne).forEach(function(item) {
+  intersectionChord.segmentExtending(radius/5).draw().draw();
+  circTwo.intersectionPointsWithArc(circOne).forEach(function(item) {
     intersectionChord.middle().segmentToPoint(item).draw(bezierStroke);
   });
 
@@ -881,10 +909,14 @@ function draw() {
     .segmentToAngle(1/2-1/32, radius*5/6).draw()
     .arc(1/4+1/32, false).draw();
   circThree.endSegment().segmentToMiddle().draw();
-  circThree.intersectionsWithArc(circTwo).forEach(function(item, index) {
+  circThree.intersectionPointsWithArc(circTwo).forEach(function(item, index) {
     item.segmentToPoint(circOneCenter)
       .segmentToRatio(1/(index+2)).draw();
   });
+
+  circOne.intersectionArc(circTwo).draw(bezierStroke);
+  circTwo.intersectionArc(circThree).draw(bezierStroke);
+  circThree.intersectionArc(circTwo).draw(bezierStroke);
 
 
   console.log(`👑 ~finis coronat opus ${Date.now()}`);
