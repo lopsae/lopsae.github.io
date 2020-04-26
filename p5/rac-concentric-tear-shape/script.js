@@ -22,6 +22,10 @@ rac.Color.prototype.applyBackground = function() {
   background(this.r * 255, this.g * 255, this.b * 255);
 };
 
+rac.Color.prototype.applyFill = function() {
+  fill(this.r * 255, this.g * 255, this.b * 255, this.alpha * 255);
+};
+
 
 rac.Stroke = function(color, weight = 1) {
   this.color = color;
@@ -685,14 +689,16 @@ function draw() {
     light: {
       background: new rac.Color(0.9, 0.9, 0.9), // whiteish
       stroke:     new rac.Color(0.7, 0.3, 0.3, 0.5), // rose pink,
-      marker:     new rac.Color( .1,  .1,  .1), // blackish
+      marker:     new rac.Color(0.9, 0.5, 0.5, 0.3), // rose pink
+      fill:       new rac.Color( .1,  .1,  .1), // blackish
       highlight:  new rac.Color(1.0, 0.0, 1.0, 0.8), // magenta
       bezier:     new rac.Color(0.9, 0.5, 0.5, 0.3) // rose pink
     },
     dark: {
       background: new rac.Color(0.1, 0.1, 0.1), // blackish
       stroke:     new rac.Color(0.9, 0.2, 0.2, 0.5), // red,
-      marker:     new rac.Color( .9,  .9,  .9), // whiteish
+      marker:     new rac.Color(0.7, 0.3, 0.3, 0.3), // rose pink
+      fill:       new rac.Color( .9,  .9,  .9), // whiteish
       highlight:  new rac.Color(0.0, 1.0, 1.0, 0.8),// cyan
       bezier:     new rac.Color(0.7, 0.3, 0.3, 0.3) // rose pink
     }
@@ -815,7 +821,7 @@ function draw() {
   // Filled tear shape
   // for(let index = 0; index <= concentricCount; index++) {
   push();
-  fill(255, 0, 255);
+  colorScheme.fill.applyFill();
   for(let index = 0; index <= concentricCount; index++) {
     let centerConcentricRadius = radius - concentricWidth * index;
     let slopeConcentricRadius = radius*2 + concentricWidth * index;
