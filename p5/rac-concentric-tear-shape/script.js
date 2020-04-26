@@ -816,8 +816,7 @@ function draw() {
   // for(let index = 0; index <= concentricCount; index++) {
   push();
   fill(255, 0, 255);
-  for(let index = 0; index <= 0; index++) {
-    beginShape();
+  for(let index = 0; index <= concentricCount; index++) {
     let centerConcentricRadius = radius - concentricWidth * index;
     let slopeConcentricRadius = radius*2 + concentricWidth * index;
 
@@ -850,9 +849,19 @@ function draw() {
       .divideToBeziers(1)
       .play(player);
 
-    player.vertex();
+    if (index % 2 == 0) {
+      beginShape();
+      player.vertex();
+      if (index == concentricCount) {
+        endShape();
+      }
+    } else {
+      beginContour();
+      player.reverse().vertex();
+      endContour();
+      endShape();
+    }
 
-    endShape()
   }
   pop();
 
