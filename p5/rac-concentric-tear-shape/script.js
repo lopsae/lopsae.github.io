@@ -626,6 +626,37 @@ rac.Bezier.prototype.vertex = function() {
     this.end.x, this.end.y);
 };
 
+rac.Bezier.prototype.reverse = function() {
+  return new rac.Bezier(
+    this.end, this.endAnchor,
+    this.startAnchor, this.start);
+};
+
+
+rac.Player = function() {
+  this.sequence = [];
+}
+
+rac.Player.prototype.add = function(element) {
+  if (element instanceof Array) {
+    element.forEach(item => this.sequence.push(item));
+    return
+  }
+  this.sequence.push(element);
+};
+
+rac.Player.prototype.reverse = function() {
+  let reversed = this.sequence.map(item => item.reverse())
+    .reverse();
+  let copy = new rac.Player()
+  copy.sequence = reversed;
+  return copy;
+};
+
+rac.Player.prototype.vertex = function() {
+  this.sequence.forEach(item => item.vertex());
+};
+
 
 rac.Error = {
   invalidParameterCombination: "Invalid parameter combination",
@@ -795,27 +826,24 @@ function draw() {
     let slopeIntersection = slopeLeft
       .intersectionPointsWithArc(slopeRight)[0];
 
-    slopeRight.withEndTowardsPoint(slopeIntersection)
+    let player = new rac.Player();
+    player.add(
+      slopeRight.withEndTowardsPoint(slopeIntersection)
       .reverse()
-      .divideToBeziers(1)
-      .forEach(function(bezier) {
-        bezier.vertex();
-      });
+      .divideToBeziers(1));
 
-    center.arc(centerConcentricRadius,
-      center.angleToPoint(slopeCenterRight),
-      center.angleToPoint(slopeCenterLeft),
-      true)
-      .divideToBeziers(3)
-      .forEach(function(bezier) {
-        bezier.vertex();
-      });
+    player.add(
+      center.arc(centerConcentricRadius,
+        center.angleToPoint(slopeCenterRight),
+        center.angleToPoint(slopeCenterLeft),
+        true)
+        .divideToBeziers(3));
 
-    slopeLeft.withEndTowardsPoint(slopeIntersection)
-      .divideToBeziers(1)
-      .forEach(function(bezier) {
-        bezier.vertex();
-      });
+    player.add(
+      slopeLeft.withEndTowardsPoint(slopeIntersection)
+        .divideToBeziers(1));
+
+    player.vertex();
 
     endShape()
   }
