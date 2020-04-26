@@ -584,7 +584,7 @@ rac.Arc.prototype.divideToBeziers = function(bezierCount) {
       endAnchor, endRay.end));
   }, this);
 
-  return beziers;
+  return new rac.Player(beziers);
 };
 
 
@@ -633,9 +633,21 @@ rac.Bezier.prototype.reverse = function() {
 };
 
 
-rac.Player = function() {
-  this.sequence = [];
+rac.Player = function(sequence = []) {
+  this.sequence = sequence;
 }
+
+rac.Player.prototype.draw = function(stroke = undefined) {
+  this.sequence.forEach(item => item.draw(stroke));
+};
+
+rac.Player.prototype.vertex = function() {
+  this.sequence.forEach(item => item.vertex());
+};
+
+rac.Player.prototype.play = function(player) {
+  player.add(this);
+};
 
 rac.Player.prototype.add = function(element) {
   if (element instanceof Array) {
@@ -648,13 +660,7 @@ rac.Player.prototype.add = function(element) {
 rac.Player.prototype.reverse = function() {
   let reversed = this.sequence.map(item => item.reverse())
     .reverse();
-  let copy = new rac.Player()
-  copy.sequence = reversed;
-  return copy;
-};
-
-rac.Player.prototype.vertex = function() {
-  this.sequence.forEach(item => item.vertex());
+  return new rac.Player(reversed);
 };
 
 
@@ -827,21 +833,22 @@ function draw() {
       .intersectionPointsWithArc(slopeRight)[0];
 
     let player = new rac.Player();
-    player.add(
-      slopeRight.withEndTowardsPoint(slopeIntersection)
+
+    slopeRight.withEndTowardsPoint(slopeIntersection)
       .reverse()
-      .divideToBeziers(1));
+      .divideToBeziers(1)
+      .play(player);
 
-    player.add(
-      center.arc(centerConcentricRadius,
-        center.angleToPoint(slopeCenterRight),
-        center.angleToPoint(slopeCenterLeft),
-        true)
-        .divideToBeziers(3));
+    center.arc(centerConcentricRadius,
+      center.angleToPoint(slopeCenterRight),
+      center.angleToPoint(slopeCenterLeft),
+      true)
+      .divideToBeziers(3)
+      .play(player);
 
-    player.add(
-      slopeLeft.withEndTowardsPoint(slopeIntersection)
-        .divideToBeziers(1));
+    slopeLeft.withEndTowardsPoint(slopeIntersection)
+      .divideToBeziers(1)
+      .play(player);
 
     player.vertex();
 
@@ -944,7 +951,7 @@ function draw() {
     .segmentToAngle(rac.Angle.e, radius).draw()
     .arc(rac.Angle.s).draw();
   bezierArc
-    .divideToBeziers(1).forEach(function(item) {
+    .divideToBeziers(1).sequence.forEach(function(item) {
       item.drawAnchors();
       item.draw(bezierStroke);
     });
@@ -952,9 +959,8 @@ function draw() {
     .segmentToRatio(1/3).draw()
     .end.segmentToPoint(bezierArcCenter).reverse()
     .arc(rac.Angle.nne, false).draw()
-    .divideToBeziers(2).forEach(function(item) {
-      item.draw(bezierStroke);
-    });
+    .divideToBeziers(2)
+    .draw(bezierStroke);
 
 
   // Test angle inside arc
