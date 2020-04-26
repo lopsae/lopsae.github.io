@@ -735,23 +735,7 @@ function draw() {
 
   // Tear shape
   let marker = new rac.Stroke(colorScheme.marker, 3);
-  center.arc(radius,
-    center.angleToPoint(slopeCenterLeft),
-    center.angleToPoint(slopeCenterRight),
-    false)
-    .draw(marker);
-  slopeCenterLeft.arc(slopeCenterLeft.distanceToPoint(center) - radius,
-    slopeCenterLeft.angleToPoint(center),
-    slopeCenterLeft.angleToPoint(slopeCenterRight),
-    false)
-    .draw(marker);
-  slopeCenterRight.arc(slopeCenterRight.distanceToPoint(center) - radius,
-    slopeCenterRight.angleToPoint(center),
-    slopeCenterRight.angleToPoint(slopeCenterLeft),
-    true)
-    .draw(marker);
-
-  for(let index = 1; index <= concentricCount; index++) {
+  for(let index = 0; index <= concentricCount; index++) {
     let centerConcentricRadius = radius - concentricWidth * index;
     let slopeConcentricRadius = radius*2 + concentricWidth * index;
 
