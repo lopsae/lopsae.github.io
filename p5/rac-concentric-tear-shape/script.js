@@ -683,7 +683,15 @@ function setup() {
 }
 
 
+function mouseDragged(event) {
+  console.log(`event: ${event.movementX} ${event.movementY}`);
+  redraw();
+  // return false;
+}
+
+
 function draw() {
+  clear();
   // Color schemes
   let colors = {
     light: {
@@ -720,6 +728,8 @@ function draw() {
   let radius = 100;
   // Width of the concentric circles
   let concentricWidth = 20;
+  // Radius of the main slope arcs
+  let slopeRadius = radius*2;
 
   // Last step is draw if its width would be greater that zero
   let concentricCount = Math.ceil(radius/concentricWidth) -1;
@@ -738,28 +748,28 @@ function draw() {
   }
 
   // Slope centers orbit arc
-  center.segmentToAngle(rac.Angle.wsw, radius * 3).draw()
+  center.segmentToAngle(rac.Angle.wsw, radius + slopeRadius).draw()
     .arc(rac.Angle.ese).draw();
   center.segmentToAngle(rac.Angle.up, radius)
     .end.arc(radius*2).draw();
-  center.segmentToAngle(rac.Angle.up, radius*2).draw()
+  center.segmentToAngle(rac.Angle.up, slopeRadius).draw()
     .end.arc(radius).draw();
 
   // Slope centers left column
-  let columnCenterLeft = center.addX(-radius*2);
+  let columnCenterLeft = center.addX(-slopeRadius);
   center.segmentToPoint(columnCenterLeft).draw()
     .segmentExtending(radius/5).draw();
   columnCenterLeft.arc(radius).draw();
 
   // Slope centers right column
-  let columnCenterRight = center.addX(radius*2);
+  let columnCenterRight = center.addX(slopeRadius);
   center.segmentToPoint(columnCenterRight).draw()
     .segmentExtending(radius/5).draw();
   columnCenterRight.arc(radius).draw();
 
   // Ray to slope center left
   let columnLeft = center.segmentToPoint(columnCenterLeft)
-    .oppositeWithHyp(radius*3, false).draw();
+    .oppositeWithHyp(radius + slopeRadius, false).draw();
   let slopeCenterLeft = columnLeft.end;
   columnLeft.segmentExtending(radius/5).draw();
   center.segmentToPoint(slopeCenterLeft).draw()
@@ -767,7 +777,7 @@ function draw() {
 
   // Ray to slope center right
   let columnRight = center.segmentToPoint(columnCenterRight)
-    .oppositeWithHyp(radius*3, true).draw();
+    .oppositeWithHyp(radius + slopeRadius, true).draw();
   let slopeCenterRight = columnRight.end;
   columnRight.segmentExtending(radius/5).draw();
   center.segmentToPoint(slopeCenterRight).draw()
@@ -775,15 +785,15 @@ function draw() {
 
   // Slope arcs
   slopeCenterLeft
-    .segmentToAngle(rac.Angle.s.add(1/32), radius*2).draw()
+    .segmentToAngle(rac.Angle.s.add(1/32), slopeRadius).draw()
     .relativeArc(new rac.Angle(3/8), false).draw();
   slopeCenterRight
-    .segmentToAngle(rac.Angle.s.add(-1/32), radius*2).draw()
+    .segmentToAngle(rac.Angle.s.add(-1/32), slopeRadius).draw()
     .relativeArc(new rac.Angle(3/8), true).draw();
 
   // Slope concentric arcs
   for(let index = 1; index <= concentricCount; index++) {
-    let concentricRadius = radius*2 + concentricWidth * index;
+    let concentricRadius = slopeRadius + concentricWidth * index;
 
     slopeCenterLeft.arc(concentricRadius,
       rac.Angle.s.add(-1/32), rac.Angle.e.add(-1/32), false).draw();
@@ -795,7 +805,7 @@ function draw() {
   let marker = new rac.Stroke(colorScheme.marker, 3);
   for(let index = 0; index <= concentricCount; index++) {
     let centerConcentricRadius = radius - concentricWidth * index;
-    let slopeConcentricRadius = radius*2 + concentricWidth * index;
+    let slopeConcentricRadius = slopeRadius + concentricWidth * index;
 
     center.arc(centerConcentricRadius,
       center.angleToPoint(slopeCenterLeft),
@@ -824,7 +834,7 @@ function draw() {
   colorScheme.fill.applyFill();
   for(let index = 0; index <= concentricCount; index++) {
     let centerConcentricRadius = radius - concentricWidth * index;
-    let slopeConcentricRadius = radius*2 + concentricWidth * index;
+    let slopeConcentricRadius = slopeRadius + concentricWidth * index;
 
     let slopeLeft = slopeCenterLeft.arc(slopeConcentricRadius,
       slopeCenterLeft.angleToPoint(center),
