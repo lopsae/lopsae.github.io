@@ -410,6 +410,13 @@ rac.Arc.prototype.draw = function(stroke = undefined) {
   return this;
 }
 
+rac.Arc.prototype.reverse = function() {
+  return new rac.Arc(
+    this.center, this.radius,
+    this.end, this.start,
+    !this.clockwise);
+};
+
 rac.Arc.prototype.withRadius = function(radius) {
   let copy = this.copy();
   copy.radius = radius;
@@ -611,6 +618,14 @@ rac.Bezier.prototype.drawAnchors = function(stroke = undefined) {
   pop();
 };
 
+rac.Bezier.prototype.vertex = function() {
+  this.start.vertex()
+  bezierVertex(
+    this.startAnchor.x, this.startAnchor.y,
+    this.endAnchor.x, this.endAnchor.y,
+    this.end.x, this.end.y);
+};
+
 
 rac.Error = {
   invalidParameterCombination: "Invalid parameter combination",
@@ -759,6 +774,52 @@ function draw() {
     slopeLeft.withEndTowardsPoint(slopeIntersection).draw(marker);
     slopeRight.withEndTowardsPoint(slopeIntersection).draw(marker);
   }
+
+  // Filled tear shape
+  // for(let index = 0; index <= concentricCount; index++) {
+  push();
+  fill(255, 0, 255);
+  for(let index = 0; index <= 0; index++) {
+    beginShape();
+    let centerConcentricRadius = radius - concentricWidth * index;
+    let slopeConcentricRadius = radius*2 + concentricWidth * index;
+
+    let slopeLeft = slopeCenterLeft.arc(slopeConcentricRadius,
+      slopeCenterLeft.angleToPoint(center),
+      rac.Angle.e,
+      false);
+    let slopeRight = slopeCenterRight.arc(slopeConcentricRadius,
+      slopeCenterRight.angleToPoint(center),
+      rac.Angle.w,
+      true);
+    let slopeIntersection = slopeLeft
+      .intersectionPointsWithArc(slopeRight)[0];
+
+    slopeRight.withEndTowardsPoint(slopeIntersection)
+      .reverse()
+      .divideToBeziers(1)
+      .forEach(function(bezier) {
+        bezier.vertex();
+      });
+
+    center.arc(centerConcentricRadius,
+      center.angleToPoint(slopeCenterRight),
+      center.angleToPoint(slopeCenterLeft),
+      true)
+      .divideToBeziers(3)
+      .forEach(function(bezier) {
+        bezier.vertex();
+      });
+
+    slopeLeft.withEndTowardsPoint(slopeIntersection)
+      .divideToBeziers(1)
+      .forEach(function(bezier) {
+        bezier.vertex();
+      });
+
+    endShape()
+  }
+  pop();
 
 
   // Bezier formation centers
