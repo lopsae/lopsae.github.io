@@ -450,7 +450,8 @@ rac.Arc.prototype.containsAngle = function(someAngle) {
   }
 };
 
-// Returns chord regardless of actual intersection.
+// Returns chord regardless of actual intersection. Both arcs are
+// considered complete circle arcs.
 rac.Arc.prototype.intersectionChord = function(other) {
   // https://mathworld.wolfram.com/Circle-CircleIntersection.html
   // R=this, r=other
@@ -480,8 +481,8 @@ rac.Arc.prototype.intersectionChord = function(other) {
     .segmentToRatio(2);
 };
 
-// Returns intersecting arc limited by current arc, but not limited by
-// `other`. Returned arc will overlay `this`, but may not overlay `other`.
+// Returns the section of `this` that is inside `other`, when `other` is
+// considerede as a complete circle.
 rac.Arc.prototype.intersectionArc = function(other) {
   let chord = this.intersectionChord(other);
   if (chord === null) { return null; }
@@ -504,7 +505,7 @@ rac.Arc.prototype.intersectionArc = function(other) {
 };
 
 // Returns only intersecting points.
-rac.Arc.prototype.intersectionPointsWithArc = function(other) {
+rac.Arc.prototype.intersectingPointsWithArc = function(other) {
   let chord = this.intersectionChord(other);
   if (chord === null) { return []; }
 
@@ -699,16 +700,14 @@ function draw() {
       stroke:     new rac.Color(0.7, 0.3, 0.3, 0.5), // rose pink,
       marker:     new rac.Color(0.9, 0.5, 0.5, 0.3), // rose pink
       fill:       new rac.Color( .1,  .1,  .1), // blackish
-      highlight:  new rac.Color(1.0, 0.0, 1.0, 0.8), // magenta
-      bezier:     new rac.Color(0.9, 0.5, 0.5, 0.3) // rose pink
+      highlight:  new rac.Color(1.0, 0.0, 1.0, 0.8) // magenta
     },
     dark: {
       background: new rac.Color(0.1, 0.1, 0.1), // blackish
       stroke:     new rac.Color(0.9, 0.2, 0.2, 0.5), // red,
       marker:     new rac.Color(0.7, 0.3, 0.3, 0.3), // rose pink
       fill:       new rac.Color( .9,  .9,  .9), // whiteish
-      highlight:  new rac.Color(0.0, 1.0, 1.0, 0.8),// cyan
-      bezier:     new rac.Color(0.7, 0.3, 0.3, 0.3) // rose pink
+      highlight:  new rac.Color(0.0, 1.0, 1.0, 0.8)// cyan
     }
   };
 
@@ -723,13 +722,13 @@ function draw() {
 
 
   // Center of the tear circle
-  let center = new rac.Point(windowWidth/2, windowHeight*3/7);
+  let center = new rac.Point(windowWidth/2, windowHeight/2);
   // Radius of tear main arc
   let radius = 100;
   // Width of the concentric circles
   let concentricWidth = 20;
   // Radius of the main slope arcs
-  let slopeRadius = radius*2;
+  let slopeRadius = radius*2.6;
 
   // Last step is draw if its width would be greater that zero
   let concentricCount = Math.ceil(radius/concentricWidth) -1;
@@ -822,7 +821,8 @@ function draw() {
       rac.Angle.w,
       true);
     let slopeIntersection = slopeLeft
-      .intersectionPointsWithArc(slopeRight)[0];
+      .intersectingPointsWithArc(slopeRight)[0]
+      ?? slopeCenterLeft.segmentToPoint(slopeCenterRight).middle();
 
     slopeLeft.withEndTowardsPoint(slopeIntersection).draw(marker);
     slopeRight.withEndTowardsPoint(slopeIntersection).draw(marker);
@@ -845,7 +845,8 @@ function draw() {
       rac.Angle.w,
       true);
     let slopeIntersection = slopeLeft
-      .intersectionPointsWithArc(slopeRight)[0];
+      .intersectingPointsWithArc(slopeRight)[0]
+      ?? slopeCenterLeft.segmentToPoint(slopeCenterRight).middle();
 
     let player = new rac.Player();
 
@@ -880,179 +881,6 @@ function draw() {
 
   }
   pop();
-
-
-  // Bezier formation centers
-  let bezierStroke = new rac.Stroke(colorScheme.bezier, 7);
-  let totalBezierTests = 8;
-  let totalBezierColumns = 4;
-  let bezierCenters = [];
-  for (let index = 0; index < totalBezierTests; index++) {
-    let spacing = radius/2;
-    var row = Math.floor(index/totalBezierColumns);
-    var col = index % totalBezierColumns;
-    let bezierTestsWidth = (radius+spacing) * totalBezierColumns - spacing;
-    bezierCenters.push(center
-      .addX(-bezierTestsWidth/2 + (radius+spacing) * col)
-      .addY(radius*2 + (radius+spacing) * row));
-  }
-
-  // Manual bezier
-  // Tangent for 4 point
-  // https://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%C3%A9zier-curves
-  let fourPointTangent = radius * (4/3) * Math.tan(PI/(4*2));
-  let manualBezierCenter = bezierCenters[0];
-  let manualBezierArcSegment = manualBezierCenter
-    .segmentToAngle(rac.Angle.e, radius).draw();
-  manualBezierArcSegment.arc(rac.Angle.s, radius).draw();
-
-  let manualBezierStart = manualBezierArcSegment.end;
-  let manualBezierStartAnchor = manualBezierStart
-    .segmentToAngle(rac.Angle.s, fourPointTangent).draw()
-    .end;
-  let manualBezierEnd = manualBezierCenter
-    .segmentToAngle(rac.Angle.s, radius).draw()
-    .end;
-  let manualBezierEndAnchor = manualBezierEnd
-    .segmentToAngle(rac.Angle.e, fourPointTangent).draw()
-    .end;
-
-  push();
-  bezierStroke.apply();
-  beginShape();
-    manualBezierCenter.vertex();
-    manualBezierStart.vertex();
-    bezierVertex(
-      manualBezierStartAnchor.x, manualBezierStartAnchor.y,
-      manualBezierEndAnchor.x, manualBezierEndAnchor.y,
-      manualBezierEnd.x, manualBezierEnd.y);
-    manualBezierEnd.segmentToPoint(manualBezierCenter)
-      .middle().vertex();
-  endShape();
-  pop();
-
-
-  // Angle distances
-  let distanceCenter = bezierCenters[1];
-  let distanceOriginAngle = rac.Angle.ese;
-  let distanceOriginSegment = distanceCenter
-    .segmentToAngle(distanceOriginAngle, radius).draw();
-
-  let distanceTargetAngle = new rac.Angle(1/8+1/32);
-  distanceOriginSegment.arc(distanceTargetAngle, radius, true).draw()
-    .endSegment().segmentToMiddle().draw();
-
-  distanceOriginSegment.segmentToMiddle()
-    .relativeArc(distanceOriginAngle.distance(distanceTargetAngle), false)
-    .draw().draw(bezierStroke)
-    .endSegment().segmentToMiddle().draw();
-
-  distanceOriginSegment.segmentToRatio(2/3)
-    .relativeArc(distanceOriginAngle.distance(distanceTargetAngle).mult(2))
-    .draw().draw(bezierStroke)
-    .endSegment().segmentToMiddle().draw();
-
-
-  // Arc of segments
-  let segmentArcsCenter = bezierCenters[2];
-  segmentArcsCenter
-    .segmentToAngle(rac.Angle.s, radius).draw()
-    .arc(rac.Angle.e, false).draw()
-    .divideToSegments(4).forEach(function(item) {
-      item.draw(bezierStroke);
-    });
-
-  segmentArcsCenter
-    .segmentToAngle(rac.Angle.e, radius*(2/3)).draw()
-    .arc(rac.Angle.sse).draw()
-    .divideToSegments(3).forEach(function(item) {
-      item.draw(bezierStroke);
-    });
-
-
-  // Arc of Beziers magic
-  let bezierArcCenter = bezierCenters[3];
-  let bezierArc = bezierArcCenter
-    .segmentToAngle(rac.Angle.e, radius).draw()
-    .arc(rac.Angle.s).draw();
-  bezierArc
-    .divideToBeziers(1).sequence.forEach(function(item) {
-      item.drawAnchors();
-      item.draw(bezierStroke);
-    });
-  bezierArc.endPoint().segmentToPoint(bezierArcCenter)
-    .segmentToRatio(1/3).draw()
-    .end.segmentToPoint(bezierArcCenter).reverse()
-    .arc(rac.Angle.nne, false).draw()
-    .divideToBeziers(2)
-    .draw(bezierStroke);
-
-
-  // Test angle inside arc
-  let insideTestCenter = bezierCenters[4];
-  insideTestCenter = insideTestCenter.add(radius/2, radius/2);
-  let ccwTestArc = insideTestCenter.segmentToAngle(rac.Angle.se, radius*2/5).draw()
-    .arc(rac.Angle.nw, false).draw();
-  ccwTestArc.endSegment().segmentToRatio(1/3).draw();
-
-  [insideTestCenter.segmentToAngle(1/4+1/32, ccwTestArc.radius),
-  insideTestCenter.segmentToAngle(-1/64, ccwTestArc.radius),
-  insideTestCenter.segmentToAngle(-1/4+1/32, ccwTestArc.radius)]
-    .forEach(function(item) {
-      item.draw();
-      if (ccwTestArc.containsAngle(item)) {
-        item.draw(bezierStroke);
-      }
-    });
-
-  let cwTestArc = insideTestCenter.segmentToAngle(rac.Angle.sw, radius/2).draw()
-    .arc(rac.Angle.ese, true).draw();
-  cwTestArc.endSegment().segmentToRatio(1/3).draw();
-
-  [insideTestCenter.segmentToAngle(1/4-1/32, cwTestArc.radius),
-  insideTestCenter.segmentToAngle(1/2+1/64, cwTestArc.radius),
-  insideTestCenter.segmentToAngle(-1/4-1/32, cwTestArc.radius)]
-    .forEach(function(item) {
-      item.draw();
-      if (cwTestArc.containsAngle(item)) {
-        item.draw(bezierStroke);
-      }
-    });
-
-
-  // Intersection of circles
-  let circOneCenter = bezierCenters[5].addX(radius);
-  let circTwoCenter = circOneCenter
-    .segmentToAngle(rac.Angle.sw, radius).draw()
-    .end;
-    //.add(radius/4, radius*3/4);
-  // circOneCenter.segmentToPoint(circTwoCenter).draw();
-  let circOne = circOneCenter
-    .segmentToAngle(rac.Angle.w, radius).draw()
-    .relativeArc(rac.Angle.eighth, false).draw();
-  let circTwo = circTwoCenter
-    .segmentToAngle(rac.Angle.wnw, radius*2/5).draw()
-    .arc(rac.Angle.sse, true).draw();
-
-  let intersectionChord = circTwo.intersectionChord(circOne).draw();
-  intersectionChord.segmentExtending(radius/5).draw().draw();
-  circTwo.intersectionPointsWithArc(circOne).forEach(function(item) {
-    intersectionChord.middle().segmentToPoint(item).draw(bezierStroke);
-  });
-
-  let circThree = circOneCenter
-    .segmentToAngle(1/2-1/32, radius*5/6).draw()
-    .arc(1/4+1/32, false).draw();
-  circThree.endSegment().segmentToMiddle().draw();
-  circThree.intersectionPointsWithArc(circTwo).forEach(function(item, index) {
-    item.segmentToPoint(circOneCenter)
-      .segmentToRatio(1/(index+2)).draw();
-  });
-
-  circOne.intersectionArc(circTwo).draw(bezierStroke);
-  circTwo.intersectionArc(circThree).draw(bezierStroke);
-  circThree.intersectionArc(circTwo).draw(bezierStroke);
-
 
   console.log(`👑 ~finis coronat opus ${Date.now()}`);
 }
