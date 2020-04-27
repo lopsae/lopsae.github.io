@@ -724,11 +724,11 @@ function draw() {
   // Center of the tear circle
   let center = new rac.Point(windowWidth/2, windowHeight/2);
   // Radius of tear main arc
-  let radius = 100;
+  let radius = 50;
   // Width of the concentric circles
-  let concentricWidth = 20;
+  let concentricWidth = 10;
   // Radius of the main slope arcs
-  let slopeRadius = radius*2.6;
+  let slopeRadius = 300;
 
   // Last step is draw if its width would be greater that zero
   let concentricCount = Math.ceil(radius/concentricWidth) -1;
@@ -739,6 +739,7 @@ function draw() {
   // Tear main radius & arc
   center.segmentToAngle(rac.Angle.sse, radius).draw()
     .arc().draw();
+  center.arc(radius + concentricWidth).draw();
 
   // Main concentric arcs
   for(let index = 1; index <= concentricCount; index++) {
@@ -749,10 +750,6 @@ function draw() {
   // Slope centers orbit arc
   center.segmentToAngle(rac.Angle.wsw, radius + slopeRadius).draw()
     .arc(rac.Angle.ese).draw();
-  center.segmentToAngle(rac.Angle.up, radius)
-    .end.arc(radius*2).draw();
-  center.segmentToAngle(rac.Angle.up, slopeRadius).draw()
-    .end.arc(radius).draw();
 
   // Slope centers left column
   let columnCenterLeft = center.addX(-slopeRadius);
@@ -784,11 +781,11 @@ function draw() {
 
   // Slope arcs
   slopeCenterLeft
-    .segmentToAngle(rac.Angle.s.add(1/32), slopeRadius).draw()
-    .relativeArc(new rac.Angle(3/8), false).draw();
+    .segmentToAngle(1/4 - 1/32, slopeRadius).draw()
+    .arc(rac.Angle.ene, false).draw();
   slopeCenterRight
-    .segmentToAngle(rac.Angle.s.add(-1/32), slopeRadius).draw()
-    .relativeArc(new rac.Angle(3/8), true).draw();
+    .segmentToAngle(1/4 + 1/32, slopeRadius).draw()
+    .arc(rac.Angle.wnw, true).draw();
 
   // Slope concentric arcs
   for(let index = 1; index <= concentricCount; index++) {
