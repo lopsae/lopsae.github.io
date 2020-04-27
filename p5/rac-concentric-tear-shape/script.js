@@ -589,7 +589,7 @@ rac.Arc.prototype.divideToBeziers = function(bezierCount) {
       endAnchor, endRay.end));
   }, this);
 
-  return new rac.Player(beziers);
+  return new rac.Composite(beziers);
 };
 
 
@@ -638,23 +638,23 @@ rac.Bezier.prototype.reverse = function() {
 };
 
 
-rac.Player = function(sequence = []) {
+rac.Composite = function(sequence = []) {
   this.sequence = sequence;
 }
 
-rac.Player.prototype.draw = function(stroke = undefined) {
+rac.Composite.prototype.draw = function(stroke = undefined) {
   this.sequence.forEach(item => item.draw(stroke));
 };
 
-rac.Player.prototype.vertex = function() {
+rac.Composite.prototype.vertex = function() {
   this.sequence.forEach(item => item.vertex());
 };
 
-rac.Player.prototype.play = function(player) {
-  player.add(this);
+rac.Composite.prototype.attach = function(composite) {
+  composite.add(this);
 };
 
-rac.Player.prototype.add = function(element) {
+rac.Composite.prototype.add = function(element) {
   if (element instanceof Array) {
     element.forEach(item => this.sequence.push(item));
     return
@@ -662,10 +662,10 @@ rac.Player.prototype.add = function(element) {
   this.sequence.push(element);
 };
 
-rac.Player.prototype.reverse = function() {
+rac.Composite.prototype.reverse = function() {
   let reversed = this.sequence.map(item => item.reverse())
     .reverse();
-  return new rac.Player(reversed);
+  return new rac.Composite(reversed);
 };
 
 
@@ -848,33 +848,33 @@ function draw() {
       .intersectingPointsWithArc(slopeRight)[0]
       ?? slopeCenterLeft.segmentToPoint(slopeCenterRight).middle();
 
-    let player = new rac.Player();
+    let composite = new rac.Composite();
 
     slopeRight.withEndTowardsPoint(slopeIntersection)
       .reverse()
       .divideToBeziers(1)
-      .play(player);
+      .attach(composite);
 
     center.arc(centerConcentricRadius,
       center.angleToPoint(slopeCenterRight),
       center.angleToPoint(slopeCenterLeft),
       true)
       .divideToBeziers(3)
-      .play(player);
+      .attach(composite);
 
     slopeLeft.withEndTowardsPoint(slopeIntersection)
       .divideToBeziers(1)
-      .play(player);
+      .attach(composite);
 
     if (index % 2 == 0) {
       beginShape();
-      player.vertex();
+      composite.vertex();
       if (index == concentricCount) {
         endShape();
       }
     } else {
       beginContour();
-      player.reverse().vertex();
+      composite.reverse().vertex();
       endContour();
       endShape();
     }
