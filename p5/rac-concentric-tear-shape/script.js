@@ -17,6 +17,13 @@ rac.Color.prototype.copy = function () {
   return new rac.Color(this.r, this.g, this.b, this.alpha);
 };
 
+rac.Color.prototype.fill = function() {
+  return new rac.Fill(this);
+};
+
+rac.Color.prototype.stroke = function(weight = 1) {
+  return new rac.Stroke(this, weight);
+};
 
 rac.Color.prototype.applyBackground = function() {
   background(this.r * 255, this.g * 255, this.b * 255);
@@ -27,10 +34,12 @@ rac.Color.prototype.applyFill = function() {
 };
 
 
-rac.Stroke = function(color, weight = 1) {
+rac.Stroke = function(color = null, weight = 1) {
   this.color = color;
   this.weight = weight;
 };
+
+rac.Stroke.no = new rac.Stroke(null);
 
 rac.Stroke.prototype.copy = function() {
   return new rac.Stroke(this.color.copy(), this.weight);
@@ -49,12 +58,46 @@ rac.Stroke.prototype.withWeight = function(weight) {
 };
 
 rac.Stroke.prototype.apply = function() {
+  if (this.color === null) {
+    noStroke();
+    return;
+  }
+
   stroke(
     this.color.r * 255,
     this.color.g * 255,
     this.color.b * 255,
     this.color.alpha * 255);
   strokeWeight(this.weight);
+};
+
+
+rac.Fill = function(color = null) {
+  this.color = color;
+}
+
+rac.Fill.prototype.apply = function() {
+  if (this.color === null) {
+    noFill();
+    return;
+  }
+
+  this.color.applyFill();
+};
+
+
+rac.Style = function(stroke = null, fill = null) {
+  this.stroke = stroke;
+  this.fill = fill;
+}
+
+rac.Style.prototype.apply = function() {
+  if (this.stroke !== null) {
+    this.stroke.apply();
+  }
+  if (this.fill !== null) {
+    this.fill.apply();
+  }
 };
 
 
@@ -116,7 +159,6 @@ rac.Angle.prototype.negative = function() {
   return new rac.Angle(-this.turn);
 };
 
-// TODO: rename arcDistance?
 rac.Angle.prototype.distance = function(other, clockwise = true) {
   let offset = other.add(this.negative());
   return clockwise
@@ -169,10 +211,10 @@ rac.Point = function(x, y) {
   this.y = y;
 };
 
-rac.Point.prototype.draw = function(stroke = undefined) {
+rac.Point.prototype.draw = function(style = undefined) {
   push();
-  if (stroke !== undefined) {
-    stroke.apply();
+  if (style !== undefined) {
+    style.apply();
   }
   point(this.x, this.y);
   pop();
@@ -256,10 +298,10 @@ rac.Segment = function(start, end) {
   this.end = end;
 };
 
-rac.Segment.prototype.draw = function(stroke = undefined) {
+rac.Segment.prototype.draw = function(style = undefined) {
   push();
-  if (stroke !== undefined) {
-    stroke.apply();
+  if (style !== undefined) {
+    style.apply();
   }
   line(this.start.x, this.start.y,
        this.end.x,   this.end.y);
@@ -394,10 +436,10 @@ rac.Arc.prototype.copy = function() {
     this.clockwise);
 }
 
-rac.Arc.prototype.draw = function(stroke = undefined) {
+rac.Arc.prototype.draw = function(style = undefined) {
   push();
-  if (stroke !== undefined) {
-    stroke.apply();
+  if (style !== undefined) {
+    style.apply();
   }
 
   let start = this.start;
@@ -600,10 +642,10 @@ rac.Bezier = function(start, startAnchor, endAnchor, end) {
   this.end = end;
 };
 
-rac.Bezier.prototype.draw = function(stroke = undefined) {
+rac.Bezier.prototype.draw = function(style = undefined) {
   push();
-  if (stroke !== undefined) {
-    stroke.apply();
+  if (style !== undefined) {
+    style.apply();
   }
   bezier(
     this.start.x, this.start.y,
@@ -613,10 +655,10 @@ rac.Bezier.prototype.draw = function(stroke = undefined) {
   pop();
 };
 
-rac.Bezier.prototype.drawAnchors = function(stroke = undefined) {
+rac.Bezier.prototype.drawAnchors = function(style = undefined) {
   push();
-  if (stroke !== undefined) {
-    stroke.apply();
+  if (style !== undefined) {
+    style.apply();
   }
   this.start.segmentToPoint(this.startAnchor).draw();
   this.end.segmentToPoint(this.endAnchor).draw();
@@ -642,16 +684,20 @@ rac.Composite = function(sequence = []) {
   this.sequence = sequence;
 }
 
-rac.Composite.prototype.draw = function(stroke = undefined) {
-  this.sequence.forEach(item => item.draw(stroke));
+rac.Composite.prototype.draw = function(style = undefined) {
+  this.sequence.forEach(item => item.draw(style));
 };
 
 rac.Composite.prototype.vertex = function() {
   this.sequence.forEach(item => item.vertex());
 };
 
-rac.Composite.prototype.attach = function(composite) {
+rac.Composite.prototype.attachTo = function(composite) {
   composite.add(this);
+};
+
+rac.Composite.prototype.isNotEmpty = function() {
+  return this.sequence.length != 0;
 };
 
 rac.Composite.prototype.add = function(element) {
@@ -669,11 +715,75 @@ rac.Composite.prototype.reverse = function() {
 };
 
 
+rac.ContourShape = function() {
+  this.outline = new rac.Composite();
+  this.contour = new rac.Composite();
+}
+
+rac.ContourShape.prototype.draw = function(style = undefined) {
+  push();
+  if (style !== undefined) {
+    style.apply();
+  }
+
+  beginShape();
+  this.outline.vertex();
+
+  if (this.contour.isNotEmpty()) {
+    beginContour();
+    this.contour.vertex();
+    endContour();
+  }
+
+  endShape();
+  pop();
+};
+
+rac.ContourShape.prototype.vertex = function() {
+  this.outline.vertex();
+  this.contour.vertex();
+};
+
+rac.ContourShape.prototype.addOutline = function(element) {
+  this.outline.add(element);
+};
+
+rac.ContourShape.prototype.addContour = function(element) {
+  this.contour.add(element);
+};
+
+// TODO
+// // Draws using p5js canvas
+// rac.Drawer = function() {
+//   this.enabled = true;
+// }
+
+
+// rac.Drawer.drawElement
+
+
+// rac.Player = function () {
+//   this.isRecording = true;
+//   this.sequence = [];
+//   this.progress = [];
+// }
+
+// rac.Player.prototype.add = function (argument) {
+//   // TODO
+// }
+
+// rac.Player.prototype.advance = function(time) {
+//   // TODO
+// };
+
+
 rac.Error = {
   invalidParameterCombination: "Invalid parameter combination",
   invalidObjectToConvert: "Invalid object to convert"
 };
 
+// TODO
+// let player = rac.Player();
 
 
 function setup() {
@@ -684,29 +794,31 @@ function setup() {
 }
 
 
-function mouseDragged(event) {
-  console.log(`event: ${event.movementX} ${event.movementY}`);
-  redraw();
-  // return false;
-}
-
-
 function draw() {
-  clear();
+  // TODO
+  // if (player.isReady()) {
+  //   player.advance();
+
+  //   if (player.isDone()) {
+  //     noLoop();
+  //   }
+  //   return;
+  // }
+
   // Color schemes
   let colors = {
     light: {
       background: new rac.Color(0.9, 0.9, 0.9), // whiteish
       stroke:     new rac.Color(0.7, 0.3, 0.3, 0.5), // rose pink,
       marker:     new rac.Color(0.9, 0.5, 0.5, 0.3), // rose pink
-      fill:       new rac.Color( .1,  .1,  .1), // blackish
+      tear:       new rac.Color( .1,  .1,  .1), // blackish
       highlight:  new rac.Color(1.0, 0.0, 1.0, 0.8) // magenta
     },
     dark: {
       background: new rac.Color(0.1, 0.1, 0.1), // blackish
       stroke:     new rac.Color(0.9, 0.2, 0.2, 0.5), // red,
       marker:     new rac.Color(0.7, 0.3, 0.3, 0.3), // rose pink
-      fill:       new rac.Color( .9,  .9,  .9), // whiteish
+      tear:       new rac.Color( .9,  .9,  .9), // whiteish
       highlight:  new rac.Color(0.0, 1.0, 1.0, 0.8)// cyan
     }
   };
@@ -714,21 +826,21 @@ function draw() {
   let colorScheme = colors.dark;
   colorScheme.background.applyBackground();
 
-  let mainStroke = new rac.Stroke(colorScheme.stroke, 2);
+  let mainStroke = colorScheme.stroke.stroke(2);
   mainStroke.apply();
 
   // Testing highlight
-  let highlight = new rac.Stroke(colorScheme.highlight, 5);
+  let highlight = colorScheme.highlight.stroke(5);
 
 
   // Center of the tear circle
   let center = new rac.Point(windowWidth/2, windowHeight/2);
   // Radius of tear main arc
-  let radius = 50;
+  let radius = 100;
   // Width of the concentric circles
-  let concentricWidth = 10;
+  let concentricWidth = 20;
   // Radius of the main slope arcs
-  let slopeRadius = 300;
+  let slopeRadius = 250;
 
   // Last step is draw if its width would be greater that zero
   let concentricCount = Math.ceil(radius/concentricWidth) -1;
@@ -781,10 +893,10 @@ function draw() {
 
   // Slope arcs
   slopeCenterLeft
-    .segmentToAngle(1/4 - 1/32, slopeRadius).draw()
+    .segmentToAngle(1/4 + 1/32, slopeRadius).draw()
     .arc(rac.Angle.ene, false).draw();
   slopeCenterRight
-    .segmentToAngle(1/4 + 1/32, slopeRadius).draw()
+    .segmentToAngle(1/4 - 1/32, slopeRadius).draw()
     .arc(rac.Angle.wnw, true).draw();
 
   // Slope concentric arcs
@@ -827,8 +939,8 @@ function draw() {
 
   // Filled tear shape
   // for(let index = 0; index <= concentricCount; index++) {
-  push();
-  colorScheme.fill.applyFill();
+  let shapeStyle = new rac.Style(rac.Stroke.no, colorScheme.tear.fill());
+  let tearShape = new rac.ContourShape();
   for(let index = 0; index <= concentricCount; index++) {
     let centerConcentricRadius = radius - concentricWidth * index;
     let slopeConcentricRadius = slopeRadius + concentricWidth * index;
@@ -850,34 +962,32 @@ function draw() {
     slopeRight.withEndTowardsPoint(slopeIntersection)
       .reverse()
       .divideToBeziers(1)
-      .attach(composite);
+      .attachTo(composite);
 
     center.arc(centerConcentricRadius,
       center.angleToPoint(slopeCenterRight),
       center.angleToPoint(slopeCenterLeft),
       true)
       .divideToBeziers(3)
-      .attach(composite);
+      .attachTo(composite);
 
     slopeLeft.withEndTowardsPoint(slopeIntersection)
       .divideToBeziers(1)
-      .attach(composite);
+      .attachTo(composite);
 
     if (index % 2 == 0) {
-      beginShape();
-      composite.vertex();
+      tearShape.addOutline(composite);
+
       if (index == concentricCount) {
-        endShape();
+        tearShape.draw(shapeStyle);
       }
     } else {
-      beginContour();
-      composite.reverse().vertex();
-      endContour();
-      endShape();
+      tearShape.addContour(composite.reverse());
+      tearShape.draw(shapeStyle);
+      tearShape = new rac.ContourShape();
     }
 
   }
-  pop();
 
   console.log(`👑 ~finis coronat opus ${Date.now()}`);
 }
