@@ -6,6 +6,44 @@ let rac;
 rac = rac ?? {};
 
 
+// Draws using p5js canvas
+rac.Drawer = function RacDrawer() {
+  this.enabled = true;
+}
+
+rac.defaultDrawer = new rac.Drawer();
+
+rac.Drawer.Routine = function RacDrawerRoutine(classId, drawElement) {
+  this.classId = classId;
+  this.drawElement = drawElement
+}
+
+rac.Drawer.routines = [];
+
+rac.Drawer.addRoutine = function(classId, drawElement) {
+  rac.Drawer.routines.push(
+    new rac.Drawer.Routine(classId, drawElement));
+}
+
+rac.Drawer.prototype.drawElement = function(element, style = null) {
+  let routine = rac.Drawer.routines
+    .find(routine => element instanceof routine.classId);
+  if (routine === undefined) {
+    console.trace(`Cannot draw element - constructorName:${element.constructor.name}`);
+    throw rac.Error.invalidObjectToDraw;
+  }
+
+  if (style === null) {
+    routine.drawElement(element);
+  } else {
+    push();
+    style.apply();
+    routine.drawElement(element);
+    pop();
+  }
+};
+
+
 rac.Color = function RacColor(r, g, b, alpha = 1) {
   this.r = r;
   this.g = g;
@@ -211,15 +249,21 @@ rac.Point = function RacPoint(x, y) {
   this.y = y;
 };
 
-rac.Point.prototype.draw = function(style = undefined) {
-  push();
-  if (style !== undefined) {
-    style.apply();
-  }
-  point(this.x, this.y);
-  pop();
+rac.Point.prototype.draw = function(style = null) {
+  rac.defaultDrawer.drawElement(this, style);
   return this;
 };
+
+// TODO
+// function(style = undefined) {
+//   push();
+//   if (style !== undefined) {
+//     style.apply();
+//   }
+//   point(this.x, this.y);
+//   pop();
+//   return this;
+// };
 
 rac.Point.prototype.vertex = function() {
   vertex(this.x, this.y);
@@ -302,6 +346,11 @@ rac.Segment.prototype.draw = function(style = null) {
   rac.defaultDrawer.drawElement(this, style);
   return this;
 };
+
+rac.Drawer.addRoutine(rac.Segment, function(segment) {
+  line(segment.start.x, segment.start.y,
+       segment.end.x,   segment.end.y);
+});
 
 rac.Segment.prototype.withLength = function(newLength) {
   return this.start.segmentToAngle(this.angle(), newLength);
@@ -430,25 +479,23 @@ rac.Arc.prototype.copy = function() {
     this.clockwise);
 }
 
-rac.Arc.prototype.draw = function(style = undefined) {
-  push();
-  if (style !== undefined) {
-    style.apply();
-  }
-
-  let start = this.start;
-  let end = this.end;
-  if (!this.clockwise) {
-    start = this.end;
-    end = this.start;
-  }
-
-  arc(this.center.x, this.center.y,
-      this.radius * 2, this.radius * 2,
-      start.radians(), end.radians());
-  pop();
+rac.Arc.prototype.draw = function(style = null) {
+  rac.defaultDrawer.drawElement(this, style);
   return this;
-}
+};
+
+rac.Drawer.addRoutine(rac.Arc, function(arcElement) {
+  let start = arcElement.start;
+  let end = arcElement.end;
+  if (!arcElement.clockwise) {
+    start = arcElement.end;
+    end = arcElement.start;
+  }
+
+  arc(arcElement.center.x, arcElement.center.y,
+      arcElement.radius * 2, arcElement.radius * 2,
+      start.radians(), end.radians());
+});
 
 rac.Arc.prototype.reverse = function() {
   return new rac.Arc(
@@ -636,18 +683,24 @@ rac.Bezier = function RacBezier(start, startAnchor, endAnchor, end) {
   this.end = end;
 };
 
-rac.Bezier.prototype.draw = function(style = undefined) {
-  push();
-  if (style !== undefined) {
-    style.apply();
-  }
-  bezier(
-    this.start.x, this.start.y,
-    this.startAnchor.x, this.startAnchor.y,
-    this.endAnchor.x, this.endAnchor.y,
-    this.end.x, this.end.y);
-  pop();
+rac.Bezier.prototype.draw = function(style = null) {
+  rac.defaultDrawer.drawElement(this, style);
+  return this;
 };
+
+// TODO
+// function(style = undefined) {
+//   push();
+//   if (style !== undefined) {
+//     style.apply();
+//   }
+//   bezier(
+//     this.start.x, this.start.y,
+//     this.startAnchor.x, this.startAnchor.y,
+//     this.endAnchor.x, this.endAnchor.y,
+//     this.end.x, this.end.y);
+//   pop();
+// };
 
 rac.Bezier.prototype.drawAnchors = function(style = undefined) {
   push();
@@ -678,9 +731,15 @@ rac.Composite = function RacComposite(sequence = []) {
   this.sequence = sequence;
 }
 
-rac.Composite.prototype.draw = function(style = undefined) {
-  this.sequence.forEach(item => item.draw(style));
+rac.Composite.prototype.draw = function(style = null) {
+  rac.defaultDrawer.drawElement(this, style);
+  return this;
 };
+
+// TODO
+// function(style = undefined) {
+//   this.sequence.forEach(item => item.draw(style));
+// };
 
 rac.Composite.prototype.vertex = function() {
   this.sequence.forEach(item => item.vertex());
@@ -714,24 +773,23 @@ rac.ContourShape = function RacContourShape() {
   this.contour = new rac.Composite();
 }
 
-rac.ContourShape.prototype.draw = function(style = undefined) {
-  push();
-  if (style !== undefined) {
-    style.apply();
-  }
+rac.ContourShape.prototype.draw = function(style = null) {
+  rac.defaultDrawer.drawElement(this, style);
+  return this;
+};
 
+rac.Drawer.addRoutine(rac.ContourShape, function (shape) {
   beginShape();
-  this.outline.vertex();
+  shape.outline.vertex();
 
-  if (this.contour.isNotEmpty()) {
+  if (shape.contour.isNotEmpty()) {
     beginContour();
-    this.contour.vertex();
+    shape.contour.vertex();
     endContour();
   }
-
   endShape();
-  pop();
-};
+});
+
 
 rac.ContourShape.prototype.vertex = function() {
   this.outline.vertex();
@@ -744,42 +802,6 @@ rac.ContourShape.prototype.addOutline = function(element) {
 
 rac.ContourShape.prototype.addContour = function(element) {
   this.contour.add(element);
-};
-
-
-// Draws using p5js canvas
-rac.Drawer = function RacDrawer() {
-  this.enabled = true;
-}
-
-rac.Drawer.Routine = function RacDrawerRoutine(classId, drawElement) {
-  this.classId = classId;
-  this.drawElement = drawElement
-}
-
-rac.Drawer.routines = [
-  new rac.Drawer.Routine(rac.Segment, function(segment) {
-    line(segment.start.x, segment.start.y,
-         segment.end.x,   segment.end.y);
-  })
-];
-
-rac.Drawer.prototype.drawElement = function(element, style = null) {
-  let routine = rac.Drawer.routines
-    .find(routine => element instanceof routine.classId);
-  if (routine === undefined) {
-    console.trace(`Cannot draw element - constructorName:${element.constructor.name}`);
-    throw rac.Error.invalidObjectToDraw;
-  }
-
-  if (style === null) {
-    routine.drawElement(element);
-  } else {
-    push();
-    style.apply();
-    routine.drawElement(element);
-    pop();
-  }
 };
 
 
@@ -805,8 +827,7 @@ rac.Error = {
 };
 
 
-// RAC setup
-rac.defaultDrawer = new rac.Drawer();
+
 // TODO
 // let player = rac.Player();
 
