@@ -6,7 +6,7 @@ let rac;
 rac = rac ?? {};
 
 
-rac.Color = function(r, g, b, alpha = 1) {
+rac.Color = function RacColor(r, g, b, alpha = 1) {
   this.r = r;
   this.g = g;
   this.b = b;
@@ -34,7 +34,7 @@ rac.Color.prototype.applyFill = function() {
 };
 
 
-rac.Stroke = function(color = null, weight = 1) {
+rac.Stroke = function RacStroke(color = null, weight = 1) {
   this.color = color;
   this.weight = weight;
 };
@@ -72,7 +72,7 @@ rac.Stroke.prototype.apply = function() {
 };
 
 
-rac.Fill = function(color = null) {
+rac.Fill = function RacFill(color = null) {
   this.color = color;
 }
 
@@ -86,7 +86,7 @@ rac.Fill.prototype.apply = function() {
 };
 
 
-rac.Style = function(stroke = null, fill = null) {
+rac.Style = function RacStyle(stroke = null, fill = null) {
   this.stroke = stroke;
   this.fill = fill;
 }
@@ -101,7 +101,7 @@ rac.Style.prototype.apply = function() {
 };
 
 
-rac.Angle = function(turn) {
+rac.Angle = function RacAngle(turn) {
   this.set(turn);
 };
 
@@ -206,7 +206,7 @@ rac.Angle.left = rac.Angle.w;
 rac.Angle.up = rac.Angle.n;
 
 
-rac.Point = function(x, y) {
+rac.Point = function RacPoint(x, y) {
   this.x = x;
   this.y = y;
 };
@@ -293,19 +293,13 @@ rac.Point.prototype.arc = function(radius, start = rac.Angle.zero, end = start, 
 };
 
 
-rac.Segment = function(start, end) {
+rac.Segment = function RacSegment(start, end) {
   this.start = start;
   this.end = end;
 };
 
-rac.Segment.prototype.draw = function(style = undefined) {
-  push();
-  if (style !== undefined) {
-    style.apply();
-  }
-  line(this.start.x, this.start.y,
-       this.end.x,   this.end.y);
-  pop();
+rac.Segment.prototype.draw = function(style = null) {
+  rac.defaultDrawer.drawElement(this, style);
   return this;
 };
 
@@ -414,7 +408,7 @@ rac.Segment.prototype.bezierCentralAnchor = function(distance, clockwise = true)
 };
 
 
-rac.Arc = function(
+rac.Arc = function RacArc(
   center, radius,
   start = rac.Angle.zero,
   end = start,
@@ -635,7 +629,7 @@ rac.Arc.prototype.divideToBeziers = function(bezierCount) {
 };
 
 
-rac.Bezier = function(start, startAnchor, endAnchor, end) {
+rac.Bezier = function RacBezier(start, startAnchor, endAnchor, end) {
   this.start = start;
   this.startAnchor = startAnchor;
   this.endAnchor = endAnchor;
@@ -680,7 +674,7 @@ rac.Bezier.prototype.reverse = function() {
 };
 
 
-rac.Composite = function(sequence = []) {
+rac.Composite = function RacComposite(sequence = []) {
   this.sequence = sequence;
 }
 
@@ -715,7 +709,7 @@ rac.Composite.prototype.reverse = function() {
 };
 
 
-rac.ContourShape = function() {
+rac.ContourShape = function RacContourShape() {
   this.outline = new rac.Composite();
   this.contour = new rac.Composite();
 }
@@ -752,14 +746,41 @@ rac.ContourShape.prototype.addContour = function(element) {
   this.contour.add(element);
 };
 
-// TODO
-// // Draws using p5js canvas
-// rac.Drawer = function() {
-//   this.enabled = true;
-// }
 
+// Draws using p5js canvas
+rac.Drawer = function RacDrawer() {
+  this.enabled = true;
+}
 
-// rac.Drawer.drawElement
+rac.Drawer.Routine = function RacDrawerRoutine(classId, drawElement) {
+  this.classId = classId;
+  this.drawElement = drawElement
+}
+
+rac.Drawer.routines = [
+  new rac.Drawer.Routine(rac.Segment, function(segment) {
+    line(segment.start.x, segment.start.y,
+         segment.end.x,   segment.end.y);
+  })
+];
+
+rac.Drawer.prototype.drawElement = function(element, style = null) {
+  let routine = rac.Drawer.routines
+    .find(routine => element instanceof routine.classId);
+  if (routine === undefined) {
+    console.trace(`Cannot draw element - constructorName:${element.constructor.name}`);
+    throw rac.Error.invalidObjectToDraw;
+  }
+
+  if (style === null) {
+    routine.drawElement(element);
+  } else {
+    push();
+    style.apply();
+    routine.drawElement(element);
+    pop();
+  }
+};
 
 
 // rac.Player = function () {
@@ -779,9 +800,13 @@ rac.ContourShape.prototype.addContour = function(element) {
 
 rac.Error = {
   invalidParameterCombination: "Invalid parameter combination",
-  invalidObjectToConvert: "Invalid object to convert"
+  invalidObjectToConvert: "Invalid object to convert",
+  invalidObjectToDraw: "Invalid object to draw"
 };
 
+
+// RAC setup
+rac.defaultDrawer = new rac.Drawer();
 // TODO
 // let player = rac.Player();
 
