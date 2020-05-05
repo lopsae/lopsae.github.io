@@ -805,6 +805,27 @@ rac.ContourShape.prototype.addContour = function(element) {
 };
 
 
+rac.stack = [];
+
+rac.Arc.prototype.push = function() {
+  rac.stack.push(this);
+  return this;
+}
+
+rac.Arc.prototype.pop = function() {
+  return rac.stack.pop();
+}
+
+rac.Segment.prototype.push = function() {
+  rac.stack.push(this);
+  return this;
+}
+
+rac.Segment.prototype.pop = function() {
+  return rac.stack.pop();
+}
+
+
 // rac.Player = function () {
 //   this.isRecording = true;
 //   this.sequence = [];
@@ -898,6 +919,22 @@ function draw() {
   center.segmentToAngle(rac.Angle.sse, radius).draw()
     .arc().draw();
   center.arc(radius + concentricWidth).draw();
+
+  // Radius control
+  let radiusControlCenter = center.segmentToAngle(rac.Angle.e, radius)
+    .end.segmentToAngle(rac.Angle.s, radius * 1.5).draw()
+    .end;
+  radiusControlCenter.arc(22).draw()
+  radiusControlCenter.arc(22+10, rac.Angle.ene, rac.Angle.ese).draw()
+    .push()
+    .startPoint().segmentToAngle(rac.Angle.se, radius).draw()
+    .pop()
+    .endPoint().segmentToAngle(rac.Angle.ne, radius).draw();
+  radiusControlCenter.arc(22+10, rac.Angle.wsw, rac.Angle.wnw).draw()
+    .push()
+    .startPoint().segmentToAngle(rac.Angle.nw, radius).draw()
+    .pop()
+    .endPoint().segmentToAngle(rac.Angle.sw, radius).draw();
 
   // Main concentric arcs
   for(let index = 1; index <= concentricCount; index++) {
