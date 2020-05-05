@@ -823,15 +823,13 @@ rac.protoFunctions.peek = function() {
   return rac.stack[rac.stack.length];
 }
 
-
-
-rac.Arc.prototype.push = rac.protoFunctions.push;
-rac.Arc.prototype.pop = rac.protoFunctions.pop;
-rac.Arc.prototype.peek = rac.protoFunctions.peek;
-
-rac.Segment.prototype.push = rac.protoFunctions.push;
-rac.Segment.prototype.pop = rac.protoFunctions.pop;
-rac.Segment.prototype.peek = rac.protoFunctions.peek;
+rac.setupStackFunctions = function(prototypeObj) {
+  prototypeObj.push = rac.protoFunctions.push;
+  prototypeObj.pop = rac.protoFunctions.pop;
+  prototypeObj.peek = rac.protoFunctions.peek;
+}
+rac.setupStackFunctions(rac.Arc.prototype);
+rac.setupStackFunctions(rac.Segment.prototype);
 
 
 rac.Error = {
