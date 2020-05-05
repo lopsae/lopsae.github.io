@@ -5,6 +5,9 @@
 let rac;
 rac = rac ?? {};
 
+// Container for prototype functions
+rac.protoFunctions = {}
+
 
 // Draws using p5js canvas
 rac.Drawer = function RacDrawer() {
@@ -807,23 +810,28 @@ rac.ContourShape.prototype.addContour = function(element) {
 
 rac.stack = [];
 
-rac.Arc.prototype.push = function() {
+rac.protoFunctions.push = function() {
   rac.stack.push(this);
   return this;
 }
 
-rac.Arc.prototype.pop = function() {
+rac.protoFunctions.pop = function() {
   return rac.stack.pop();
 }
 
-rac.Segment.prototype.push = function() {
-  rac.stack.push(this);
-  return this;
+rac.protoFunctions.peek = function() {
+  return rac.stack[rac.stack.length];
 }
 
-rac.Segment.prototype.pop = function() {
-  return rac.stack.pop();
-}
+
+
+rac.Arc.prototype.push = rac.protoFunctions.push;
+rac.Arc.prototype.pop = rac.protoFunctions.pop;
+rac.Arc.prototype.peek = rac.protoFunctions.peek;
+
+rac.Segment.prototype.push = rac.protoFunctions.push;
+rac.Segment.prototype.pop = rac.protoFunctions.pop;
+rac.Segment.prototype.peek = rac.protoFunctions.peek;
 
 
 rac.Error = {
