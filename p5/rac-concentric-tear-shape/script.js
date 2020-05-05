@@ -826,31 +826,12 @@ rac.Segment.prototype.pop = function() {
 }
 
 
-// rac.Player = function () {
-//   this.isRecording = true;
-//   this.sequence = [];
-//   this.progress = [];
-// }
-
-// rac.Player.prototype.add = function (argument) {
-//   // TODO
-// }
-
-// rac.Player.prototype.advance = function(time) {
-//   // TODO
-// };
-
-
 rac.Error = {
   invalidParameterCombination: "Invalid parameter combination",
   invalidObjectToConvert: "Invalid object to convert",
   invalidObjectToDraw: "Invalid object to draw"
 };
 
-
-
-// TODO
-// let player = rac.Player();
 
 
 function setup() {
@@ -862,16 +843,6 @@ function setup() {
 
 
 function draw() {
-  // TODO
-  // if (player.isReady()) {
-  //   player.advance();
-
-  //   if (player.isDone()) {
-  //     noLoop();
-  //   }
-  //   return;
-  // }
-
   // Color schemes
   let colors = {
     light: {
