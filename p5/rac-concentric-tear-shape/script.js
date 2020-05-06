@@ -368,6 +368,30 @@ rac.Segment.prototype.angle = function() {
   return rac.Angle.fromSegment(this);
 };
 
+// Returns the slope of the segment, or `null` if the segment is part of a
+// vertical line.
+rac.Segment.prototype.slope = function() {
+  let dx = this.end.x - this.start.x;
+  if (dx == 0) {
+    return null;
+  }
+
+  let dy = this.end.y - this.start.y;
+  return dy / dx;
+};
+
+// Returns the y-intercept, or `null` if the segment is part of a
+// vertical line.
+rac.Segment.prototype.yIntercept = function() {
+  let slope = this.slope();
+  if (slope === null) {
+    return null;
+  }
+  // y = mx + b
+  // y - mx = b
+  return this.start.y - slope * this.start.x;
+};
+
 rac.Segment.prototype.reverseAngle = function() {
   return rac.Angle.fromSegment(this).inverse();
 };
@@ -379,40 +403,22 @@ rac.Segment.prototype.reverse = function() {
 // Returns the intersecting point of `this` and `other`. Both segments are
 // considered lines without endpoints.
 rac.Segment.prototype.intersectingPointWithSegment = function(other) {
-  return this.end;
+  // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
+  let a = this.slope();
+  let b = other.slope();
+  if (a === b) {
+    // Parallel lines, no intersection
+    return null;
+  }
 
+  // TODO: if a or b is null
 
+  let c = this.yIntercept();
+  let d = other.yIntercept();
 
-  // y = x*m + b
-// 0 = x*m + b -y
-// x = (y - b)/m
-
-// vertical:
-// x = 3
-// getX(5) -> 3
-// getX(10) -> 3
-// y = cannot be calculated using x
-// y = inf*x + undef
-// getY(3) -> 0
-// getY(5) -> undefined
-
-// ?? 0 = x*0 + 3 -y
-
-// horizontal
-// y = 4 = x*0 + 4
-// getY(1) -> 4
-// getY(10) -> 4
-// x = cannot be calculated using y
-// getX(4) -> 0
-// getX(10) -> undefined
-
-
-// normal
-// 0 = x*1 + 2 -y
-// y = x*1 + 2
-// getY()
-// x = (y - 2)/1
-
+  let x = (d - c) / (a - b);
+  let y = a * x + c;
+  return new rac.Point(x, y);
 };
 
 rac.Segment.prototype.arc = function(
