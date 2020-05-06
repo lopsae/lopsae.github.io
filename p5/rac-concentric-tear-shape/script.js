@@ -850,6 +850,10 @@ rac.ContourShape.prototype.addContour = function(element) {
 
 rac.stack = [];
 
+rac.stack.peek = function() {
+  return rac.stack[rac.stack.length];
+}
+
 rac.protoFunctions.push = function() {
   rac.stack.push(this);
   return this;
@@ -860,7 +864,7 @@ rac.protoFunctions.pop = function() {
 }
 
 rac.protoFunctions.peek = function() {
-  return rac.stack[rac.stack.length];
+  return rac.stack.peek();
 }
 
 rac.setupStackFunctions = function(prototypeObj) {
@@ -868,6 +872,7 @@ rac.setupStackFunctions = function(prototypeObj) {
   prototypeObj.pop = rac.protoFunctions.pop;
   prototypeObj.peek = rac.protoFunctions.peek;
 }
+rac.setupStackFunctions(rac.Point.prototype);
 rac.setupStackFunctions(rac.Arc.prototype);
 rac.setupStackFunctions(rac.Segment.prototype);
 
@@ -926,6 +931,9 @@ function draw() {
   // Radius of the main slope arcs
   let slopeRadius = 250;
 
+  // Radius of controls
+  let controlRadius = 22;
+
   // Last step is draw if its width would be greater that zero
   let concentricCount = Math.ceil(radius/concentricWidth) -1;
   let smallestRadius = concentricCount > 0
@@ -941,23 +949,41 @@ function draw() {
   let radiusControlCenter = center.segmentToAngle(rac.Angle.e, radius)
     .end.segmentToAngle(rac.Angle.s, radius * 1.5).draw()
     .end;
-  radiusControlCenter.arc(22).draw()
-  radiusControlCenter.arc(22+10, rac.Angle.ene, rac.Angle.ese).draw()
-    .push()
-    .startPoint().segmentToAngle(rac.Angle.se, radius).draw()
-    .pop()
-    .endPoint().segmentToAngle(rac.Angle.ne, radius).draw();
-  radiusControlCenter.arc(22+10, rac.Angle.wsw, rac.Angle.wnw).draw()
-    .push()
-    .startPoint().segmentToAngle(rac.Angle.nw, radius).draw()
-    .pop()
-    .endPoint().segmentToAngle(rac.Angle.sw, radius).draw();
 
-  radiusControlCenter.arc(22+10, rac.Angle.wsw, rac.Angle.wnw)
-    .startPoint().segmentToAngle(rac.Angle.nw, radius)
-    .intersectingPointWithSegment(
-      radiusControlCenter.arc(22+10, rac.Angle.wsw, rac.Angle.wnw)
-        .endPoint().segmentToAngle(rac.Angle.sw, radius)).draw(highlight);
+  let radiusControlComposite = new rac.Composite();
+
+  radiusControlCenter.arc(controlRadius).draw();
+    // .addToShape()
+    // .composeWithShape();
+
+  let radiusControlRightArc = radiusControlCenter
+    .arc(controlRadius * 1.5, rac.Angle.ene, rac.Angle.ese)
+    .draw();
+
+  radiusControlRightArc.startPoint().segmentToAngle(rac.Angle.se, 10)
+    .push();
+  radiusControlRightArc.endPoint().segmentToAngle(rac.Angle.ne, 10)
+    .intersectingPointWithSegment(rac.stack.pop())
+    .push();
+
+  radiusControlRightArc.startPoint()
+    .segmentToPoint(rac.stack.pop()).draw()
+    .end.segmentToPoint(radiusControlRightArc.endPoint()).draw();
+
+  let radiusControlLeftArc = radiusControlCenter
+    .arc(controlRadius * 1.5, rac.Angle.wsw, rac.Angle.wnw)
+    .draw();
+
+  radiusControlLeftArc.startPoint().segmentToAngle(rac.Angle.nw, 10)
+    .push();
+  radiusControlLeftArc.endPoint().segmentToAngle(rac.Angle.sw, 10)
+    .intersectingPointWithSegment(rac.stack.pop())
+    .push();
+
+  radiusControlLeftArc.startPoint()
+    .segmentToPoint(rac.stack.pop()).draw()
+    .end.segmentToPoint(radiusControlLeftArc.endPoint()).draw();
+
 
   // Main concentric arcs
   for(let index = 1; index <= concentricCount; index++) {
