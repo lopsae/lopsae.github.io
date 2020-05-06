@@ -257,16 +257,9 @@ rac.Point.prototype.draw = function(style = null) {
   return this;
 };
 
-// TODO
-// function(style = undefined) {
-//   push();
-//   if (style !== undefined) {
-//     style.apply();
-//   }
-//   point(this.x, this.y);
-//   pop();
-//   return this;
-// };
+rac.Drawer.addRoutine(rac.Point, function(pointElement) {
+  point(pointElement.x, pointElement.y);
+});
 
 rac.Point.prototype.vertex = function() {
   vertex(this.x, this.y);
@@ -379,6 +372,45 @@ rac.Segment.prototype.reverseAngle = function() {
 
 rac.Segment.prototype.reverse = function() {
   return new rac.Segment(this.end, this.start);
+};
+
+// Returns the intersecting point of `this` and `other`. Both segments are
+// considered lines without endpoints.
+rac.Segment.prototype.intersectingPointWithSegment = function(other) {
+  return this.end;
+
+
+
+  // y = x*m + b
+// 0 = x*m + b -y
+// x = (y - b)/m
+
+// vertical:
+// x = 3
+// getX(5) -> 3
+// getX(10) -> 3
+// y = cannot be calculated using x
+// y = inf*x + undef
+// getY(3) -> 0
+// getY(5) -> undefined
+
+// ?? 0 = x*0 + 3 -y
+
+// horizontal
+// y = 4 = x*0 + 4
+// getY(1) -> 4
+// getY(10) -> 4
+// x = cannot be calculated using y
+// getX(4) -> 0
+// getX(10) -> undefined
+
+
+// normal
+// 0 = x*1 + 2 -y
+// y = x*1 + 2
+// getY()
+// x = (y - 2)/1
+
 };
 
 rac.Segment.prototype.arc = function(
@@ -567,8 +599,8 @@ rac.Arc.prototype.intersectionChord = function(other) {
     .segmentToRatio(2);
 };
 
-// Returns the section of `this` that is inside `other`, when `other` is
-// considerede as a complete circle.
+// Returns the section of `this` that is inside `other`.
+// `other` is aways considered as a complete circle.
 rac.Arc.prototype.intersectionArc = function(other) {
   let chord = this.intersectionChord(other);
   if (chord === null) { return null; }
@@ -859,11 +891,11 @@ function draw() {
       highlight:  new rac.Color(1.0, 0.0, 1.0, 0.8) // magenta
     },
     dark: {
-      background: new rac.Color(0.1, 0.1, 0.1), // blackish
-      stroke:     new rac.Color(0.9, 0.2, 0.2, 0.5), // red,
-      marker:     new rac.Color(0.7, 0.3, 0.3, 0.3), // rose pink
-      tear:       new rac.Color( .9,  .9,  .9), // whiteish
-      highlight:  new rac.Color(0.0, 1.0, 1.0, 0.8)// cyan
+      background: new rac.Color( .1,  .1,  .1), // blackish
+      stroke:     new rac.Color( .9,  .2,  .2,  .5), // red,
+      marker:     new rac.Color( .7,  .3,  .3,  .3), // rose pink
+      tear:       new rac.Color( .9,  .9,  .9,  .3), // whiteish
+      highlight:  new rac.Color(  0, 1.0, 1.0,  .8)// cyan
     }
   };
 
@@ -912,6 +944,12 @@ function draw() {
     .startPoint().segmentToAngle(rac.Angle.nw, radius).draw()
     .pop()
     .endPoint().segmentToAngle(rac.Angle.sw, radius).draw();
+
+  radiusControlCenter.arc(22+10, rac.Angle.wsw, rac.Angle.wnw)
+    .startPoint().segmentToAngle(rac.Angle.nw, radius)
+    .intersectingPointWithSegment(
+      radiusControlCenter.arc(22+10, rac.Angle.wsw, rac.Angle.wnw)
+        .endPoint().segmentToAngle(rac.Angle.sw, radius)).draw(highlight);
 
   // Main concentric arcs
   for(let index = 1; index <= concentricCount; index++) {
