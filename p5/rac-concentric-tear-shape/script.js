@@ -23,6 +23,8 @@ rac.Drawer.Routine = function RacDrawerRoutine(classId, drawElement) {
 
 rac.Drawer.routines = [];
 
+// Adds a routine for the given class. The `drawElement` function will be
+// called passing the element to be drawn as `this`.
 rac.Drawer.addRoutine = function(classId, drawElement) {
   rac.Drawer.routines.push(
     new rac.Drawer.Routine(classId, drawElement));
@@ -37,11 +39,11 @@ rac.Drawer.prototype.drawElement = function(element, style = null) {
   }
 
   if (style === null) {
-    routine.drawElement(element);
+    routine.drawElement.call(element);
   } else {
     push();
     style.apply();
-    routine.drawElement(element);
+    routine.drawElement.call(element);
     pop();
   }
 };
@@ -257,8 +259,8 @@ rac.Point.prototype.draw = function(style = null) {
   return this;
 };
 
-rac.Drawer.addRoutine(rac.Point, function(pointElement) {
-  point(pointElement.x, pointElement.y);
+rac.Drawer.addRoutine(rac.Point, function() {
+  point(this.x, this.y);
 });
 
 rac.Point.prototype.vertex = function() {
@@ -343,9 +345,9 @@ rac.Segment.prototype.draw = function(style = null) {
   return this;
 };
 
-rac.Drawer.addRoutine(rac.Segment, function(segment) {
-  line(segment.start.x, segment.start.y,
-       segment.end.x,   segment.end.y);
+rac.Drawer.addRoutine(rac.Segment, function() {
+  line(this.start.x, this.start.y,
+       this.end.x,   this.end.y);
 });
 
 rac.Segment.prototype.withLength = function(newLength) {
@@ -519,16 +521,16 @@ rac.Arc.prototype.draw = function(style = null) {
   return this;
 };
 
-rac.Drawer.addRoutine(rac.Arc, function(arcElement) {
-  let start = arcElement.start;
-  let end = arcElement.end;
-  if (!arcElement.clockwise) {
-    start = arcElement.end;
-    end = arcElement.start;
+rac.Drawer.addRoutine(rac.Arc, function() {
+  let start = this.start;
+  let end = this.end;
+  if (!this.clockwise) {
+    start = this.end;
+    end = this.start;
   }
 
-  arc(arcElement.center.x, arcElement.center.y,
-      arcElement.radius * 2, arcElement.radius * 2,
+  arc(this.center.x, this.center.y,
+      this.radius * 2, this.radius * 2,
       start.radians(), end.radians());
 });
 
@@ -813,13 +815,13 @@ rac.ContourShape.prototype.draw = function(style = null) {
   return this;
 };
 
-rac.Drawer.addRoutine(rac.ContourShape, function (shape) {
+rac.Drawer.addRoutine(rac.ContourShape, function () {
   beginShape();
-  shape.outline.vertex();
+  this.outline.vertex();
 
-  if (shape.contour.isNotEmpty()) {
+  if (this.contour.isNotEmpty()) {
     beginContour();
-    shape.contour.vertex();
+    this.contour.vertex();
     endContour();
   }
   endShape();
