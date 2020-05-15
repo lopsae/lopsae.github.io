@@ -540,6 +540,20 @@ rac.Drawer.addRoutine(rac.Arc, function() {
       start.radians(), end.radians());
 });
 
+rac.Arc.prototype.vertex = function() {
+  let arcLength = this.arcLength();
+  let beziersPerTurn = 5;
+  let divisions = arcLength.turn == 0
+    ? beziersPerTurn
+    : Math.ceil(arcLength * beziersPerTurn);
+
+  this.divideToBeziers(divisions).vertex();
+};
+
+rac.Arc.prototype.attachTo = function(composite) {
+  composite.add(this);
+};
+
 rac.Arc.prototype.reverse = function() {
   return new rac.Arc(
     this.center, this.radius,
@@ -770,19 +784,19 @@ rac.Bezier.prototype.reverse = function() {
 };
 
 
+// Contains a sequence of shapes which can be drawn or vertex together
 rac.Composite = function RacComposite(sequence = []) {
   this.sequence = sequence;
-}
+};
 
 rac.Composite.prototype.draw = function(style = null) {
   rac.defaultDrawer.drawElement(this, style);
   return this;
 };
 
-// TODO
-// function(style = undefined) {
-//   this.sequence.forEach(item => item.draw(style));
-// };
+rac.Drawer.addRoutine(rac.Composite, function() {
+  this.sequence.forEach(item => item.draw());
+});
 
 rac.Composite.prototype.vertex = function() {
   this.sequence.forEach(item => item.vertex());
@@ -950,11 +964,17 @@ function draw() {
     .end.segmentToAngle(rac.Angle.s, radius * 1.5).draw()
     .end;
 
-  // let radiusControlComposite = new rac.Composite();
+  let radiusControlComposite = new rac.Composite();
 
-  radiusControlCenter.arc(controlRadius).draw();
+  let radiusControlCenterShape = new rac.ContourShape();
+  radiusControlCenter.arc(controlRadius)
+    .attachTo(radiusControlCenterShape.outline);
     // .addToShape()
     // .composeWithShape();
+  radiusControlComposite.add(radiusControlCenterShape);
+
+  // TODO: draw with fill and outline
+  radiusControlComposite.draw();
 
   let radiusControlRightArc = radiusControlCenter
     .arc(controlRadius * 1.5, rac.Angle.ene, rac.Angle.ese)
