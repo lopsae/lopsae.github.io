@@ -75,8 +75,18 @@ rac.protoFunctions.peek = function() {
 }
 
 rac.protoFunctions.attachTo = function(composite) {
-  composite.add(this);
-  return this;
+  if (composite instanceof rac.Composite) {
+    composite.add(this);
+    return this;
+  }
+
+  if (something instanceof rac.Shape) {
+    composite.addOutline(this);
+    return this;
+  }
+
+  console.trace(`Cannot attachTo composite - constructorName:${composite.constructor.name}`);
+  throw rac.Error.invalidObjectToConvert;
 };
 
 rac.setupProtoFunctions = function(classObj) {
@@ -208,6 +218,7 @@ rac.Angle.from = function(something) {
     return something.angle();
   }
 
+  console.trace(`Cannot convert to rac.Angle - constructorName:${something.constructor.name}`);
   throw rac.Error.invalidObjectToConvert;
 }
 
