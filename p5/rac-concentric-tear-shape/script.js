@@ -74,18 +74,18 @@ rac.protoFunctions.peek = function() {
   return rac.stack.peek();
 }
 
-rac.protoFunctions.attachTo = function(composite) {
-  if (composite instanceof rac.Composite) {
-    composite.add(this);
+rac.protoFunctions.attachTo = function(someComposite) {
+  if (someComposite instanceof rac.Composite) {
+    someComposite.add(this);
     return this;
   }
 
-  if (something instanceof rac.Shape) {
-    composite.addOutline(this);
+  if (someComposite instanceof rac.Shape) {
+    someComposite.addOutline(this);
     return this;
   }
 
-  console.trace(`Cannot attachTo composite - constructorName:${composite.constructor.name}`);
+  console.trace(`Cannot attachTo composite - constructorName:${someComposite.constructor.name}`);
   throw rac.Error.invalidObjectToConvert;
 };
 
@@ -980,7 +980,7 @@ function draw() {
 
   let radiusControlCenterShape = new rac.Shape();
   radiusControlCenter.arc(controlRadius)
-    .attachTo(radiusControlCenterShape.outline);
+    .attachTo(radiusControlCenterShape);
     // .addToShape()
     // .composeWithShape();
 
@@ -999,13 +999,12 @@ function draw() {
   let radiusControlRightArrowShape = new rac.Shape();
   rac.stack.peek()
     .segmentToPoint(radiusControlRightArc.startPoint())
-    .attachTo(radiusControlRightArrowShape.outline);
+    .attachTo(radiusControlRightArrowShape);
 
   radiusControlRightArc
-  // TODO: automatic add to outline if shape is used on its own
-    .attachTo(radiusControlRightArrowShape.outline)
+    .attachTo(radiusControlRightArrowShape)
     .endPoint().segmentToPoint(rac.stack.pop())
-    .attachTo(radiusControlRightArrowShape.outline);
+    .attachTo(radiusControlRightArrowShape);
 
   radiusControlComposite.add(radiusControlRightArrowShape);
 
@@ -1022,12 +1021,12 @@ function draw() {
   let radiusControlLeftArrowShape = new rac.Shape();
   rac.stack.peek()
     .segmentToPoint(radiusControlLeftArc.startPoint())
-    .attachTo(radiusControlLeftArrowShape.outline);
+    .attachTo(radiusControlLeftArrowShape);
 
   radiusControlLeftArc
-    .attachTo(radiusControlLeftArrowShape.outline)
+    .attachTo(radiusControlLeftArrowShape)
     .endPoint().segmentToPoint(rac.stack.pop())
-    .attachTo(radiusControlLeftArrowShape.outline);
+    .attachTo(radiusControlLeftArrowShape);
 
   radiusControlComposite.add(radiusControlLeftArrowShape);
 
@@ -1154,13 +1153,14 @@ function draw() {
       .attachTo(composite);
 
     if (index % 2 == 0) {
-      tearShape.addOutline(composite);
+      composite.attachTo(tearShape);
 
       if (index == concentricCount) {
         tearShape.draw(shapeStyle);
       }
     } else {
-      tearShape.addContour(composite.reverse());
+      composite.reverse()
+        .attachTo(tearShape.contour);
       tearShape.draw(shapeStyle);
       tearShape = new rac.Shape();
     }
