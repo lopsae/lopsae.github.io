@@ -354,6 +354,17 @@ rac.Drawer.addRoutine(rac.Segment, function() {
        this.end.x,   this.end.y);
 });
 
+rac.Segment.prototype.vertex = function() {
+  this.start.vertex();
+  this.end.vertex();
+  return this;
+};
+
+rac.Segment.prototype.attachTo = function(composite) {
+  composite.add(this);
+  return this;
+};
+
 rac.Segment.prototype.withLength = function(newLength) {
   return this.start.segmentToAngle(this.angle(), newLength);
 };
@@ -557,6 +568,7 @@ rac.Arc.prototype.vertex = function() {
 
 rac.Arc.prototype.attachTo = function(composite) {
   composite.add(this);
+  return this;
 };
 
 rac.Arc.prototype.reverse = function() {
@@ -809,6 +821,7 @@ rac.Composite.prototype.vertex = function() {
 
 rac.Composite.prototype.attachTo = function(composite) {
   composite.add(this);
+  return this;
 };
 
 rac.Composite.prototype.isNotEmpty = function() {
@@ -870,7 +883,7 @@ rac.ContourShape.prototype.addContour = function(element) {
 rac.stack = [];
 
 rac.stack.peek = function() {
-  return rac.stack[rac.stack.length];
+  return rac.stack[rac.stack.length - 1];
 }
 
 rac.protoFunctions.push = function() {
@@ -981,13 +994,11 @@ function draw() {
     .attachTo(radiusControlCenterShape.outline);
     // .addToShape()
     // .composeWithShape();
+
   radiusControlComposite.add(radiusControlCenterShape);
 
-  radiusControlComposite.draw(controlStyle);
-
   let radiusControlRightArc = radiusControlCenter
-    .arc(controlRadius * 1.5, rac.Angle.ene, rac.Angle.ese)
-    .draw();
+    .arc(controlRadius * 1.5, rac.Angle.ene, rac.Angle.ese);
 
   radiusControlRightArc.startPoint()
     .segmentToAngle(rac.Angle.se, 10)
@@ -995,9 +1006,20 @@ function draw() {
       radiusControlRightArc.endPoint().segmentToAngle(rac.Angle.ne, 10))
     .push();
 
-  radiusControlRightArc.startPoint()
-    .segmentToPoint(rac.stack.pop()).draw()
-    .end.segmentToPoint(radiusControlRightArc.endPoint()).draw();
+  let radiusControlRightArrowShape = new rac.ContourShape();
+  rac.stack.peek()
+    .segmentToPoint(radiusControlRightArc.startPoint())
+    .attachTo(radiusControlRightArrowShape.outline);
+
+  radiusControlRightArc
+  // TODO: automatic add to outline if shape is used on its own
+    .attachTo(radiusControlRightArrowShape.outline)
+    .endPoint().segmentToPoint(rac.stack.pop())
+    .attachTo(radiusControlRightArrowShape.outline);
+
+  radiusControlComposite.add(radiusControlRightArrowShape);
+
+  radiusControlComposite.draw(controlStyle);
 
   let radiusControlLeftArc = radiusControlCenter
     .arc(controlRadius * 1.5, rac.Angle.wsw, rac.Angle.wnw)
