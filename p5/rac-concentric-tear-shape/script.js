@@ -997,6 +997,7 @@ function draw() {
 
   radiusControlComposite.add(radiusControlCenterShape);
 
+  // Radius control right arrow
   let radiusControlRightArc = radiusControlCenter
     .arc(controlRadius * 1.5, rac.Angle.ene, rac.Angle.ese);
 
@@ -1019,20 +1020,29 @@ function draw() {
 
   radiusControlComposite.add(radiusControlRightArrowShape);
 
-  radiusControlComposite.draw(controlStyle);
-
+  // Radius control left arrow
   let radiusControlLeftArc = radiusControlCenter
-    .arc(controlRadius * 1.5, rac.Angle.wsw, rac.Angle.wnw)
-    .draw();
+    .arc(controlRadius * 1.5, rac.Angle.wsw, rac.Angle.wnw);
 
-  radiusControlLeftArc.startPoint().segmentToAngle(rac.Angle.nw, 10)
+  radiusControlLeftArc.startPoint()
+    .segmentToAngle(rac.Angle.nw, 10)
     .intersectingPointWithSegment(
       radiusControlLeftArc.endPoint().segmentToAngle(rac.Angle.sw, 10))
     .push();
 
-  radiusControlLeftArc.startPoint()
-    .segmentToPoint(rac.stack.pop()).draw()
-    .end.segmentToPoint(radiusControlLeftArc.endPoint()).draw();
+  let radiusControlLeftArrowShape = new rac.ContourShape();
+  rac.stack.peek()
+    .segmentToPoint(radiusControlLeftArc.startPoint())
+    .attachTo(radiusControlLeftArrowShape.outline);
+
+  radiusControlLeftArc
+    .attachTo(radiusControlLeftArrowShape.outline)
+    .endPoint().segmentToPoint(rac.stack.pop())
+    .attachTo(radiusControlLeftArrowShape.outline);
+
+  radiusControlComposite.add(radiusControlLeftArrowShape);
+
+  radiusControlComposite.draw(controlStyle);
 
 
   // Main concentric arcs
