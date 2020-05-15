@@ -114,6 +114,10 @@ rac.Stroke.prototype.apply = function() {
   strokeWeight(this.weight);
 };
 
+rac.Stroke.prototype.styleWithFill = function(fill) {
+  return new rac.Style(this, fill);
+};
+
 
 rac.Fill = function RacFill(color = null) {
   this.color = color;
@@ -545,9 +549,10 @@ rac.Arc.prototype.vertex = function() {
   let beziersPerTurn = 5;
   let divisions = arcLength.turn == 0
     ? beziersPerTurn
-    : Math.ceil(arcLength * beziersPerTurn);
+    : Math.ceil(arcLength.turn * beziersPerTurn);
 
   this.divideToBeziers(divisions).vertex();
+  return this;
 };
 
 rac.Arc.prototype.attachTo = function(composite) {
@@ -911,18 +916,20 @@ function draw() {
   // Color schemes
   let colors = {
     light: {
-      background: new rac.Color(0.9, 0.9, 0.9), // whiteish
-      stroke:     new rac.Color(0.7, 0.3, 0.3, 0.5), // rose pink,
-      marker:     new rac.Color(0.9, 0.5, 0.5, 0.3), // rose pink
-      tear:       new rac.Color( .1,  .1,  .1), // blackish
-      highlight:  new rac.Color(1.0, 0.0, 1.0, 0.8) // magenta
+      background:  new rac.Color(0.9, 0.9, 0.9), // whiteish
+      stroke:      new rac.Color(0.7, 0.3, 0.3, 0.5), // rose pink,
+      marker:      new rac.Color(0.9, 0.5, 0.5, 0.3), // rose pink
+      tear:        new rac.Color( .1,  .1,  .1), // blackish
+      controlFill: new rac.Color( .1,  .1,  .1,  .8), // blackish
+      highlight:   new rac.Color(1.0, 0.0, 1.0, 0.8) // magenta
     },
     dark: {
-      background: new rac.Color( .1,  .1,  .1), // blackish
-      stroke:     new rac.Color( .9,  .2,  .2,  .5), // red,
-      marker:     new rac.Color( .7,  .3,  .3,  .3), // rose pink
-      tear:       new rac.Color( .9,  .9,  .9,  .3), // whiteish
-      highlight:  new rac.Color(  0, 1.0, 1.0,  .8)// cyan
+      background:  new rac.Color( .1,  .1,  .1), // blackish
+      stroke:      new rac.Color( .9,  .2,  .2,  .5), // red,
+      marker:      new rac.Color( .7,  .3,  .3,  .3), // rose pink
+      tear:        new rac.Color( .9,  .9,  .9,  .3), // whiteish
+      controlFill: new rac.Color( .9,  .9,  .9,  .8), // whiteish
+      highlight:   new rac.Color(  0, 1.0, 1.0,  .8)// cyan
     }
   };
 
@@ -934,6 +941,9 @@ function draw() {
 
   // Testing highlight
   let highlight = colorScheme.highlight.stroke(5);
+
+  let controlStyle = colorScheme.stroke.stroke(3)
+    .styleWithFill(colorScheme.controlFill.fill());
 
 
   // Center of the tear circle
@@ -973,8 +983,7 @@ function draw() {
     // .composeWithShape();
   radiusControlComposite.add(radiusControlCenterShape);
 
-  // TODO: draw with fill and outline
-  radiusControlComposite.draw();
+  radiusControlComposite.draw(controlStyle);
 
   let radiusControlRightArc = radiusControlCenter
     .arc(controlRadius * 1.5, rac.Angle.ene, rac.Angle.ese)
@@ -1112,18 +1121,15 @@ function draw() {
 
     slopeRight.withEndTowardsPoint(slopeIntersection)
       .reverse()
-      .divideToBeziers(1)
       .attachTo(composite);
 
     center.arc(centerConcentricRadius,
       center.angleToPoint(slopeCenterRight),
       center.angleToPoint(slopeCenterLeft),
       true)
-      .divideToBeziers(3)
       .attachTo(composite);
 
     slopeLeft.withEndTowardsPoint(slopeIntersection)
-      .divideToBeziers(1)
       .attachTo(composite);
 
     if (index % 2 == 0) {
