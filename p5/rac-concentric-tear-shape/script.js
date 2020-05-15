@@ -6,33 +6,39 @@ let rac;
 rac = rac ?? {};
 
 // Container for prototype functions
-rac.protoFunctions = {}
+rac.protoFunctions = {};
 
 
 // Draws using p5js canvas
 rac.Drawer = function RacDrawer() {
   this.enabled = true;
-}
+};
 
 rac.defaultDrawer = new rac.Drawer();
 
-rac.Drawer.Routine = function RacDrawerRoutine(classId, drawElement) {
-  this.classId = classId;
+rac.Drawer.Routine = function RacDrawerRoutine(classObj, drawElement) {
+  this.classObj = classObj;
   this.drawElement = drawElement
-}
+};
 
 rac.Drawer.routines = [];
 
+rac.protoFunctions.draw = function(style = null){
+  rac.defaultDrawer.drawElement(this, style);
+  return this;
+};
+
 // Adds a routine for the given class. The `drawElement` function will be
 // called passing the element to be drawn as `this`.
-rac.Drawer.addRoutine = function(classId, drawElement) {
-  rac.Drawer.routines.push(
-    new rac.Drawer.Routine(classId, drawElement));
-}
+rac.Drawer.addDrawFunction = function(classObj, drawElement) {
+  let routine = new rac.Drawer.Routine(classObj, drawElement);
+  rac.Drawer.routines.push(routine);
+  classObj.prototype.draw = rac.protoFunctions.draw;
+};
 
 rac.Drawer.prototype.drawElement = function(element, style = null) {
   let routine = rac.Drawer.routines
-    .find(routine => element instanceof routine.classId);
+    .find(routine => element instanceof routine.classObj);
   if (routine === undefined) {
     console.trace(`Cannot draw element - constructorName:${element.constructor.name}`);
     throw rac.Error.invalidObjectToDraw;
@@ -258,12 +264,7 @@ rac.Point = function RacPoint(x, y) {
   this.y = y;
 };
 
-rac.Point.prototype.draw = function(style = null) {
-  rac.defaultDrawer.drawElement(this, style);
-  return this;
-};
-
-rac.Drawer.addRoutine(rac.Point, function() {
+rac.Drawer.addDrawFunction(rac.Point, function() {
   point(this.x, this.y);
 });
 
@@ -344,12 +345,7 @@ rac.Segment = function RacSegment(start, end) {
   this.end = end;
 };
 
-rac.Segment.prototype.draw = function(style = null) {
-  rac.defaultDrawer.drawElement(this, style);
-  return this;
-};
-
-rac.Drawer.addRoutine(rac.Segment, function() {
+rac.Drawer.addDrawFunction(rac.Segment, function() {
   line(this.start.x, this.start.y,
        this.end.x,   this.end.y);
 });
@@ -537,12 +533,7 @@ rac.Arc.prototype.copy = function() {
     this.clockwise);
 }
 
-rac.Arc.prototype.draw = function(style = null) {
-  rac.defaultDrawer.drawElement(this, style);
-  return this;
-};
-
-rac.Drawer.addRoutine(rac.Arc, function() {
+rac.Drawer.addDrawFunction(rac.Arc, function() {
   let start = this.start;
   let end = this.end;
   if (!this.clockwise) {
@@ -806,12 +797,7 @@ rac.Composite = function RacComposite(sequence = []) {
   this.sequence = sequence;
 };
 
-rac.Composite.prototype.draw = function(style = null) {
-  rac.defaultDrawer.drawElement(this, style);
-  return this;
-};
-
-rac.Drawer.addRoutine(rac.Composite, function() {
+rac.Drawer.addDrawFunction(rac.Composite, function() {
   this.sequence.forEach(item => item.draw());
 });
 
@@ -848,12 +834,7 @@ rac.Shape = function RacShape() {
   this.contour = new rac.Composite();
 }
 
-rac.Shape.prototype.draw = function(style = null) {
-  rac.defaultDrawer.drawElement(this, style);
-  return this;
-};
-
-rac.Drawer.addRoutine(rac.Shape, function () {
+rac.Drawer.addDrawFunction(rac.Shape, function () {
   beginShape();
   this.outline.vertex();
 
@@ -864,7 +845,6 @@ rac.Drawer.addRoutine(rac.Shape, function () {
   }
   endShape();
 });
-
 
 rac.Shape.prototype.vertex = function() {
   this.outline.vertex();
