@@ -899,14 +899,14 @@ rac.protoFunctions.peek = function() {
   return rac.stack.peek();
 }
 
-rac.setupStackFunctions = function(prototypeObj) {
-  prototypeObj.push = rac.protoFunctions.push;
-  prototypeObj.pop = rac.protoFunctions.pop;
-  prototypeObj.peek = rac.protoFunctions.peek;
+rac.setupStackFunctions = function(classObj) {
+  classObj.prototype.push = rac.protoFunctions.push;
+  classObj.prototype.pop = rac.protoFunctions.pop;
+  classObj.prototype.peek = rac.protoFunctions.peek;
 }
-rac.setupStackFunctions(rac.Point.prototype);
-rac.setupStackFunctions(rac.Arc.prototype);
-rac.setupStackFunctions(rac.Segment.prototype);
+rac.setupStackFunctions(rac.Point);
+rac.setupStackFunctions(rac.Arc);
+rac.setupStackFunctions(rac.Segment);
 
 
 rac.Error = {
