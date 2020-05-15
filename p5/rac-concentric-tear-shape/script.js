@@ -950,7 +950,7 @@ function draw() {
     .end.segmentToAngle(rac.Angle.s, radius * 1.5).draw()
     .end;
 
-  let radiusControlComposite = new rac.Composite();
+  // let radiusControlComposite = new rac.Composite();
 
   radiusControlCenter.arc(controlRadius).draw();
     // .addToShape()
@@ -960,10 +960,10 @@ function draw() {
     .arc(controlRadius * 1.5, rac.Angle.ene, rac.Angle.ese)
     .draw();
 
-  radiusControlRightArc.startPoint().segmentToAngle(rac.Angle.se, 10)
-    .push();
-  radiusControlRightArc.endPoint().segmentToAngle(rac.Angle.ne, 10)
-    .intersectingPointWithSegment(rac.stack.pop())
+  radiusControlRightArc.startPoint()
+    .segmentToAngle(rac.Angle.se, 10)
+    .intersectingPointWithSegment(
+      radiusControlRightArc.endPoint().segmentToAngle(rac.Angle.ne, 10))
     .push();
 
   radiusControlRightArc.startPoint()
@@ -975,9 +975,8 @@ function draw() {
     .draw();
 
   radiusControlLeftArc.startPoint().segmentToAngle(rac.Angle.nw, 10)
-    .push();
-  radiusControlLeftArc.endPoint().segmentToAngle(rac.Angle.sw, 10)
-    .intersectingPointWithSegment(rac.stack.pop())
+    .intersectingPointWithSegment(
+      radiusControlLeftArc.endPoint().segmentToAngle(rac.Angle.sw, 10))
     .push();
 
   radiusControlLeftArc.startPoint()
