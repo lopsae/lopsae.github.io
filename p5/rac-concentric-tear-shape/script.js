@@ -30,7 +30,7 @@ rac.protoFunctions.draw = function(style = null){
 
 // Adds a routine for the given class. The `drawElement` function will be
 // called passing the element to be drawn as `this`.
-rac.Drawer.addDrawFunction = function(classObj, drawElement) {
+rac.Drawer.setupDrawFunction = function(classObj, drawElement) {
   let routine = new rac.Drawer.Routine(classObj, drawElement);
   rac.Drawer.routines.push(routine);
   classObj.prototype.draw = rac.protoFunctions.draw;
@@ -52,6 +52,45 @@ rac.Drawer.prototype.drawElement = function(element, style = null) {
     routine.drawElement.call(element);
     pop();
   }
+};
+
+
+rac.stack = [];
+
+rac.stack.peek = function() {
+  return rac.stack[rac.stack.length - 1];
+}
+
+rac.protoFunctions.push = function() {
+  rac.stack.push(this);
+  return this;
+}
+
+rac.protoFunctions.pop = function() {
+  return rac.stack.pop();
+}
+
+rac.protoFunctions.peek = function() {
+  return rac.stack.peek();
+}
+
+rac.protoFunctions.attachTo = function(composite) {
+  composite.add(this);
+  return this;
+};
+
+rac.setupProtoFunctions = function(classObj) {
+  classObj.prototype.push     = rac.protoFunctions.push;
+  classObj.prototype.pop      = rac.protoFunctions.pop;
+  classObj.prototype.peek     = rac.protoFunctions.peek;
+  classObj.prototype.attachTo = rac.protoFunctions.attachTo;
+}
+
+
+rac.Error = {
+  invalidParameterCombination: "Invalid parameter combination",
+  invalidObjectToConvert: "Invalid object to convert",
+  invalidObjectToDraw: "Invalid object to draw"
 };
 
 
@@ -264,9 +303,11 @@ rac.Point = function RacPoint(x, y) {
   this.y = y;
 };
 
-rac.Drawer.addDrawFunction(rac.Point, function() {
+rac.Drawer.setupDrawFunction(rac.Point, function() {
   point(this.x, this.y);
 });
+
+rac.setupProtoFunctions(rac.Point);
 
 rac.Point.prototype.vertex = function() {
   vertex(this.x, this.y);
@@ -345,19 +386,16 @@ rac.Segment = function RacSegment(start, end) {
   this.end = end;
 };
 
-rac.Drawer.addDrawFunction(rac.Segment, function() {
+rac.Drawer.setupDrawFunction(rac.Segment, function() {
   line(this.start.x, this.start.y,
        this.end.x,   this.end.y);
 });
 
+rac.setupProtoFunctions(rac.Segment);
+
 rac.Segment.prototype.vertex = function() {
   this.start.vertex();
   this.end.vertex();
-  return this;
-};
-
-rac.Segment.prototype.attachTo = function(composite) {
-  composite.add(this);
   return this;
 };
 
@@ -533,7 +571,7 @@ rac.Arc.prototype.copy = function() {
     this.clockwise);
 }
 
-rac.Drawer.addDrawFunction(rac.Arc, function() {
+rac.Drawer.setupDrawFunction(rac.Arc, function() {
   let start = this.start;
   let end = this.end;
   if (!this.clockwise) {
@@ -546,6 +584,8 @@ rac.Drawer.addDrawFunction(rac.Arc, function() {
       start.radians(), end.radians());
 });
 
+rac.setupProtoFunctions(rac.Arc);
+
 rac.Arc.prototype.vertex = function() {
   let arcLength = this.arcLength();
   let beziersPerTurn = 5;
@@ -554,11 +594,6 @@ rac.Arc.prototype.vertex = function() {
     : Math.ceil(arcLength.turn * beziersPerTurn);
 
   this.divideToBeziers(divisions).vertex();
-  return this;
-};
-
-rac.Arc.prototype.attachTo = function(composite) {
-  composite.add(this);
   return this;
 };
 
@@ -797,17 +832,14 @@ rac.Composite = function RacComposite(sequence = []) {
   this.sequence = sequence;
 };
 
-rac.Drawer.addDrawFunction(rac.Composite, function() {
+rac.Drawer.setupDrawFunction(rac.Composite, function() {
   this.sequence.forEach(item => item.draw());
 });
 
+rac.setupProtoFunctions(rac.Composite);
+
 rac.Composite.prototype.vertex = function() {
   this.sequence.forEach(item => item.vertex());
-};
-
-rac.Composite.prototype.attachTo = function(composite) {
-  composite.add(this);
-  return this;
 };
 
 rac.Composite.prototype.isNotEmpty = function() {
@@ -834,7 +866,7 @@ rac.Shape = function RacShape() {
   this.contour = new rac.Composite();
 }
 
-rac.Drawer.addDrawFunction(rac.Shape, function () {
+rac.Drawer.setupDrawFunction(rac.Shape, function () {
   beginShape();
   this.outline.vertex();
 
@@ -845,6 +877,8 @@ rac.Drawer.addDrawFunction(rac.Shape, function () {
   }
   endShape();
 });
+
+rac.setupProtoFunctions(rac.Shape);
 
 rac.Shape.prototype.vertex = function() {
   this.outline.vertex();
@@ -857,42 +891,6 @@ rac.Shape.prototype.addOutline = function(element) {
 
 rac.Shape.prototype.addContour = function(element) {
   this.contour.add(element);
-};
-
-
-rac.stack = [];
-
-rac.stack.peek = function() {
-  return rac.stack[rac.stack.length - 1];
-}
-
-rac.protoFunctions.push = function() {
-  rac.stack.push(this);
-  return this;
-}
-
-rac.protoFunctions.pop = function() {
-  return rac.stack.pop();
-}
-
-rac.protoFunctions.peek = function() {
-  return rac.stack.peek();
-}
-
-rac.setupStackFunctions = function(classObj) {
-  classObj.prototype.push = rac.protoFunctions.push;
-  classObj.prototype.pop = rac.protoFunctions.pop;
-  classObj.prototype.peek = rac.protoFunctions.peek;
-}
-rac.setupStackFunctions(rac.Point);
-rac.setupStackFunctions(rac.Arc);
-rac.setupStackFunctions(rac.Segment);
-
-
-rac.Error = {
-  invalidParameterCombination: "Invalid parameter combination",
-  invalidObjectToConvert: "Invalid object to convert",
-  invalidObjectToDraw: "Invalid object to draw"
 };
 
 
