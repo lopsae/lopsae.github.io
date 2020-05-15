@@ -843,17 +843,17 @@ rac.Composite.prototype.reverse = function() {
 };
 
 
-rac.ContourShape = function RacContourShape() {
+rac.Shape = function RacShape() {
   this.outline = new rac.Composite();
   this.contour = new rac.Composite();
 }
 
-rac.ContourShape.prototype.draw = function(style = null) {
+rac.Shape.prototype.draw = function(style = null) {
   rac.defaultDrawer.drawElement(this, style);
   return this;
 };
 
-rac.Drawer.addRoutine(rac.ContourShape, function () {
+rac.Drawer.addRoutine(rac.Shape, function () {
   beginShape();
   this.outline.vertex();
 
@@ -866,16 +866,16 @@ rac.Drawer.addRoutine(rac.ContourShape, function () {
 });
 
 
-rac.ContourShape.prototype.vertex = function() {
+rac.Shape.prototype.vertex = function() {
   this.outline.vertex();
   this.contour.vertex();
 };
 
-rac.ContourShape.prototype.addOutline = function(element) {
+rac.Shape.prototype.addOutline = function(element) {
   this.outline.add(element);
 };
 
-rac.ContourShape.prototype.addContour = function(element) {
+rac.Shape.prototype.addContour = function(element) {
   this.contour.add(element);
 };
 
@@ -989,7 +989,7 @@ function draw() {
 
   let radiusControlComposite = new rac.Composite();
 
-  let radiusControlCenterShape = new rac.ContourShape();
+  let radiusControlCenterShape = new rac.Shape();
   radiusControlCenter.arc(controlRadius)
     .attachTo(radiusControlCenterShape.outline);
     // .addToShape()
@@ -1007,7 +1007,7 @@ function draw() {
       radiusControlRightArc.endPoint().segmentToAngle(rac.Angle.ne, 10))
     .push();
 
-  let radiusControlRightArrowShape = new rac.ContourShape();
+  let radiusControlRightArrowShape = new rac.Shape();
   rac.stack.peek()
     .segmentToPoint(radiusControlRightArc.startPoint())
     .attachTo(radiusControlRightArrowShape.outline);
@@ -1030,7 +1030,7 @@ function draw() {
       radiusControlLeftArc.endPoint().segmentToAngle(rac.Angle.sw, 10))
     .push();
 
-  let radiusControlLeftArrowShape = new rac.ContourShape();
+  let radiusControlLeftArrowShape = new rac.Shape();
   rac.stack.peek()
     .segmentToPoint(radiusControlLeftArc.startPoint())
     .attachTo(radiusControlLeftArrowShape.outline);
@@ -1132,7 +1132,7 @@ function draw() {
   // Filled tear shape
   // for(let index = 0; index <= concentricCount; index++) {
   let shapeStyle = new rac.Style(rac.Stroke.no, colorScheme.tear.fill());
-  let tearShape = new rac.ContourShape();
+  let tearShape = new rac.Shape();
   for(let index = 0; index <= concentricCount; index++) {
     let centerConcentricRadius = radius - concentricWidth * index;
     let slopeConcentricRadius = slopeRadius + concentricWidth * index;
@@ -1173,7 +1173,7 @@ function draw() {
     } else {
       tearShape.addContour(composite.reverse());
       tearShape.draw(shapeStyle);
-      tearShape = new rac.ContourShape();
+      tearShape = new rac.Shape();
     }
 
   }
