@@ -1036,7 +1036,7 @@ function draw() {
     .attachToShape()
     .endPoint().segmentToPoint(rac.stack.pop())
     .attachToShape()
-    .popShape();
+    .popShape()
     .attachToComposite();
 
   // Radius control left arrow
