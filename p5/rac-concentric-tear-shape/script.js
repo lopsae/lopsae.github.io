@@ -74,6 +74,39 @@ rac.protoFunctions.peek = function() {
   return rac.stack.peek();
 }
 
+rac.currentShape = null;
+rac.currentComposite = null;
+
+rac.protoFunctions.attachToShape = function() {
+  if (rac.currentShape === null) {
+    rac.currentShape = new rac.Shape();
+  }
+
+  this.attachTo(rac.currentShape);
+  return this;
+}
+
+rac.protoFunctions.popShape = function() {
+  let shape = rac.currentShape;
+  rac.currentShape = null;
+  return shape;
+}
+
+rac.protoFunctions.attachToComposite = function() {
+  if (rac.currentComposite === null) {
+    rac.currentComposite = new rac.Composite();
+  }
+
+  this.attachTo(rac.currentComposite);
+  return this;
+}
+
+rac.protoFunctions.popComposite = function() {
+  let composite = rac.currentComposite;
+  rac.currentComposite = null;
+  return composite;
+}
+
 rac.protoFunctions.attachTo = function(someComposite) {
   if (someComposite instanceof rac.Composite) {
     someComposite.add(this);
@@ -90,10 +123,14 @@ rac.protoFunctions.attachTo = function(someComposite) {
 };
 
 rac.setupProtoFunctions = function(classObj) {
-  classObj.prototype.push     = rac.protoFunctions.push;
-  classObj.prototype.pop      = rac.protoFunctions.pop;
-  classObj.prototype.peek     = rac.protoFunctions.peek;
-  classObj.prototype.attachTo = rac.protoFunctions.attachTo;
+  classObj.prototype.push              = rac.protoFunctions.push;
+  classObj.prototype.pop               = rac.protoFunctions.pop;
+  classObj.prototype.peek              = rac.protoFunctions.peek;
+  classObj.prototype.attachTo          = rac.protoFunctions.attachTo;
+  classObj.prototype.attachToShape     = rac.protoFunctions.attachToShape;
+  classObj.prototype.popShape          = rac.protoFunctions.popShape;
+  classObj.prototype.attachToComposite = rac.protoFunctions.attachToComposite;
+  classObj.prototype.popComposite      = rac.protoFunctions.popComposite;
 }
 
 
@@ -976,15 +1013,10 @@ function draw() {
     .end.segmentToAngle(rac.Angle.s, radius * 1.5).draw()
     .end;
 
-  let radiusControlComposite = new rac.Composite();
-
-  let radiusControlCenterShape = new rac.Shape();
   radiusControlCenter.arc(controlRadius)
-    .attachTo(radiusControlCenterShape);
-    // .addToShape()
-    // .composeWithShape();
-
-  radiusControlComposite.add(radiusControlCenterShape);
+    .attachToShape()
+    .popShape()
+    .attachToComposite();
 
   // Radius control right arrow
   let radiusControlRightArc = radiusControlCenter
@@ -996,17 +1028,16 @@ function draw() {
       radiusControlRightArc.endPoint().segmentToAngle(rac.Angle.ne, 10))
     .push();
 
-  let radiusControlRightArrowShape = new rac.Shape();
   rac.stack.peek()
     .segmentToPoint(radiusControlRightArc.startPoint())
-    .attachTo(radiusControlRightArrowShape);
+    .attachToShape();
 
   radiusControlRightArc
-    .attachTo(radiusControlRightArrowShape)
+    .attachToShape()
     .endPoint().segmentToPoint(rac.stack.pop())
-    .attachTo(radiusControlRightArrowShape);
-
-  radiusControlComposite.add(radiusControlRightArrowShape);
+    .attachToShape()
+    .popShape();
+    .attachToComposite();
 
   // Radius control left arrow
   let radiusControlLeftArc = radiusControlCenter
@@ -1018,19 +1049,17 @@ function draw() {
       radiusControlLeftArc.endPoint().segmentToAngle(rac.Angle.sw, 10))
     .push();
 
-  let radiusControlLeftArrowShape = new rac.Shape();
   rac.stack.peek()
     .segmentToPoint(radiusControlLeftArc.startPoint())
-    .attachTo(radiusControlLeftArrowShape);
+    .attachToShape();
 
   radiusControlLeftArc
-    .attachTo(radiusControlLeftArrowShape)
+    .attachToShape()
     .endPoint().segmentToPoint(rac.stack.pop())
-    .attachTo(radiusControlLeftArrowShape);
-
-  radiusControlComposite.add(radiusControlLeftArrowShape);
-
-  radiusControlComposite.draw(controlStyle);
+    .attachToShape()
+    .popShape()
+    .attachToComposite()
+    .popComposite().draw(controlStyle);
 
 
   // Main concentric arcs
