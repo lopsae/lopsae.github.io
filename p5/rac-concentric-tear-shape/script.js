@@ -77,6 +77,12 @@ rac.protoFunctions.peek = function() {
 rac.currentShape = null;
 rac.currentComposite = null;
 
+rac.popComposite = function() {
+  let composite = rac.currentComposite;
+  rac.currentComposite = null;
+  return composite;
+}
+
 rac.protoFunctions.attachToShape = function() {
   if (rac.currentShape === null) {
     rac.currentShape = new rac.Shape();
@@ -92,6 +98,12 @@ rac.protoFunctions.popShape = function() {
   return shape;
 }
 
+rac.protoFunctions.popShapeToComposite = function() {
+  let shape = this.popShape();
+  shape.attachToComposite();
+  return this;
+}
+
 rac.protoFunctions.attachToComposite = function() {
   if (rac.currentComposite === null) {
     rac.currentComposite = new rac.Composite();
@@ -102,9 +114,7 @@ rac.protoFunctions.attachToComposite = function() {
 }
 
 rac.protoFunctions.popComposite = function() {
-  let composite = rac.currentComposite;
-  rac.currentComposite = null;
-  return composite;
+  return rac.popComposite();
 }
 
 rac.protoFunctions.attachTo = function(someComposite) {
@@ -123,14 +133,15 @@ rac.protoFunctions.attachTo = function(someComposite) {
 };
 
 rac.setupProtoFunctions = function(classObj) {
-  classObj.prototype.push              = rac.protoFunctions.push;
-  classObj.prototype.pop               = rac.protoFunctions.pop;
-  classObj.prototype.peek              = rac.protoFunctions.peek;
-  classObj.prototype.attachTo          = rac.protoFunctions.attachTo;
-  classObj.prototype.attachToShape     = rac.protoFunctions.attachToShape;
-  classObj.prototype.popShape          = rac.protoFunctions.popShape;
-  classObj.prototype.attachToComposite = rac.protoFunctions.attachToComposite;
-  classObj.prototype.popComposite      = rac.protoFunctions.popComposite;
+  classObj.prototype.push                = rac.protoFunctions.push;
+  classObj.prototype.pop                 = rac.protoFunctions.pop;
+  classObj.prototype.peek                = rac.protoFunctions.peek;
+  classObj.prototype.attachTo            = rac.protoFunctions.attachTo;
+  classObj.prototype.attachToShape       = rac.protoFunctions.attachToShape;
+  classObj.prototype.popShape            = rac.protoFunctions.popShape;
+  classObj.prototype.popShapeToComposite = rac.protoFunctions.popShapeToComposite;
+  classObj.prototype.attachToComposite   = rac.protoFunctions.attachToComposite;
+  classObj.prototype.popComposite        = rac.protoFunctions.popComposite;
 }
 
 
@@ -1005,12 +1016,9 @@ function draw() {
     .end;
 
   radiusControlCenter.arc(controlRadius)
-    .divideToBeziers(5).draw(highlight);
-
-  radiusControlCenter.arc(controlRadius)
     .attachToShape()
-    .popShape()
-    .attachToComposite();
+    .popShapeToComposite();
+
 
   // Radius control right arrow
   let radiusControlRightArc = radiusControlCenter
@@ -1030,8 +1038,7 @@ function draw() {
     .attachToShape()
     .endPoint().segmentToPoint(rac.stack.pop())
     .attachToShape()
-    .popShape()
-    .attachToComposite();
+    .popShapeToComposite();
 
   // Radius control left arrow
   let radiusControlLeftArc = radiusControlCenter
@@ -1051,9 +1058,9 @@ function draw() {
     .attachToShape()
     .endPoint().segmentToPoint(rac.stack.pop())
     .attachToShape()
-    .popShape()
-    .attachToComposite()
-    .popComposite().draw(controlStyle);
+    .popShapeToComposite();
+
+  rac.popComposite().draw(controlStyle);
 
 
   // Main concentric arcs
