@@ -831,24 +831,15 @@ rac.Bezier = function RacBezier(start, startAnchor, endAnchor, end) {
   this.end = end;
 };
 
-rac.Bezier.prototype.draw = function(style = null) {
-  rac.defaultDrawer.drawElement(this, style);
-  return this;
-};
+rac.Drawer.setupDrawFunction(rac.Bezier, function() {
+  bezier(
+    this.start.x, this.start.y,
+    this.startAnchor.x, this.startAnchor.y,
+    this.endAnchor.x, this.endAnchor.y,
+    this.end.x, this.end.y);
+});
 
-// TODO
-// function(style = undefined) {
-//   push();
-//   if (style !== undefined) {
-//     style.apply();
-//   }
-//   bezier(
-//     this.start.x, this.start.y,
-//     this.startAnchor.x, this.startAnchor.y,
-//     this.endAnchor.x, this.endAnchor.y,
-//     this.end.x, this.end.y);
-//   pop();
-// };
+rac.setupProtoFunctions(rac.Bezier);
 
 rac.Bezier.prototype.drawAnchors = function(style = undefined) {
   push();
@@ -1012,6 +1003,9 @@ function draw() {
   let radiusControlCenter = center.segmentToAngle(rac.Angle.e, radius)
     .end.segmentToAngle(rac.Angle.s, radius * 1.5).draw()
     .end;
+
+  radiusControlCenter.arc(controlRadius)
+    .divideToBeziers(5).draw(highlight);
 
   radiusControlCenter.arc(controlRadius)
     .attachToShape()
