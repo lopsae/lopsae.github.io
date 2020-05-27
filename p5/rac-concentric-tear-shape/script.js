@@ -382,6 +382,14 @@ rac.Point.prototype.vertex = function() {
   return this;
 };
 
+rac.Point.prototype.withX = function(newX) {
+  return new rac.Point(newX, this.y);
+};
+
+rac.Point.prototype.withY = function(newY) {
+  return new rac.Point(this.x, newY);
+};
+
 rac.Point.prototype.add = function(other, y = undefined) {
   if (other instanceof rac.Point && y === undefined) {
     return new rac.Point(
@@ -453,6 +461,10 @@ rac.Segment = function RacSegment(start, end) {
   this.start = start;
   this.end = end;
 };
+
+rac.Segment.prototype.copy = function() {
+  return new rac.Segment(this.start, this.end);
+}
 
 rac.Drawer.setupDrawFunction(rac.Segment, function() {
   line(this.start.x, this.start.y,
@@ -528,10 +540,11 @@ rac.Segment.prototype.intersectingPointWithSegment = function(other) {
     return null;
   }
 
-  // TODO: if a or b is null
-
   let c = this.yIntercept();
   let d = other.yIntercept();
+
+  if (a === null) { return this.start.withY(d); }
+  if (b === null) { return other.start.withY(c); }
 
   let x = (d - c) / (a - b);
   let y = a * x + c;
@@ -955,14 +968,27 @@ rac.Shape.prototype.addContour = function(element) {
 
 rac.controls = [];
 rac.selectedControl = null;
+rac.anchorCopy = null;
 rac.mouseStyle = rac.Color.white.stroke(3);
 
 rac.drawControls = function() {
   rac.controls.forEach(item => item.draw());
 
+  let mouseCenter = new rac.Point(mouseX, mouseY);
+
+  // Mouse to anchor
+  if (rac.anchorCopy !== null && mouseIsPressed) {
+    let perpendicularAngle = rac.anchorCopy.angle().add(1/4);
+    let perpendicularSegment = mouseCenter
+      .segmentToAngle(perpendicularAngle, rac.Control.radius);
+    let intersection = rac.anchorCopy
+      .intersectingPointWithSegment(perpendicularSegment);
+    mouseCenter.segmentToPoint(intersection)
+      .draw(rac.mouseStyle);
+  }
+
   // Mouse position
   let mouseRadius = 25;
-  let mouseCenter = new rac.Point(mouseX, mouseY);
   if (mouseIsPressed) {
     if (rac.selectedControl !== null) {
       mouseRadius = 10;
@@ -970,7 +996,6 @@ rac.drawControls = function() {
       mouseRadius = 20;
     }
   }
-
   mouseCenter.arc(mouseRadius).draw(rac.mouseStyle);
 }
 
@@ -1058,16 +1083,19 @@ function setup() {
 
 
 function mousePressed(event) {
-  rac.controls.forEach(function(item) {
+  for (let item of rac.controls) {
     let mouseCenter = new rac.Point(mouseX, mouseY);
     let controlCenter = item.center();
-    if (controlCenter === null) { return; }
+    if (controlCenter === null) { continue; }
 
     if (controlCenter.distanceToPoint(mouseCenter) <= rac.Control.radius) {
       item.isSelected = true;
       rac.selectedControl = item;
+      rac.anchorCopy = item.anchorSegment.copy();
+      break;
     }
-  });
+  }
+
   redraw();
 }
 
@@ -1076,7 +1104,9 @@ function mouseDragged(event) {
 }
 
 function mouseReleased(event) {
+  // TODO: move selection to method
   rac.selectedControl = null;
+  rac.anchorCopy = null;
   rac.controls.forEach(function(item) {
     item.isSelected = false;
   });
