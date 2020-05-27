@@ -486,6 +486,14 @@ rac.Segment.prototype.vertex = function() {
   return this;
 };
 
+rac.Segment.prototype.withStart = function(newStart) {
+  return new rac.Segment(newStart, this.end);
+};
+
+rac.Segment.prototype.withEnd = function(newEnd) {
+  return new rac.Segment(this.start, newEnd);
+};
+
 rac.Segment.prototype.withLength = function(newLength) {
   return this.start.segmentToAngle(this.angle(), newLength);
 };
@@ -534,6 +542,11 @@ rac.Segment.prototype.reverseAngle = function() {
 
 rac.Segment.prototype.reverse = function() {
   return new rac.Segment(this.end, this.start);
+};
+
+rac.Segment.prototype.translateToStart = function(newStart) {
+  let offset = newStart.add(this.start.negative());
+  return new rac.Segment(this.start.add(offset), this.end.add(offset));
 };
 
 // Returns the intersecting point of `this` and `other`. Both segments are
@@ -992,7 +1005,11 @@ rac.drawControls = function() {
   // Mouse to anchor
   if (rac.anchorCopy !== null && mouseIsPressed) {
     let intersection = rac.anchorCopy.closestPointToPoint(mouseCenter);
-    mouseCenter.segmentToPoint(intersection)
+    let controlOffset = intersection.segmentToPoint(rac.selectedControl.center());
+
+    controlOffset.translateToStart(mouseCenter)
+      .draw(rac.mouseStyle)
+      .end.segmentToPoint(rac.selectedControl.center())
       .draw(rac.mouseStyle);
   }
 
