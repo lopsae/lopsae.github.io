@@ -955,10 +955,16 @@ rac.Shape.prototype.addContour = function(element) {
 
 rac.controls = [];
 
-rac.Control = function RacControl(style) {
-  this.style = style;
+rac.drawControls = function() {
+  rac.controls.forEach(item => item.draw());
+}
+
+
+rac.Control = function RacControl() {
+  this.style = null;
   this.value = 0;
   this.anchorSegment = null;
+  this.isSelected = false;
 }
 
 rac.Control.prototype.draw = function() {
@@ -1037,6 +1043,11 @@ function mouseReleased(event) {
 }
 
 
+let radiusControl = new rac.Control();
+radiusControl.value = 100;
+rac.controls.push(radiusControl);
+
+
 function draw() {
   clear();
 
@@ -1097,19 +1108,9 @@ function draw() {
 
 
   // Radius control
-  let radiusControlAnchor = center.segmentToAngle(rac.Angle.s, radius * 1.5)
+  radiusControl.style = controlStyle;
+  radiusControl.anchorSegment = center.segmentToAngle(rac.Angle.s, radius * 1.5)
     .end.segmentToAngle(rac.Angle.e, radius *3).draw();
-
-  // let radiusControlCenter = center.segmentToAngle(rac.Angle.e, radius)
-  //   .end.segmentToAngle(rac.Angle.s, radius * 1.5).draw()
-  //   .end;
-
-  let radiusControl = new rac.Control(controlStyle);
-  radiusControl.value = radius;
-  radiusControl.anchorSegment = radiusControlAnchor
-
-  radiusControl.draw();
-
 
 
   // Main concentric arcs
@@ -1245,6 +1246,9 @@ function draw() {
     }
 
   }
+
+
+  rac.drawControls();
 
 
   // Mouse position
