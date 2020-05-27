@@ -954,12 +954,25 @@ rac.Shape.prototype.addContour = function(element) {
 
 
 rac.controls = [];
+rac.selectedControl = null;
+rac.mouseStyle = rac.Color.white.stroke(3);
 
 rac.drawControls = function() {
   rac.controls.forEach(item => item.draw());
-}
 
-rac.mouseStyle = rac.Color.white.stroke(3);
+  // Mouse position
+  let mouseRadius = 25;
+  let mouseCenter = new rac.Point(mouseX, mouseY);
+  if (mouseIsPressed) {
+    if (rac.selectedControl !== null) {
+      mouseRadius = 10;
+    } else {
+      mouseRadius = 20;
+    }
+  }
+
+  mouseCenter.arc(mouseRadius).draw(rac.mouseStyle);
+}
 
 
 rac.Control = function RacControl() {
@@ -1046,12 +1059,13 @@ function setup() {
 
 function mousePressed(event) {
   rac.controls.forEach(function(item) {
-    let pointer = new rac.Point(mouseX, mouseY);
+    let mouseCenter = new rac.Point(mouseX, mouseY);
     let controlCenter = item.center();
     if (controlCenter === null) { return; }
 
-    if (controlCenter.distanceToPoint(pointer) <= rac.Control.radius) {
+    if (controlCenter.distanceToPoint(mouseCenter) <= rac.Control.radius) {
       item.isSelected = true;
+      rac.selectedControl = item;
     }
   });
   redraw();
@@ -1062,6 +1076,7 @@ function mouseDragged(event) {
 }
 
 function mouseReleased(event) {
+  rac.selectedControl = null;
   rac.controls.forEach(function(item) {
     item.isSelected = false;
   });
@@ -1277,16 +1292,6 @@ function draw() {
 
 
   rac.drawControls();
-
-
-  // Mouse position
-  if (mouseIsPressed) {
-    let mouseCenter = new rac.Point(mouseX, mouseY);
-    mouseCenter.arc(20).draw(colorScheme.mouse.stroke(3));
-  } else {
-    let mouseCenter = new rac.Point(mouseX, mouseY);
-    mouseCenter.arc(25).draw(colorScheme.mouse.stroke(3));
-  }
 
   console.log(`👑 ~finis coronat opus ${Date.now()}`);
 }
