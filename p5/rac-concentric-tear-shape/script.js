@@ -965,9 +965,9 @@ rac.Control.prototype.draw = function() {
   let radius = 22;
 
   // TODO: segmentToDistance
-  let anchorAngle = this.anchorSegment.angle();
+  let angle = this.anchorSegment.angle();
   let center = this.anchorSegment.start
-    .segmentToAngle(anchorAngle, this.value)
+    .segmentToAngle(angle, this.value)
     .end;
 
   center.arc(radius)
@@ -975,33 +975,33 @@ rac.Control.prototype.draw = function() {
     .popShapeToComposite();
 
 
-  // Right arrow
-  let rightArc = center.arc(radius * 1.5, rac.Angle.ene, rac.Angle.ese);
-  let rightPoint = rightArc.startPoint()
-    .segmentToAngle(rac.Angle.se, radius)
+  // Positive arrow
+  let posArc = center.arc(radius * 1.5, angle.add(-1/16), angle.add(1/16));
+  let posPoint = posArc.startPoint()
+    .segmentToAngle(angle.add(1/8), radius)
     .intersectingPointWithSegment(
-      rightArc.endPoint().segmentToAngle(rac.Angle.ne, radius));
+      posArc.endPoint().segmentToAngle(angle.add(-1/8), radius));
 
-  rightPoint.segmentToPoint(rightArc.startPoint())
+  posPoint.segmentToPoint(posArc.startPoint())
     .attachToShape();
 
-  rightArc.attachToShape()
-    .endPoint().segmentToPoint(rightPoint)
+  posArc.attachToShape()
+    .endPoint().segmentToPoint(posPoint)
     .attachToShape()
     .popShapeToComposite();
 
-  // Left arrow
-  let leftArc = center.arc(radius * 1.5, rac.Angle.wsw, rac.Angle.wnw);
-  let leftPoint = leftArc.startPoint()
-    .segmentToAngle(rac.Angle.nw, radius)
+  // Negative arrow
+  let negArc = center.arc(radius * 1.5, angle.inverse().add(-1/16), angle.inverse().add(1/16));
+  let negPoint = negArc.startPoint()
+    .segmentToAngle(angle.add(1/8), radius)
     .intersectingPointWithSegment(
-      leftArc.endPoint().segmentToAngle(rac.Angle.sw, radius));
+      negArc.endPoint().segmentToAngle(angle.add(-1/8), radius));
 
-  leftPoint.segmentToPoint(leftArc.startPoint())
+  negPoint.segmentToPoint(negArc.startPoint())
     .attachToShape();
 
-  leftArc.attachToShape()
-    .endPoint().segmentToPoint(leftPoint)
+  negArc.attachToShape()
+    .endPoint().segmentToPoint(negPoint)
     .attachToShape()
     .popShapeToComposite();
 
