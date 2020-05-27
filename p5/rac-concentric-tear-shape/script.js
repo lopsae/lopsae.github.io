@@ -995,7 +995,8 @@ rac.Shape.prototype.addContour = function(element) {
 rac.controls = [];
 rac.selectedControl = null;
 rac.anchorCopy = null;
-rac.mouseStyle = rac.Color.white.stroke(3);
+rac.mouseOffset = null;
+rac.mouseStyle = null;
 
 rac.drawControls = function() {
   rac.controls.forEach(item => item.draw());
@@ -1004,12 +1005,13 @@ rac.drawControls = function() {
 
   // Mouse to anchor
   if (rac.anchorCopy !== null && mouseIsPressed) {
-    let intersection = rac.anchorCopy.closestPointToPoint(mouseCenter);
-    let controlOffset = intersection.segmentToPoint(rac.selectedControl.center());
-
-    controlOffset.translateToStart(mouseCenter)
+    let perpendicularToControl = rac.mouseOffset.translateToStart(mouseCenter)
       .draw(rac.mouseStyle)
-      .end.segmentToPoint(rac.selectedControl.center())
+      .end;
+
+    let pointAtAnchor = rac.anchorCopy.closestPointToPoint(perpendicularToControl);
+
+    perpendicularToControl.segmentToPoint(pointAtAnchor)
       .draw(rac.mouseStyle);
   }
 
@@ -1109,17 +1111,25 @@ function setup() {
 
 
 function mousePressed(event) {
+  // TODO: rac.selectedControl = rac.controls.find?
   for (let item of rac.controls) {
     let mouseCenter = new rac.Point(mouseX, mouseY);
     let controlCenter = item.center();
-    if (controlCenter === null) { continue; }
 
-    if (controlCenter.distanceToPoint(mouseCenter) <= rac.Control.radius) {
-      item.isSelected = true;
-      rac.selectedControl = item;
-      rac.anchorCopy = item.anchorSegment.copy();
-      break;
+    if (controlCenter === null) { continue; }
+    if (controlCenter.distanceToPoint(mouseCenter) > rac.Control.radius) {
+      continue;
     }
+
+    item.isSelected = true;
+    rac.selectedControl = item;
+    rac.anchorCopy = item.anchorSegment.copy();
+
+    let mouseAtAnchor = rac.anchorCopy.closestPointToPoint(mouseCenter);
+    rac.mouseOffset = mouseAtAnchor
+      .segmentToPoint(rac.selectedControl.center())
+      .translateToStart(mouseCenter);
+    break;
   }
 
   redraw();
@@ -1133,6 +1143,7 @@ function mouseReleased(event) {
   // TODO: move selection to method
   rac.selectedControl = null;
   rac.anchorCopy = null;
+  rac.mouseOffset = null;
   rac.controls.forEach(function(item) {
     item.isSelected = false;
   });
