@@ -944,6 +944,76 @@ rac.Shape.prototype.addContour = function(element) {
 };
 
 
+rac.controls = [];
+
+rac.Control = function RacControl(style) {
+  this.style = style;
+  this.value = 0;
+  this.anchorShape = null;
+}
+
+rac.Control.prototype.draw = function() {
+  let radius = 22;
+
+  // TODO: segmentToDistance
+  let anchorAngle = this.anchorShape.angle();
+  let center = this.anchorShape.start
+    .segmentToAngle(anchorAngle, this.value)
+    .end;
+
+  center.arc(radius)
+    .attachToShape()
+    .popShapeToComposite();
+
+
+  // Right arrow
+  let rightArc = center.arc(radius * 1.5, rac.Angle.ene, rac.Angle.ese);
+
+  rightArc.startPoint()
+    .segmentToAngle(rac.Angle.se, radius)
+    .intersectingPointWithSegment(
+      rightArc.endPoint().segmentToAngle(rac.Angle.ne, radius))
+    .push();
+
+  rac.stack.peek()
+    .segmentToPoint(rightArc.startPoint())
+    .attachToShape();
+
+  rightArc.attachToShape()
+    .endPoint().segmentToPoint(rac.stack.pop())
+    .attachToShape()
+    .popShapeToComposite();
+
+  // // Radius control left arrow
+  // let radiusControlLeftArc = radiusControlCenter
+  //   .arc(controlRadius * 1.5, rac.Angle.wsw, rac.Angle.wnw);
+
+  // radiusControlLeftArc.startPoint()
+  //   .segmentToAngle(rac.Angle.nw, 10)
+  //   .intersectingPointWithSegment(
+  //     radiusControlLeftArc.endPoint().segmentToAngle(rac.Angle.sw, 10))
+  //   .push();
+
+  // rac.stack.peek()
+  //   .segmentToPoint(radiusControlLeftArc.startPoint())
+  //   .attachToShape();
+
+  // radiusControlLeftArc
+  //   .attachToShape()
+  //   .endPoint().segmentToPoint(rac.stack.pop())
+  //   .attachToShape()
+  //   .popShapeToComposite();
+
+  rac.popComposite().draw(this.style);
+};
+
+
+
+//=========================================================================
+//=========================================================================
+//=========================================================================
+
+
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -955,7 +1025,6 @@ function setup() {
 
 function mousePressed(event) {
   redraw();
-  // console.log(`mousePressed ${mouseX}, ${mouseY}`);
 }
 
 function mouseDragged(event) {
@@ -1014,9 +1083,6 @@ function draw() {
   // Radius of the main slope arcs
   let slopeRadius = 250;
 
-  // Radius of controls
-  let controlRadius = 22;
-
   // Last step is draw if its width would be greater that zero
   let concentricCount = Math.ceil(radius/concentricWidth) -1;
   let smallestRadius = concentricCount > 0
@@ -1028,57 +1094,21 @@ function draw() {
     .arc().draw();
   center.arc(radius + concentricWidth).draw();
 
+
   // Radius control
-  let radiusControlCenter = center.segmentToAngle(rac.Angle.e, radius)
-    .end.segmentToAngle(rac.Angle.s, radius * 1.5).draw()
-    .end;
+  let radiusControlAnchor = center.segmentToAngle(rac.Angle.s, radius * 1.5)
+    .end.segmentToAngle(rac.Angle.e, radius *3).draw();
 
-  radiusControlCenter.arc(controlRadius)
-    .attachToShape()
-    .popShapeToComposite();
+  // let radiusControlCenter = center.segmentToAngle(rac.Angle.e, radius)
+  //   .end.segmentToAngle(rac.Angle.s, radius * 1.5).draw()
+  //   .end;
 
+  let radiusControl = new rac.Control(controlStyle);
+  radiusControl.value = radius;
+  radiusControl.anchorShape = radiusControlAnchor
 
-  // Radius control right arrow
-  let radiusControlRightArc = radiusControlCenter
-    .arc(controlRadius * 1.5, rac.Angle.ene, rac.Angle.ese);
+  radiusControl.draw();
 
-  radiusControlRightArc.startPoint()
-    .segmentToAngle(rac.Angle.se, 10)
-    .intersectingPointWithSegment(
-      radiusControlRightArc.endPoint().segmentToAngle(rac.Angle.ne, 10))
-    .push();
-
-  rac.stack.peek()
-    .segmentToPoint(radiusControlRightArc.startPoint())
-    .attachToShape();
-
-  radiusControlRightArc
-    .attachToShape()
-    .endPoint().segmentToPoint(rac.stack.pop())
-    .attachToShape()
-    .popShapeToComposite();
-
-  // Radius control left arrow
-  let radiusControlLeftArc = radiusControlCenter
-    .arc(controlRadius * 1.5, rac.Angle.wsw, rac.Angle.wnw);
-
-  radiusControlLeftArc.startPoint()
-    .segmentToAngle(rac.Angle.nw, 10)
-    .intersectingPointWithSegment(
-      radiusControlLeftArc.endPoint().segmentToAngle(rac.Angle.sw, 10))
-    .push();
-
-  rac.stack.peek()
-    .segmentToPoint(radiusControlLeftArc.startPoint())
-    .attachToShape();
-
-  radiusControlLeftArc
-    .attachToShape()
-    .endPoint().segmentToPoint(rac.stack.pop())
-    .attachToShape()
-    .popShapeToComposite();
-
-  rac.popComposite().draw(controlStyle);
 
 
   // Main concentric arcs
@@ -1219,7 +1249,7 @@ function draw() {
   // Mouse position
   if (mouseIsPressed) {
     let mouseCenter = new rac.Point(mouseX, mouseY);
-    mouseCenter.arc(20).draw(colorScheme.mouse.stroke(5));
+    mouseCenter.arc(20).draw(colorScheme.mouse.stroke(3));
   } else {
     let mouseCenter = new rac.Point(mouseX, mouseY);
     mouseCenter.arc(25).draw(colorScheme.mouse.stroke(3));
