@@ -959,6 +959,8 @@ rac.drawControls = function() {
   rac.controls.forEach(item => item.draw());
 }
 
+rac.mouseStyle = rac.Color.white.stroke(3);
+
 
 rac.Control = function RacControl() {
   this.style = null;
@@ -967,14 +969,22 @@ rac.Control = function RacControl() {
   this.isSelected = false;
 }
 
-rac.Control.prototype.draw = function() {
-  let radius = 22;
+rac.Control.radius = 22;
 
-  // TODO: segmentToDistance
+
+rac.Control.prototype.center = function() {
+  if (this.anchorSegment === null) {
+    return null;
+  }
+
+  return this.anchorSegment.withLength(this.value).end;
+};
+
+rac.Control.prototype.draw = function() {
+  let radius = rac.Control.radius;
+
   let angle = this.anchorSegment.angle();
-  let center = this.anchorSegment.start
-    .segmentToAngle(angle, this.value)
-    .end;
+  let center = this.center();
 
   center.arc(radius)
     .attachToShape()
@@ -1012,6 +1022,10 @@ rac.Control.prototype.draw = function() {
     .popShapeToComposite();
 
   rac.popComposite().draw(this.style);
+
+  if (this.isSelected) {
+    center.arc(radius * 2/3).draw(rac.mouseStyle);
+  }
 };
 
 
@@ -1031,6 +1045,15 @@ function setup() {
 
 
 function mousePressed(event) {
+  rac.controls.forEach(function(item) {
+    let pointer = new rac.Point(mouseX, mouseY);
+    let controlCenter = item.center();
+    if (controlCenter === null) { return; }
+
+    if (controlCenter.distanceToPoint(pointer) <= rac.Control.radius) {
+      item.isSelected = true;
+    }
+  });
   redraw();
 }
 
@@ -1039,6 +1062,9 @@ function mouseDragged(event) {
 }
 
 function mouseReleased(event) {
+  rac.controls.forEach(function(item) {
+    item.isSelected = false;
+  });
   redraw();
 }
 
@@ -1084,6 +1110,8 @@ function draw() {
 
   let controlStyle = colorScheme.stroke.stroke(3)
     .styleWithFill(colorScheme.controlFill.fill());
+
+  rac.mouseStyle = colorScheme.mouse.stroke(3);
 
 
   // Center of the tear circle
