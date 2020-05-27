@@ -319,6 +319,13 @@ rac.Angle.prototype.negative = function() {
   return new rac.Angle(-this.turn);
 };
 
+rac.Angle.prototype.perpendicular = function(clockwise = true) {
+  return clockwise
+    ? this.add(rac.Angle.quarter)
+    : this.add(rac.Angle.quarter.negative())
+
+};
+
 rac.Angle.prototype.distance = function(other, clockwise = true) {
   let offset = other.add(this.negative());
   return clockwise
@@ -549,6 +556,12 @@ rac.Segment.prototype.intersectingPointWithSegment = function(other) {
   let x = (d - c) / (a - b);
   let y = a * x + c;
   return new rac.Point(x, y);
+};
+
+rac.Segment.prototype.closestPointToPoint = function(point) {
+  let perpendicular = this.angle().perpendicular();
+  return point.segmentToAngle(perpendicular, this.length())
+    .intersectingPointWithSegment(this);
 };
 
 rac.Segment.prototype.arc = function(
@@ -978,11 +991,7 @@ rac.drawControls = function() {
 
   // Mouse to anchor
   if (rac.anchorCopy !== null && mouseIsPressed) {
-    let perpendicularAngle = rac.anchorCopy.angle().add(1/4);
-    let perpendicularSegment = mouseCenter
-      .segmentToAngle(perpendicularAngle, rac.Control.radius);
-    let intersection = rac.anchorCopy
-      .intersectingPointWithSegment(perpendicularSegment);
+    let intersection = rac.anchorCopy.closestPointToPoint(mouseCenter);
     mouseCenter.segmentToPoint(intersection)
       .draw(rac.mouseStyle);
   }
