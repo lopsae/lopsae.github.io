@@ -179,6 +179,15 @@ rac.Color.prototype.applyFill = function() {
   fill(this.r * 255, this.g * 255, this.b * 255, this.alpha * 255);
 };
 
+rac.Color.black   = new rac.Color(0, 0, 0);
+rac.Color.red     = new rac.Color(1, 0, 0);
+rac.Color.green   = new rac.Color(0, 1, 0);
+rac.Color.blue    = new rac.Color(0, 0, 1);
+rac.Color.yellow  = new rac.Color(1, 1, 0);
+rac.Color.magenta = new rac.Color(1, 0, 1);
+rac.Color.cyan    = new rac.Color(0, 1, 1);
+rac.Color.white   = new rac.Color(1, 1, 1);
+
 
 rac.Stroke = function RacStroke(color = null, weight = 1) {
   this.color = color;
@@ -968,41 +977,33 @@ rac.Control.prototype.draw = function() {
 
   // Right arrow
   let rightArc = center.arc(radius * 1.5, rac.Angle.ene, rac.Angle.ese);
-
-  rightArc.startPoint()
+  let rightPoint = rightArc.startPoint()
     .segmentToAngle(rac.Angle.se, radius)
     .intersectingPointWithSegment(
-      rightArc.endPoint().segmentToAngle(rac.Angle.ne, radius))
-    .push();
+      rightArc.endPoint().segmentToAngle(rac.Angle.ne, radius));
 
-  rac.stack.peek()
-    .segmentToPoint(rightArc.startPoint())
+  rightPoint.segmentToPoint(rightArc.startPoint())
     .attachToShape();
 
   rightArc.attachToShape()
-    .endPoint().segmentToPoint(rac.stack.pop())
+    .endPoint().segmentToPoint(rightPoint)
     .attachToShape()
     .popShapeToComposite();
 
-  // // Radius control left arrow
-  // let radiusControlLeftArc = radiusControlCenter
-  //   .arc(controlRadius * 1.5, rac.Angle.wsw, rac.Angle.wnw);
+  // Left arrow
+  let leftArc = center.arc(radius * 1.5, rac.Angle.wsw, rac.Angle.wnw);
+  let leftPoint = leftArc.startPoint()
+    .segmentToAngle(rac.Angle.nw, radius)
+    .intersectingPointWithSegment(
+      leftArc.endPoint().segmentToAngle(rac.Angle.sw, radius));
 
-  // radiusControlLeftArc.startPoint()
-  //   .segmentToAngle(rac.Angle.nw, 10)
-  //   .intersectingPointWithSegment(
-  //     radiusControlLeftArc.endPoint().segmentToAngle(rac.Angle.sw, 10))
-  //   .push();
+  leftPoint.segmentToPoint(leftArc.startPoint())
+    .attachToShape();
 
-  // rac.stack.peek()
-  //   .segmentToPoint(radiusControlLeftArc.startPoint())
-  //   .attachToShape();
-
-  // radiusControlLeftArc
-  //   .attachToShape()
-  //   .endPoint().segmentToPoint(rac.stack.pop())
-  //   .attachToShape()
-  //   .popShapeToComposite();
+  leftArc.attachToShape()
+    .endPoint().segmentToPoint(leftPoint)
+    .attachToShape()
+    .popShapeToComposite();
 
   rac.popComposite().draw(this.style);
 };
