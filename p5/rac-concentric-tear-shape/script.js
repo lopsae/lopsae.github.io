@@ -958,15 +958,15 @@ rac.controls = [];
 rac.Control = function RacControl(style) {
   this.style = style;
   this.value = 0;
-  this.anchorShape = null;
+  this.anchorSegment = null;
 }
 
 rac.Control.prototype.draw = function() {
   let radius = 22;
 
   // TODO: segmentToDistance
-  let anchorAngle = this.anchorShape.angle();
-  let center = this.anchorShape.start
+  let anchorAngle = this.anchorSegment.angle();
+  let center = this.anchorSegment.start
     .segmentToAngle(anchorAngle, this.value)
     .end;
 
@@ -1106,7 +1106,7 @@ function draw() {
 
   let radiusControl = new rac.Control(controlStyle);
   radiusControl.value = radius;
-  radiusControl.anchorShape = radiusControlAnchor
+  radiusControl.anchorSegment = radiusControlAnchor
 
   radiusControl.draw();
 
