@@ -1237,7 +1237,7 @@ function draw() {
   // Center of the tear circle
   let center = new rac.Point(windowWidth/2, windowHeight/2);
   // Radius of tear main arc
-  let radius = 100;
+  let radius = radiusControl.value;
   // Width of the concentric circles
   let concentricWidth = 20;
   // Radius of the main slope arcs
