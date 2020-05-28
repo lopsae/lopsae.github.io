@@ -465,6 +465,11 @@ rac.Point.prototype.segmentToAngle = function(someAngle, distance) {
   return new rac.Segment(this, end);
 };
 
+rac.Point.prototype.segmentToClosestPointInSegment = function(segment) {
+  let closestPoint = segment.closestPointToPoint(this);
+  return this.segmentToPoint(closestPoint);
+};
+
 rac.Point.prototype.arc = function(radius, start = rac.Angle.zero, end = start, clockwise = true) {
   return new rac.Arc(this, radius, start, end, clockwise);
 };
@@ -1018,21 +1023,20 @@ rac.drawControls = function() {
   // Mouse to anchor
   if (rac.anchorCopy !== null && mouseIsPressed) {
     rac.anchorCopy.draw(rac.mouseStyle);
-    // TODO: could be projection of two points onto a segment!
-    let mouseAtAnchor = rac.anchorCopy.closestPointToPoint(rac.mouseOffset.start);
-    let paralellMouseOffset = mouseAtAnchor
-      .segmentToPoint(rac.mouseOffset.end)
+
+    // Ray to controlShadow center
+    let controlShadowCenter = rac.mouseOffset
       .translateToStart(mouseCenter)
+      .draw(rac.mouseStyle)
+      .end;
+
+    // controlShadow center to anchorSegment
+    controlShadowCenter.segmentToClosestPointInSegment(rac.anchorCopy)
       .draw(rac.mouseStyle);
 
-    let pointAtAnchor = rac.anchorCopy.closestPointToPoint(paralellMouseOffset.end);
-    paralellMouseOffset.end.segmentToPoint(pointAtAnchor)
+    // ControlShadow
+    controlShadowCenter.arc(rac.Control.radius)
       .draw(rac.mouseStyle);
-
-    rac.mouseOffset.translateToStart(mouseCenter)
-      .end.arc(rac.Control.radius)
-      .draw(rac.mouseStyle);
-
   }
 
   // Mouse position
@@ -1157,21 +1161,18 @@ function mouseDragged(event) {
   if (rac.selectedControl !== null) {
     let mouseCenter = new rac.Point(mouseX, mouseY);
 
-    // TODO keep copy of both mouseOffset and paralellMouseOffset
-    // with better names
-    let mouseAtAnchor = rac.anchorCopy.closestPointToPoint(rac.mouseOffset.start);
-    let paralellMouseOffset = mouseAtAnchor
-      .segmentToPoint(rac.mouseOffset.end)
-      .translateToStart(mouseCenter);
+    let controlShadowCenter = rac.mouseOffset
+      .translateToStart(mouseCenter)
+      .end;
 
     let controlOnAnchor = rac.anchorCopy
-      .closestPointToPoint(paralellMouseOffset.end);
+      .closestPointToPoint(controlShadowCenter);
 
-    let newDistance = rac.anchorCopy.start
+    let newValue = rac.anchorCopy.start
       .segmentToPoint(controlOnAnchor)
       .length();
 
-    rac.selectedControl.value = newDistance;
+    rac.selectedControl.value = newValue;
   }
   redraw();
 }
