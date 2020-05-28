@@ -717,9 +717,15 @@ rac.Arc.prototype.reverse = function() {
     !this.clockwise);
 };
 
-rac.Arc.prototype.withRadius = function(radius) {
+rac.Arc.prototype.withCenter = function(newCenter) {
   let copy = this.copy();
-  copy.radius = radius;
+  copy.center = newCenter;
+  return copy;
+}
+
+rac.Arc.prototype.withRadius = function(newRadius) {
+  let copy = this.copy();
+  copy.radius = newRadius;
   return copy;
 }
 
@@ -1011,23 +1017,30 @@ rac.drawControls = function() {
 
   // Mouse to anchor
   if (rac.anchorCopy !== null && mouseIsPressed) {
-    let perpendicularToControl = rac.mouseOffset.translateToStart(mouseCenter)
-      .draw(rac.mouseStyle)
-      .end;
-
-    let pointAtAnchor = rac.anchorCopy.closestPointToPoint(perpendicularToControl);
-
-    perpendicularToControl.segmentToPoint(pointAtAnchor)
+    // TODO: could be projection of two points onto a segment!
+    let mouseAtAnchor = rac.anchorCopy.closestPointToPoint(rac.mouseOffset.start);
+    let paralellMouseOffset = mouseAtAnchor
+      .segmentToPoint(rac.mouseOffset.end)
+      .translateToStart(mouseCenter)
       .draw(rac.mouseStyle);
+
+    let pointAtAnchor = rac.anchorCopy.closestPointToPoint(paralellMouseOffset.end);
+    paralellMouseOffset.end.segmentToPoint(pointAtAnchor)
+      .draw(rac.mouseStyle);
+
+    rac.mouseOffset.translateToStart(mouseCenter)
+      .end.arc(rac.Control.radius)
+      .draw(rac.mouseStyle);
+
   }
 
   // Mouse position
-  let mouseRadius = 25;
+  let mouseRadius = 12;
   if (mouseIsPressed) {
     if (rac.selectedControl !== null) {
-      mouseRadius = 10;
+      mouseRadius = 7;
     } else {
-      mouseRadius = 20;
+      mouseRadius = 10;
     }
   }
   mouseCenter.arc(mouseRadius).draw(rac.mouseStyle);
@@ -1095,8 +1108,9 @@ rac.Control.prototype.draw = function() {
 
   rac.popComposite().draw(this.style);
 
+  // Selection
   if (this.isSelected) {
-    center.arc(radius * 2/3).draw(rac.mouseStyle);
+    center.arc(radius * 1.5).draw(rac.mouseStyle);
   }
 };
 
@@ -1131,10 +1145,7 @@ function mousePressed(event) {
     rac.selectedControl = item;
     rac.anchorCopy = item.anchorSegment.copy();
 
-    let mouseAtAnchor = rac.anchorCopy.closestPointToPoint(mouseCenter);
-    rac.mouseOffset = mouseAtAnchor
-      .segmentToPoint(rac.selectedControl.center())
-      .translateToStart(mouseCenter);
+    rac.mouseOffset = mouseCenter.segmentToPoint(controlCenter);
     break;
   }
 
