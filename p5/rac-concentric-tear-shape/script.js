@@ -1017,6 +1017,7 @@ rac.drawControls = function() {
 
   // Mouse to anchor
   if (rac.anchorCopy !== null && mouseIsPressed) {
+    rac.anchorCopy.draw(rac.mouseStyle);
     // TODO: could be projection of two points onto a segment!
     let mouseAtAnchor = rac.anchorCopy.closestPointToPoint(rac.mouseOffset.start);
     let paralellMouseOffset = mouseAtAnchor
@@ -1038,7 +1039,7 @@ rac.drawControls = function() {
   let mouseRadius = 12;
   if (mouseIsPressed) {
     if (rac.selectedControl !== null) {
-      mouseRadius = 7;
+      mouseRadius = 2;
     } else {
       mouseRadius = 10;
     }
@@ -1153,6 +1154,25 @@ function mousePressed(event) {
 }
 
 function mouseDragged(event) {
+  if (rac.selectedControl !== null) {
+    let mouseCenter = new rac.Point(mouseX, mouseY);
+
+    // TODO keep copy of both mouseOffset and paralellMouseOffset
+    // with better names
+    let mouseAtAnchor = rac.anchorCopy.closestPointToPoint(rac.mouseOffset.start);
+    let paralellMouseOffset = mouseAtAnchor
+      .segmentToPoint(rac.mouseOffset.end)
+      .translateToStart(mouseCenter);
+
+    let controlOnAnchor = rac.anchorCopy
+      .closestPointToPoint(paralellMouseOffset.end);
+
+    let newDistance = rac.anchorCopy.start
+      .segmentToPoint(controlOnAnchor)
+      .length();
+
+    rac.selectedControl.value = newDistance;
+  }
   redraw();
 }
 
