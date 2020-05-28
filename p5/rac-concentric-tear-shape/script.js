@@ -145,6 +145,12 @@ rac.setupProtoFunctions = function(classObj) {
 }
 
 
+// Used to determine equality between measures for some operations, like
+// calculating the slope of a segment. Without this values too close can
+// suddenly cause odd results.
+rac.equalityThreshold = 0.001;
+
+
 rac.Error = {
   invalidParameterCombination: "Invalid parameter combination",
   invalidObjectToConvert: "Invalid object to convert",
@@ -516,7 +522,7 @@ rac.Segment.prototype.angle = function() {
 // vertical line.
 rac.Segment.prototype.slope = function() {
   let dx = this.end.x - this.start.x;
-  if (dx == 0) {
+  if (Math.abs(dx) < rac.equalityThreshold) {
     return null;
   }
 
