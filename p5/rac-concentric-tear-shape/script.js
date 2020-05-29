@@ -470,8 +470,8 @@ rac.Point.prototype.segmentToAngle = function(someAngle, distance) {
 };
 
 rac.Point.prototype.segmentPerpendicularToSegment = function(segment) {
-  let closestPoint = segment.closestPointToPoint(this);
-  return this.segmentToPoint(closestPoint);
+  let projectedPoint = segment.projectedPoint(this);
+  return this.segmentToPoint(projectedPoint);
 };
 
 rac.Point.prototype.arc = function(radius, start = rac.Angle.zero, end = start, clockwise = true) {
@@ -587,7 +587,7 @@ rac.Segment.prototype.intersectingPointWithSegment = function(other) {
   return new rac.Point(x, y);
 };
 
-rac.Segment.prototype.closestPointToPoint = function(point) {
+rac.Segment.prototype.projectedPoint = function(point) {
   let perpendicular = this.angle().perpendicular();
   return point.segmentToAngle(perpendicular, this.length())
     .intersectingPointWithSegment(this);
@@ -1177,12 +1177,14 @@ function mouseDragged(event) {
       .end;
 
     let controlOnAnchor = rac.anchorCopy
-      .closestPointToPoint(controlShadowCenter);
+      .projectedPoint(controlShadowCenter);
 
     let newValue = rac.anchorCopy.start
       .segmentToPoint(controlOnAnchor)
       .length();
 
+    // TODO: segment.lengthToPointClosestToPoint
+    // lengthToProjectedPoint
     rac.selectedControl.value = newValue;
   }
   redraw();
