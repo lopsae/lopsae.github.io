@@ -1252,13 +1252,12 @@ function draw() {
   // Tear main radius & arc
   center.segmentToAngle(rac.Angle.sse, radius).draw()
     .arc().draw();
-  center.arc(radius + concentricWidth).draw();
 
 
   // Radius control
   radiusControl.style = controlStyle;
-  radiusControl.anchorSegment = center.segmentToAngle(rac.Angle.s, radius * 1.5)
-    .end.segmentToAngle(rac.Angle.e, radius *3).draw();
+  radiusControl.anchorSegment = center.segmentToAngle(rac.Angle.s, radius + rac.Control.radius)
+    .end.segmentToAngle(rac.Angle.e, 300).draw();
 
 
   // Main concentric arcs
@@ -1312,9 +1311,9 @@ function draw() {
     let concentricRadius = slopeRadius + concentricWidth * index;
 
     slopeCenterLeft.arc(concentricRadius,
-      rac.Angle.s.add(-1/32), rac.Angle.e.add(-1/32), false).draw();
+      rac.Angle.s, rac.Angle.e.add(-1/32), false).draw();
     slopeCenterRight.arc(concentricRadius,
-      rac.Angle.s.add(1/32), rac.Angle.w.add(1/32), true).draw();
+      rac.Angle.s, rac.Angle.w.add(1/32), true).draw();
   }
 
   // Tear shape
