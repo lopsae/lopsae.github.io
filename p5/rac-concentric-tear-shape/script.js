@@ -1091,7 +1091,6 @@ rac.Control.prototype.draw = function() {
     .attachToShape()
     .popShapeToComposite();
 
-
   // Positive arrow
   let posArc = center.arc(radius * 1.5, angle.add(-1/16), angle.add(1/16));
   let posPoint = posArc.startPoint()
@@ -1147,22 +1146,22 @@ function setup() {
 
 
 function mousePressed(event) {
-  // TODO: rac.selectedControl = rac.controls.find?
-  for (let item of rac.controls) {
-    let mouseCenter = new rac.Point(mouseX, mouseY);
+  let mouseCenter = new rac.Point(mouseX, mouseY);
+
+  let selected = rac.controls.find(function(item) {
     let controlCenter = item.center();
-
-    if (controlCenter === null) { continue; }
-    if (controlCenter.distanceToPoint(mouseCenter) > rac.Control.radius) {
-      continue;
+    if (controlCenter === null) { return false; }
+    if (controlCenter.distanceToPoint(mouseCenter) <= rac.Control.radius) {
+      return true;
     }
+    return false;
+  });
 
-    item.isSelected = true;
-    rac.selectedControl = item;
-    rac.anchorCopy = item.anchorSegment.copy();
-
-    rac.mouseOffset = mouseCenter.segmentToPoint(controlCenter);
-    break;
+  if (selected !== null) {
+    selected.isSelected = true;
+    rac.anchorCopy = selected.anchorSegment.copy();
+    rac.mouseOffset = mouseCenter.segmentToPoint(selected.center());
+    rac.selectedControl = selected;
   }
 
   redraw();
@@ -1260,9 +1259,8 @@ function draw() {
     ? radius - concentricCount * concentricWidth
     : radius;
 
-  // Tear main radius & arc
-  center.segmentToAngle(rac.Angle.sse, radius).draw()
-    .arc().draw();
+  // Tear main circle
+  center.arc(radius).draw()
 
 
   // Radius control
