@@ -1158,7 +1158,7 @@ function mousePressed(event) {
     return false;
   });
 
-  if (selected !== null) {
+  if (selected !== undefined) {
     selected.isSelected = true;
     rac.anchorCopy = selected.anchorSegment.copy();
     rac.mouseOffset = mouseCenter.segmentToPoint(selected.center());
