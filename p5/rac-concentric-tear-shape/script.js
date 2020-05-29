@@ -453,15 +453,19 @@ rac.Point.prototype.pointPerpendicular = function(clockwise = true) {
     : new rac.Point(this.y, -this.x);
 };
 
+rac.Point.prototype.pointToAngle = function(someAngle, distance) {
+  let angle = rac.Angle.from(someAngle);
+  let distanceX = distance * Math.cos(angle.radians());
+  let distanceY = distance * Math.sin(angle.radians());
+  return new rac.Point(this.x + distanceX, this.y + distanceY);
+};
+
 rac.Point.prototype.segmentToPoint = function(point) {
   return new rac.Segment(this, point);
 };
 
 rac.Point.prototype.segmentToAngle = function(someAngle, distance) {
-  let angle = rac.Angle.from(someAngle);
-  let distanceX = distance * Math.cos(angle.radians());
-  let distanceY = distance * Math.sin(angle.radians());
-  let end = new rac.Point(this.x + distanceX, this.y + distanceY);
+  let end = this.pointToAngle(someAngle, distance);
   return new rac.Segment(this, end);
 };
 
@@ -506,7 +510,8 @@ rac.Segment.prototype.withEnd = function(newEnd) {
 };
 
 rac.Segment.prototype.withLength = function(newLength) {
-  return this.start.segmentToAngle(this.angle(), newLength);
+  let newEnd = this.start.pointToAngle(this.angle(), newLength);
+  return new rac.Segment(this.start, newEnd);
 };
 
 rac.Segment.prototype.middle = function() {
@@ -597,6 +602,10 @@ rac.Segment.prototype.arc = function(
     this.start, this.length(),
     rac.Angle.fromSegment(this), end,
     clockwise);
+};
+
+rac.Segment.prototype.pointAtLength = function(length) {
+  return this.start.pointToAngle(this.angle(), length);
 };
 
 rac.Segment.prototype.segmentExtending = function(distance) {
@@ -1076,6 +1085,8 @@ rac.Control.prototype.draw = function() {
   let angle = this.anchorSegment.angle();
   let center = this.center();
 
+  this.anchorSegment.draw(this.style);
+
   center.arc(radius)
     .attachToShape()
     .popShapeToComposite();
@@ -1256,8 +1267,18 @@ function draw() {
 
   // Radius control
   radiusControl.style = controlStyle;
-  radiusControl.anchorSegment = center.segmentToAngle(rac.Angle.s, radius + rac.Control.radius)
-    .end.segmentToAngle(rac.Angle.e, 300).draw();
+  radiusControl.anchorSegment = center
+    // Tear center to control anchor
+    .segmentToAngle(rac.Angle.s, radius + rac.Control.radius * 2)
+    .draw()
+    // Control anchor
+    .end.segmentToAngle(rac.Angle.e, 300);
+
+  radiusControl.center()
+    .segmentToPoint(center.pointToAngle(rac.Angle.e, radius))
+    .draw();
+
+
 
 
   // Main concentric arcs
