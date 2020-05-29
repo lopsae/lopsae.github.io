@@ -469,7 +469,7 @@ rac.Point.prototype.segmentToAngle = function(someAngle, distance) {
   return new rac.Segment(this, end);
 };
 
-rac.Point.prototype.segmentToClosestPointInSegment = function(segment) {
+rac.Point.prototype.segmentPerpendicularToSegment = function(segment) {
   let closestPoint = segment.closestPointToPoint(this);
   return this.segmentToPoint(closestPoint);
 };
@@ -1024,31 +1024,10 @@ rac.anchorCopy = null;
 rac.mouseOffset = null;
 rac.mouseStyle = null;
 
+// Draws controls and the visuals of control selection
 rac.drawControls = function() {
-  rac.controls.forEach(item => item.draw());
-
-  let mouseCenter = new rac.Point(mouseX, mouseY);
-
-  // Mouse to anchor
-  if (rac.anchorCopy !== null && mouseIsPressed) {
-    rac.anchorCopy.draw(rac.mouseStyle);
-
-    // Ray to controlShadow center
-    let controlShadowCenter = rac.mouseOffset
-      .translateToStart(mouseCenter)
-      .draw(rac.mouseStyle)
-      .end;
-
-    // controlShadow center to anchorSegment
-    controlShadowCenter.segmentToClosestPointInSegment(rac.anchorCopy)
-      .draw(rac.mouseStyle);
-
-    // ControlShadow
-    controlShadowCenter.arc(rac.Control.radius)
-      .draw(rac.mouseStyle);
-  }
-
   // Mouse position
+  let mouseCenter = new rac.Point(mouseX, mouseY);
   let mouseRadius = 12;
   if (mouseIsPressed) {
     if (rac.selectedControl !== null) {
@@ -1058,6 +1037,28 @@ rac.drawControls = function() {
     }
   }
   mouseCenter.arc(mouseRadius).draw(rac.mouseStyle);
+
+  rac.controls.forEach(item => item.draw());
+
+  // Mouse to anchor
+  if (rac.selectedControl !== null && mouseIsPressed) {
+    rac.anchorCopy.draw(rac.mouseStyle);
+
+    // Ray to controlShadow center
+    let controlShadowCenter = rac.mouseOffset
+      .translateToStart(mouseCenter)
+      .draw(rac.mouseStyle)
+      .end;
+
+    // controlShadow center to anchorSegment
+    controlShadowCenter.segmentPerpendicularToSegment(rac.anchorCopy)
+      .draw(rac.mouseStyle);
+
+    // ControlShadow
+    controlShadowCenter.arc(rac.Control.radius)
+      .draw(rac.mouseStyle);
+  }
+
 }
 
 
