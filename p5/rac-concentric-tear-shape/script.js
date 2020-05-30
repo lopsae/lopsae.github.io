@@ -146,8 +146,9 @@ rac.setupProtoFunctions = function(classObj) {
 
 
 // Used to determine equality between measures for some operations, like
-// calculating the slope of a segment. Without this values too close can
-// suddenly cause odd results.
+// calculating the slope of a segment. Calues too close can result in odd
+// calculations. E.g.:
+// `if (difference < rac.equalityThreshold) { /* considered equal */ }`
 rac.equalityThreshold = 0.001;
 
 
@@ -533,6 +534,11 @@ rac.Segment = class Segment {
   lengthToProjectedPoint(point) {
     let projected = this.projectedPoint(point);
     let segment = this.start.segmentToPoint(projected);
+
+    if (segment.length() < rac.equalityThreshold) {
+      return 0;
+    }
+
     let angleDiff = this.angle().substract(segment.angle());
     if (angleDiff.turn <= 1/4 || angleDiff.turn > 3/4) {
       return segment.length();
@@ -1093,6 +1099,8 @@ rac.drawControls = function() {
 
   rac.controls.forEach(item => item.draw());
 
+  // NEXT: constrain controlShadow to anchor range
+
   // Pointer to anchor elements
   if (rac.controlSelection !== null && mouseIsPressed) {
     // Copied anchor segment
@@ -1146,6 +1154,7 @@ rac.Control.prototype.draw = function() {
     .attachToShape()
     .popShapeToComposite();
 
+  // TODO: remove arrows when values are at the edges
   // Positive arrow
   let posArc = center.arc(radius * 1.5, angle.add(-1/16), angle.add(1/16));
   let posPoint = posArc.startPoint()
