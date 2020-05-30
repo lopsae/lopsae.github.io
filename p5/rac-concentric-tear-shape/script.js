@@ -195,46 +195,53 @@ rac.Color.cyan    = new rac.Color(0, 1, 1);
 rac.Color.white   = new rac.Color(1, 1, 1);
 
 
-rac.Stroke = function RacStroke(color = null, weight = 1) {
-  this.color = color;
-  this.weight = weight;
-};
-
-rac.Stroke.no = new rac.Stroke(null);
-
-rac.Stroke.prototype.copy = function() {
-  return new rac.Stroke(this.color.copy(), this.weight);
-};
-
-rac.Stroke.prototype.withAlpha = function(alpha) {
-  let copy = this.copy();
-  copy.color.alpha = alpha;
-  return copy;
-};
-
-rac.Stroke.prototype.withWeight = function(weight) {
-  let copy = this.copy();
-  copy.weight = weight;
-  return copy;
-};
-
-rac.Stroke.prototype.apply = function() {
-  if (this.color === null) {
-    noStroke();
-    return;
+rac.Stroke = class Stroke{
+  constructor(color = null, weight = 1) {
+    this.color = color;
+    this.weight = weight;
   }
 
-  stroke(
-    this.color.r * 255,
-    this.color.g * 255,
-    this.color.b * 255,
-    this.color.alpha * 255);
-  strokeWeight(this.weight);
-};
+  copy() {
+    let colorCopy = null;
+    if (this.color !== null) {
+      colorCopy = this.color.copy();
+    }
+    return new rac.Stroke(colorCopy, this.weight);
+  }
 
-rac.Stroke.prototype.styleWithFill = function(fill) {
-  return new rac.Style(this, fill);
-};
+  withAlpha(alpha) {
+    let copy = this.copy();
+    copy.color.alpha = alpha;
+    return copy;
+  }
+
+  withWeight(weight) {
+    let copy = this.copy();
+    copy.weight = weight;
+    return copy;
+  }
+
+  apply() {
+    if (this.color === null) {
+      noStroke();
+      return;
+    }
+
+    stroke(
+      this.color.r * 255,
+      this.color.g * 255,
+      this.color.b * 255,
+      this.color.alpha * 255);
+    strokeWeight(this.weight);
+  }
+
+  styleWithFill(fill) {
+    return new rac.Style(this, fill);
+  }
+
+}
+
+rac.Stroke.no = new rac.Stroke(null);
 
 
 rac.Fill = function RacFill(color = null) {
