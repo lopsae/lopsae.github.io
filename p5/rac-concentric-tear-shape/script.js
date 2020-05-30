@@ -195,7 +195,8 @@ rac.Color.cyan    = new rac.Color(0, 1, 1);
 rac.Color.white   = new rac.Color(1, 1, 1);
 
 
-rac.Stroke = class Stroke{
+rac.Stroke = class Stroke {
+
   constructor(color = null, weight = 1) {
     this.color = color;
     this.weight = weight;
@@ -319,6 +320,14 @@ rac.Angle.prototype.add = function(other) {
 
   return new rac.Angle(this.turn + other);
 };
+
+rac.Angle.prototype.substract = function(other) {
+  if (other instanceof rac.Angle) {
+    return new rac.Angle(this.turn - other.turn);
+  }
+
+  return new rac.Angle(this.turn - other);
+}
 
 rac.Angle.prototype.mult = function(factor) {
   return new rac.Angle(this.turn * factor);
@@ -486,13 +495,44 @@ rac.Point.prototype.arc = function(radius, start = rac.Angle.zero, end = start, 
 };
 
 
-rac.Segment = function RacSegment(start, end) {
-  this.start = start;
-  this.end = end;
-};
+rac.Segment = class Segment {
 
-rac.Segment.prototype.copy = function() {
-  return new rac.Segment(this.start, this.end);
+  constructor(start, end) {
+    this.start = start;
+    this.end = end;
+  }
+
+  copy() {
+    return new rac.Segment(this.start, this.end);
+  }
+
+  vertex() {
+    this.start.vertex();
+    this.end.vertex();
+    return this;
+  }
+
+
+  projectedPoint(point) {
+    let perpendicular = this.angle().perpendicular();
+    return point.segmentToAngle(perpendicular, this.length())
+      .intersectingPointWithSegment(this);
+  }
+
+  // Returns the length of a segment from `start` to `point` being
+  // projected in the segment. The returned length may be negative if the
+  // projected point falls behind `start`.
+  lengthToProjectedPoint(point) {
+    let projected = this.projectedPoint(point);
+    let segment = this.start.segmentToPoint(projected);
+    let angleDiff = this.angle().substract(segment.angle());
+    if (angleDiff.turn <= 1/4 || angleDiff.turn > 3/4) {
+      return segment.length();
+    } else {
+      return - segment.length();
+    }
+  }
+
 }
 
 rac.Drawer.setupDrawFunction(rac.Segment, function() {
@@ -501,12 +541,6 @@ rac.Drawer.setupDrawFunction(rac.Segment, function() {
 });
 
 rac.setupProtoFunctions(rac.Segment);
-
-rac.Segment.prototype.vertex = function() {
-  this.start.vertex();
-  this.end.vertex();
-  return this;
-};
 
 rac.Segment.prototype.withStart = function(newStart) {
   return new rac.Segment(newStart, this.end);
@@ -592,12 +626,6 @@ rac.Segment.prototype.intersectingPointWithSegment = function(other) {
   let x = (d - c) / (a - b);
   let y = a * x + c;
   return new rac.Point(x, y);
-};
-
-rac.Segment.prototype.projectedPoint = function(point) {
-  let perpendicular = this.angle().perpendicular();
-  return point.segmentToAngle(perpendicular, this.length())
-    .intersectingPointWithSegment(this);
 };
 
 rac.Segment.prototype.arc = function(
@@ -1184,20 +1212,23 @@ function mousePressed(event) {
 function mouseDragged(event) {
   if (rac.controlSelection !== null) {
     let mouseCenter = new rac.Point(mouseX, mouseY);
+    let anchorCopy = rac.controlSelection.anchorCopy;
 
     let controlShadowCenter = rac.controlSelection.mouseOffset
       .translateToStart(mouseCenter)
       .end;
 
-    let controlOnAnchor = rac.controlSelection.anchorCopy
-      .projectedPoint(controlShadowCenter);
+    let newValue = anchorCopy
+      .lengthToProjectedPoint(controlShadowCenter);
 
-    let newValue = rac.controlSelection.anchorCopy.start
-      .segmentToPoint(controlOnAnchor)
-      .length();
+    if (newValue < 0) {
+      newValue = 0;
+    }
 
-    // TODO: segment.lengthToPointClosestToPoint
-    // lengthToProjectedPoint
+    if (newValue > anchorCopy.length()) {
+      newValue = anchorCopy.length()
+    }
+
     rac.controlSelection.control.value = newValue;
   }
   redraw();
