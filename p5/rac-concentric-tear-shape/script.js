@@ -395,10 +395,19 @@ rac.Angle.left = rac.Angle.w;
 rac.Angle.up = rac.Angle.n;
 
 
-rac.Point = function RacPoint(x, y) {
-  this.x = x;
-  this.y = y;
-};
+rac.Point = class Point{
+
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  vertex() {
+    vertex(this.x, this.y);
+    return this;
+  }
+
+}
 
 rac.Drawer.setupDrawFunction(rac.Point, function() {
   point(this.x, this.y);
@@ -406,10 +415,9 @@ rac.Drawer.setupDrawFunction(rac.Point, function() {
 
 rac.setupProtoFunctions(rac.Point);
 
-rac.Point.prototype.vertex = function() {
-  vertex(this.x, this.y);
-  return this;
-};
+rac.Point.mouse = function() {
+  return new rac.Point(mouseX, mouseY);
+}
 
 rac.Point.prototype.withX = function(newX) {
   return new rac.Point(newX, this.y);
@@ -1056,50 +1064,53 @@ rac.Shape.prototype.addContour = function(element) {
 rac.ControlSelection = class ControlSelection{
   constructor(control) {
     this.control = control;
+    // Copy of the control anchor, so that the control can move tied to
+    // the drawing, while the interaction range remains fixed.
     this.anchorCopy = control.anchorSegment.copy();
-    let mouseCenter = new rac.Point(mouseX, mouseY);
-    this.mouseOffset = mouseCenter.segmentToPoint(control.center());
+    // Segment from the captured pointer position to the contro center,
+    // used to attach the control to the point where interaction started.
+    this.pointerOffset = rac.Point.mouse().segmentToPoint(control.center());
   }
 }
 
 rac.controls = [];
 rac.controlSelection = null;
-rac.mouseStyle = null;
+rac.pointerStyle = null;
 
 // Draws controls and the visuals of control selection
 rac.drawControls = function() {
-  // Mouse position
-  let mouseCenter = new rac.Point(mouseX, mouseY);
-  let mouseRadius = 12;
+  // Pointer position
+  let pointerCenter = rac.Point.mouse();
+  let pointerRadius = 12;
   if (mouseIsPressed) {
     if (rac.controlSelection !== null) {
-      mouseRadius = 2;
+      pointerRadius = 2;
     } else {
-      mouseRadius = 10;
+      pointerRadius = 10;
     }
   }
-  mouseCenter.arc(mouseRadius).draw(rac.mouseStyle);
+  pointerCenter.arc(pointerRadius).draw(rac.pointerStyle);
 
   rac.controls.forEach(item => item.draw());
 
-  // Mouse to anchor
+  // Pointer to anchor elements
   if (rac.controlSelection !== null && mouseIsPressed) {
+    // Copied anchor segment
     let anchorCopy = rac.controlSelection.anchorCopy;
-    anchorCopy.draw(rac.mouseStyle);
+    anchorCopy.draw(rac.pointerStyle);
 
     // Ray to controlShadow center
-    let controlShadowCenter = rac.controlSelection.mouseOffset
-      .translateToStart(mouseCenter)
-      .draw(rac.mouseStyle)
+    let controlShadowCenter = rac.controlSelection.pointerOffset
+      .translateToStart(pointerCenter)
       .end;
 
     // controlShadow center to anchorSegment
     controlShadowCenter.segmentPerpendicularToSegment(anchorCopy)
-      .draw(rac.mouseStyle);
+      .draw(rac.pointerStyle);
 
     // ControlShadow
     controlShadowCenter.arc(rac.Control.radius)
-      .draw(rac.mouseStyle);
+      .draw(rac.pointerStyle);
   }
 
 }
@@ -1169,7 +1180,7 @@ rac.Control.prototype.draw = function() {
 
   // Selection
   if (this.isSelected) {
-    center.arc(radius * 1.5).draw(rac.mouseStyle);
+    center.arc(radius * 1.5).draw(rac.pointerStyle);
   }
 };
 
@@ -1190,12 +1201,12 @@ function setup() {
 
 
 function mousePressed(event) {
-  let mouseCenter = new rac.Point(mouseX, mouseY);
+  let pointerCenter = new rac.Point.mouse();
 
   let selected = rac.controls.find(function(item) {
     let controlCenter = item.center();
     if (controlCenter === null) { return false; }
-    if (controlCenter.distanceToPoint(mouseCenter) <= rac.Control.radius) {
+    if (controlCenter.distanceToPoint(pointerCenter) <= rac.Control.radius) {
       return true;
     }
     return false;
@@ -1211,11 +1222,11 @@ function mousePressed(event) {
 
 function mouseDragged(event) {
   if (rac.controlSelection !== null) {
-    let mouseCenter = new rac.Point(mouseX, mouseY);
+    let pointerCenter = new rac.Point.mouse();
     let anchorCopy = rac.controlSelection.anchorCopy;
 
-    let controlShadowCenter = rac.controlSelection.mouseOffset
-      .translateToStart(mouseCenter)
+    let controlShadowCenter = rac.controlSelection.pointerOffset
+      .translateToStart(pointerCenter)
       .end;
 
     let newValue = anchorCopy
@@ -1259,7 +1270,7 @@ function draw() {
       marker:      new rac.Color(0.9, 0.5, 0.5, 0.3), // rose pink
       tear:        new rac.Color( .2,  .2,  .2,  .3), // blackish
       controlFill: new rac.Color( .2,  .2,  .2,  .8), // blackish
-      mouse:       new rac.Color( .1,  .1,  .1,  .6), // blackish
+      pointer:       new rac.Color( .1,  .1,  .1,  .6), // blackish
       highlight:   new rac.Color(1.0, 0.0, 1.0, 0.8) // magenta
     },
     dark: {
@@ -1268,7 +1279,7 @@ function draw() {
       marker:      new rac.Color( .7,  .3,  .3,  .3), // rose pink
       tear:        new rac.Color( .8,  .8,  .8,  .3), // whiteish
       controlFill: new rac.Color( .8,  .8,  .8,  .8), // whiteish
-      mouse:       new rac.Color( .9,  .9,  .9,  .6), // whiteish
+      pointer:       new rac.Color( .9,  .9,  .9,  .6), // whiteish
       highlight:   new rac.Color(  0, 1.0, 1.0,  .8)// cyan
     }
   };
@@ -1285,7 +1296,7 @@ function draw() {
   let controlStyle = colorScheme.stroke.stroke(3)
     .styleWithFill(colorScheme.controlFill.fill());
 
-  rac.mouseStyle = colorScheme.mouse.stroke(3);
+  rac.pointerStyle = colorScheme.pointer.stroke(3);
 
 
   // Center of the tear circle
