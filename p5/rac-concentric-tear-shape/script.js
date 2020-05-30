@@ -1025,10 +1025,17 @@ rac.Shape.prototype.addContour = function(element) {
 };
 
 
+rac.ControlSelection = class ControlSelection{
+  constructor(control) {
+    this.control = control;
+    this.anchorCopy = control.anchorSegment.copy();
+    let mouseCenter = new rac.Point(mouseX, mouseY);
+    this.mouseOffset = mouseCenter.segmentToPoint(control.center());
+  }
+}
+
 rac.controls = [];
-rac.selectedControl = null;
-rac.anchorCopy = null;
-rac.mouseOffset = null;
+rac.controlSelection = null;
 rac.mouseStyle = null;
 
 // Draws controls and the visuals of control selection
@@ -1037,7 +1044,7 @@ rac.drawControls = function() {
   let mouseCenter = new rac.Point(mouseX, mouseY);
   let mouseRadius = 12;
   if (mouseIsPressed) {
-    if (rac.selectedControl !== null) {
+    if (rac.controlSelection !== null) {
       mouseRadius = 2;
     } else {
       mouseRadius = 10;
@@ -1048,17 +1055,18 @@ rac.drawControls = function() {
   rac.controls.forEach(item => item.draw());
 
   // Mouse to anchor
-  if (rac.selectedControl !== null && mouseIsPressed) {
-    rac.anchorCopy.draw(rac.mouseStyle);
+  if (rac.controlSelection !== null && mouseIsPressed) {
+    let anchorCopy = rac.controlSelection.anchorCopy;
+    anchorCopy.draw(rac.mouseStyle);
 
     // Ray to controlShadow center
-    let controlShadowCenter = rac.mouseOffset
+    let controlShadowCenter = rac.controlSelection.mouseOffset
       .translateToStart(mouseCenter)
       .draw(rac.mouseStyle)
       .end;
 
     // controlShadow center to anchorSegment
-    controlShadowCenter.segmentPerpendicularToSegment(rac.anchorCopy)
+    controlShadowCenter.segmentPerpendicularToSegment(anchorCopy)
       .draw(rac.mouseStyle);
 
     // ControlShadow
@@ -1166,45 +1174,40 @@ function mousePressed(event) {
   });
 
   if (selected !== undefined) {
+    rac.controlSelection = new rac.ControlSelection(selected);
     selected.isSelected = true;
-    rac.anchorCopy = selected.anchorSegment.copy();
-    rac.mouseOffset = mouseCenter.segmentToPoint(selected.center());
-    rac.selectedControl = selected;
   }
 
   redraw();
 }
 
 function mouseDragged(event) {
-  if (rac.selectedControl !== null) {
+  if (rac.controlSelection !== null) {
     let mouseCenter = new rac.Point(mouseX, mouseY);
 
-    let controlShadowCenter = rac.mouseOffset
+    let controlShadowCenter = rac.controlSelection.mouseOffset
       .translateToStart(mouseCenter)
       .end;
 
-    let controlOnAnchor = rac.anchorCopy
+    let controlOnAnchor = rac.controlSelection.anchorCopy
       .projectedPoint(controlShadowCenter);
 
-    let newValue = rac.anchorCopy.start
+    let newValue = rac.controlSelection.anchorCopy.start
       .segmentToPoint(controlOnAnchor)
       .length();
 
     // TODO: segment.lengthToPointClosestToPoint
     // lengthToProjectedPoint
-    rac.selectedControl.value = newValue;
+    rac.controlSelection.control.value = newValue;
   }
   redraw();
 }
 
 function mouseReleased(event) {
-  // TODO: move selection to method
-  rac.selectedControl = null;
-  rac.anchorCopy = null;
-  rac.mouseOffset = null;
-  rac.controls.forEach(function(item) {
-    item.isSelected = false;
-  });
+  if (rac.controlSelection !== null) {
+    rac.controlSelection.control.isSelected = false;
+    rac.controlSelection = null;
+  }
   redraw();
 }
 
