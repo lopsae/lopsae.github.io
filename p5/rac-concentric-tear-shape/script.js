@@ -147,8 +147,9 @@ rac.setupProtoFunctions = function(classObj) {
 
 // Used to determine equality between measures for some operations, like
 // calculating the slope of a segment. Calues too close can result in odd
-// calculations. E.g.:
-// `if (difference < rac.equalityThreshold) { /* considered equal */ }`
+// calculations. When checking for equality:
+// x is not equal to x+equalityThreshold
+// x is equal to x+equalityThreshold/2
 rac.equalityThreshold = 0.001;
 
 
@@ -1183,9 +1184,9 @@ rac.Control.prototype.draw = function() {
     .attachToShape()
     .popShapeToComposite();
 
-  // NEXTTODO: remove arrows when values are at the edges
   // Positive arrow
-  let posArc = center.arc(radius * 1.5, angle.add(-1/16), angle.add(1/16));
+  if (this.value <= this.anchorSegment.length() - rac.equalityThreshold) {
+    let posArc = center.arc(radius * 1.5, angle.add(-1/16), angle.add(1/16));
   let posPoint = posArc.startPoint()
     .segmentToAngle(angle.add(1/8), radius)
     .intersectingPointWithSegment(
@@ -1198,9 +1199,11 @@ rac.Control.prototype.draw = function() {
     .endPoint().segmentToPoint(posPoint)
     .attachToShape()
     .popShapeToComposite();
+  }
 
   // Negative arrow
-  let negArc = center.arc(radius * 1.5, angle.inverse().add(-1/16), angle.inverse().add(1/16));
+  if (this.value >= rac.equalityThreshold) {
+    let negArc = center.arc(radius * 1.5, angle.inverse().add(-1/16), angle.inverse().add(1/16));
   let negPoint = negArc.startPoint()
     .segmentToAngle(angle.add(1/8), radius)
     .intersectingPointWithSegment(
@@ -1213,6 +1216,7 @@ rac.Control.prototype.draw = function() {
     .endPoint().segmentToPoint(negPoint)
     .attachToShape()
     .popShapeToComposite();
+  }
 
   rac.popComposite().draw(this.style);
 
