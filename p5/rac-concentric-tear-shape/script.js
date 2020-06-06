@@ -1320,16 +1320,16 @@ function draw() {
       marker:      new rac.Color(0.9, 0.5, 0.5, 0.3), // rose pink
       tear:        new rac.Color( .2,  .2,  .2,  .3), // blackish
       controlFill: new rac.Color( .2,  .2,  .2,  .8), // blackish
-      pointer:       new rac.Color( .1,  .1,  .1,  .6), // blackish
+      pointer:     new rac.Color( .1,  .1,  .1,  .6), // blackish
       highlight:   new rac.Color(1.0, 0.0, 1.0, 0.8) // magenta
     },
     dark: {
       background:  new rac.Color( .1,  .1,  .1), // blackish
       stroke:      new rac.Color( .9,  .2,  .2,  .5), // red,
       marker:      new rac.Color( .7,  .3,  .3,  .3), // rose pink
-      tear:        new rac.Color( .8,  .8,  .8,  .3), // whiteish
-      controlFill: new rac.Color( .8,  .8,  .8,  .8), // whiteish
-      pointer:       new rac.Color( .9,  .9,  .9,  .6), // whiteish
+      tear:        new rac.Color( .8,  .8,  .8,  .9), // whiteish
+      controlFill: new rac.Color( .8,  .8,  .8, 1.0), // whiteish
+      pointer:     new rac.Color( .9,  .9,  .9,  .6), // whiteish
       highlight:   new rac.Color(  0, 1.0, 1.0,  .8)// cyan
     }
   };
