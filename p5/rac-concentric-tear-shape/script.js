@@ -1300,6 +1300,10 @@ let radiusControl = new rac.Control();
 radiusControl.value = 100;
 rac.controls.push(radiusControl);
 
+let slopeControl = new rac.Control();
+slopeControl.value = 200;
+rac.controls.push(slopeControl);
+
 
 function draw() {
   clear();
@@ -1348,7 +1352,7 @@ function draw() {
   // Width of the concentric circles
   let concentricWidth = 20;
   // Radius of the main slope arcs
-  let slopeRadius = 250;
+  let slopeRadius = slopeControl.value;
 
   // Last step is draw if its width would be greater that zero
   let concentricCount = Math.ceil(radius/concentricWidth) -1;
@@ -1374,13 +1378,26 @@ function draw() {
     .draw();
 
 
-
-
   // Main concentric arcs
   for(let index = 1; index <= concentricCount; index++) {
     let concentricRadius = radius - concentricWidth * index;
     center.arc(concentricRadius).draw();
   }
+
+
+  // Slope control
+  slopeControl.style = controlStyle;
+  slopeControl.anchorSegment = center
+    // Tear center to control anchor
+    .segmentToAngle(rac.Angle.s, radius + rac.Control.radius * 4)
+    .draw()
+    // Control anchor
+    .end.segmentToAngle(rac.Angle.w, 300);
+
+  slopeControl.center()
+    .segmentToPoint(center.pointToAngle(rac.Angle.w, slopeRadius))
+    .draw();
+
 
   // Slope centers orbit arc
   center.segmentToAngle(rac.Angle.wsw, radius + slopeRadius).draw()
