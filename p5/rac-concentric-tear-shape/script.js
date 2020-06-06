@@ -1106,16 +1106,16 @@ rac.drawControls = function() {
     anchorCopy.draw(rac.pointerStyle);
 
     // Ray from pointer to control shadow center
-    let controlShadowCenter = rac.controlSelection.pointerOffset
+    let draggedShadowCenter = rac.controlSelection.pointerOffset
       .translateToStart(pointerCenter)
       .end;
 
     // Control shadow center, attached to pointer
-    controlShadowCenter.arc(2)
+    draggedShadowCenter.arc(2)
       .draw(rac.pointerStyle);
 
     let constrainedLength = anchorCopy
-      .lengthToProjectedPoint(controlShadowCenter);
+      .lengthToProjectedPoint(draggedShadowCenter);
     if (constrainedLength < 0) {
       constrainedLength = 0;
     }
@@ -1131,7 +1131,7 @@ rac.drawControls = function() {
     constrainedAnchorCenter.arc(rac.Control.radius)
       .draw(rac.pointerStyle);
 
-    let constrainedShadowCenter = controlShadowCenter
+    let constrainedShadowCenter = draggedShadowCenter
       .segmentPerpendicularToSegment(anchorCopy)
       // reverse and translated to constraint to anchor
       .reverse()
@@ -1140,13 +1140,13 @@ rac.drawControls = function() {
       .draw(rac.pointerStyle)
       .end;
 
-    // Control shadow
+    // Control shadow, dragged and constrained to anchor
     constrainedShadowCenter.arc(rac.Control.radius / 2)
       .draw(rac.pointerStyle);
 
     // Segment to dragged shadow center
-    constrainedShadowCenter.segmentToPoint(controlShadowCenter)
-    // TODO: drawIfLenghtGreaterThat?
+    constrainedShadowCenter.segmentToPoint(draggedShadowCenter)
+      .segmentToRatio(2/3)
       .draw(rac.pointerStyle);
 
   }
