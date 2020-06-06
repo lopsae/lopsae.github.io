@@ -1304,6 +1304,10 @@ let slopeControl = new rac.Control();
 slopeControl.value = 200;
 rac.controls.push(slopeControl);
 
+let concentricControl = new rac.Control();
+concentricControl.value = 18;
+rac.controls.push(concentricControl);
+
 
 function draw() {
   clear();
@@ -1350,7 +1354,8 @@ function draw() {
   // Radius of tear main arc
   let radius = radiusControl.value;
   // Width of the concentric circles
-  let concentricWidth = 20;
+  let concentricMin = 3
+  let concentricWidth = concentricMin + concentricControl.value;
   // Radius of the main slope arcs
   let slopeRadius = slopeControl.value;
 
@@ -1368,13 +1373,29 @@ function draw() {
   radiusControl.style = controlStyle;
   radiusControl.anchorSegment = center
     // Tear center to control anchor
-    .segmentToAngle(rac.Angle.s, radius + rac.Control.radius * 2)
+    .segmentToAngle(rac.Angle.s, radius + rac.Control.radius * 3)
     .draw()
     // Control anchor
     .end.segmentToAngle(rac.Angle.e, 300);
 
   radiusControl.center()
     .segmentToPoint(center.pointToAngle(rac.Angle.e, radius))
+    .draw();
+
+
+  // Concentric control
+  concentricControl.style = controlStyle
+  concentricControl.anchorSegment = center
+    // Tear center to control anchor
+    .pointToAngle(rac.Angle.s, radius)
+    .segmentToAngle(rac.Angle.e, radius + rac.Control.radius * 2)
+    .draw()
+    .end.segmentToAngle(rac.Angle.n, concentricMin)
+    .draw()
+    .end.segmentToAngle(rac.Angle.n, 300);
+
+  center.pointToAngle(rac.Angle.s, radius - concentricWidth)
+    .segmentToPoint(concentricControl.center())
     .draw();
 
 
@@ -1389,7 +1410,7 @@ function draw() {
   slopeControl.style = controlStyle;
   slopeControl.anchorSegment = center
     // Tear center to control anchor
-    .segmentToAngle(rac.Angle.s, radius + rac.Control.radius * 4)
+    .segmentToAngle(rac.Angle.s, radius + rac.Control.radius * 6)
     .draw()
     // Control anchor
     .end.segmentToAngle(rac.Angle.w, 300);
