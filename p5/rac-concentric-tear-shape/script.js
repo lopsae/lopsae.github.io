@@ -1098,21 +1098,18 @@ rac.drawControls = function() {
   pointerCenter.arc(pointerRadius).draw(rac.pointerStyle);
 
   rac.controls.forEach(item => item.draw());
-
-  // NEXT: constrain controlShadow to anchor range
-
   // Pointer to anchor elements
   if (rac.controlSelection !== null && mouseIsPressed) {
     // Copied anchor segment
     let anchorCopy = rac.controlSelection.anchorCopy;
     anchorCopy.draw(rac.pointerStyle);
 
-    // Ray to control shadow center
+    // Ray from pointer to control shadow center
     let controlShadowCenter = rac.controlSelection.pointerOffset
       .translateToStart(pointerCenter)
       .end;
 
-    // Control shadow center
+    // Control shadow center, attached to pointer
     controlShadowCenter.arc(2)
       .draw(rac.pointerStyle);
 
@@ -1129,6 +1126,9 @@ rac.drawControls = function() {
       .withLength(constrainedLength)
       .end;
 
+    // Control shadow at anchor
+    constrainedAnchorCenter.arc(rac.Control.radius)
+      .draw(rac.pointerStyle);
 
     let constrainedShadowCenter = controlShadowCenter
       .segmentPerpendicularToSegment(anchorCopy)
@@ -1140,7 +1140,7 @@ rac.drawControls = function() {
       .end;
 
     // Control shadow
-    constrainedShadowCenter.arc(rac.Control.radius)
+    constrainedShadowCenter.arc(rac.Control.radius / 2)
       .draw(rac.pointerStyle);
 
     // Segment to dragged shadow center
@@ -1183,7 +1183,7 @@ rac.Control.prototype.draw = function() {
     .attachToShape()
     .popShapeToComposite();
 
-  // TODO: remove arrows when values are at the edges
+  // NEXTTODO: remove arrows when values are at the edges
   // Positive arrow
   let posArc = center.arc(radius * 1.5, angle.add(-1/16), angle.add(1/16));
   let posPoint = posArc.startPoint()
