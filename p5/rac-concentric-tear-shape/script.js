@@ -528,6 +528,11 @@ rac.Segment = class Segment {
     return this;
   }
 
+  withAngleAdd(someAngle) {
+    let newAngle = this.angle().add(someAngle);
+    let newEnd = this.start.pointToAngle(newAngle, this.length());
+    return new rac.Segment(this.start, newEnd);
+  }
 
   projectedPoint(point) {
     let perpendicular = this.angle().perpendicular();
@@ -1447,6 +1452,7 @@ function draw() {
     .oppositeWithHyp(radius + slopeRadius, false).draw();
   let slopeCenterLeft = columnLeft.end;
   columnLeft.segmentExtending(radius/5).draw();
+
   center.segmentToPoint(slopeCenterLeft).draw()
     .segmentExtending(radius/5).draw();
 
@@ -1455,16 +1461,21 @@ function draw() {
     .oppositeWithHyp(radius + slopeRadius, true).draw();
   let slopeCenterRight = columnRight.end;
   columnRight.segmentExtending(radius/5).draw();
+
   center.segmentToPoint(slopeCenterRight).draw()
     .segmentExtending(radius/5).draw();
 
   // Slope arcs
-  slopeCenterLeft
-    .segmentToAngle(1/4 + 1/32, slopeRadius).draw()
-    .arc(rac.Angle.ene, false).draw();
-  slopeCenterRight
-    .segmentToAngle(1/4 - 1/32, slopeRadius).draw()
-    .arc(rac.Angle.wnw, true).draw();
+  let slopeArcLeft = slopeCenterLeft
+    .segmentToPoint(center).withLength(slopeRadius)
+    .withAngleAdd(1/16)
+    .draw()
+    .arc(-1/32, false).draw();
+  let slopeArcRight = slopeCenterRight
+    .segmentToPoint(center).withLength(slopeRadius)
+    .withAngleAdd(-1/16)
+    .draw()
+    .arc(1/2 + 1/32, true).draw();
 
   // Slope concentric arcs
   for(let index = 1; index <= concentricCount +1; index++) {
@@ -1479,10 +1490,10 @@ function draw() {
       concentricStroke = mainStroke.withAlphaRatio(colorRatio);
     }
 
-    slopeCenterLeft.arc(concentricRadius,
-      rac.Angle.s, rac.Angle.e.add(-1/32), false).draw(concentricStroke);
-    slopeCenterRight.arc(concentricRadius,
-      rac.Angle.s, rac.Angle.w.add(1/32), true).draw(concentricStroke);
+    slopeArcLeft.withRadius(concentricRadius)
+      .draw(concentricStroke);
+    slopeArcRight.withRadius(concentricRadius)
+      .draw(concentricStroke);
   }
 
   // Tear shape
