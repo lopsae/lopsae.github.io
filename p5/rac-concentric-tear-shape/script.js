@@ -1297,15 +1297,15 @@ function mouseReleased(event) {
 
 
 let radiusControl = new rac.Control();
-radiusControl.value = 100;
+radiusControl.value = 120;
 rac.controls.push(radiusControl);
 
 let slopeControl = new rac.Control();
-slopeControl.value = 200;
+slopeControl.value = 240;
 rac.controls.push(slopeControl);
 
 let concentricControl = new rac.Control();
-concentricControl.value = 18;
+concentricControl.value = 17;
 rac.controls.push(concentricControl);
 
 
