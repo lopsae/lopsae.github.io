@@ -218,6 +218,12 @@ rac.Stroke = class Stroke {
     return copy;
   }
 
+  withAlphaRatio(ratio) {
+    let copy = this.copy();
+    copy.color.alpha = this.color.alpha * ratio;
+    return copy;
+  }
+
   withWeight(weight) {
     let copy = this.copy();
     copy.weight = weight;
@@ -1461,13 +1467,22 @@ function draw() {
     .arc(rac.Angle.wnw, true).draw();
 
   // Slope concentric arcs
-  for(let index = 1; index <= concentricCount; index++) {
+  for(let index = 1; index <= concentricCount +1; index++) {
     let concentricRadius = slopeRadius + concentricWidth * index;
+    let concentricStroke = mainStroke;
+
+
+    if (index == concentricCount +1) {
+      // Color fading for extra concentric arc
+      let distancePastCenter = concentricRadius - (slopeRadius + radius);
+      let colorRatio = (concentricWidth - distancePastCenter) / concentricWidth;
+      concentricStroke = mainStroke.withAlphaRatio(colorRatio);
+    }
 
     slopeCenterLeft.arc(concentricRadius,
-      rac.Angle.s, rac.Angle.e.add(-1/32), false).draw();
+      rac.Angle.s, rac.Angle.e.add(-1/32), false).draw(concentricStroke);
     slopeCenterRight.arc(concentricRadius,
-      rac.Angle.s, rac.Angle.w.add(1/32), true).draw();
+      rac.Angle.s, rac.Angle.w.add(1/32), true).draw(concentricStroke);
   }
 
   // Tear shape
