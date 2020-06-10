@@ -1238,6 +1238,92 @@ rac.Control.prototype.draw = function() {
 };
 
 
+rac.Animator = class RacAnimator {
+
+  constructor() {
+    this.steps = [];
+    this.stepIndex = 0;
+    this.controlInitialValue = 0;
+    this.stepStartTime = 0;
+    this.lastTime = null;
+    this.loop = false;
+  }
+
+  // Animate with the current time. Time is expected in milliseconds.
+  animate(currentTime) {
+    if (this.lastTime == null) {
+      // first animate is no-op, time is recorded
+      this.stepIndex = 0;
+      this.lastTime = currentTime;
+      this.stepStartTime = currentTime;
+      let currentStep = this.steps[this.stepIndex];
+      if (currentStep.control !== null) {
+        this.controlInitialValue = currentStep.control.value;
+      } else {
+        this.controlInitialValue = null;
+      }
+      return;
+    }
+    // applies animations for current time
+    let currentStep = this.steps[this.stepIndex];
+    let delta = currentTime - this.stepStartTime;
+    if (delta >= currentStep.duration) {
+      if (currentStep.control !== null) {
+        currentStep.control.value = currentStep.value;
+      }
+      this.stepIndex = (this.stepIndex + 1) % this.steps.length;
+      console.log(`delta:${delta} currentStep.duration:${currentStep.duration}`);
+      console.log(`currentTime:${currentTime}`);
+      this.stepStartTime = currentTime - (delta - currentStep.duration);
+      console.log(`stepStartTime:${this.stepStartTime}`);
+      let nextStep = this.steps[this.stepIndex];
+      let nextDelta = currentTime - this.stepStartTime;
+      if (nextStep.control !== null) {
+        this.controlInitialValue = nextStep.control.value;
+        let durationRatio = nextDelta / nextStep.duration;
+        let valueDelta = nextStep.value - this.controlInitialValue;
+        let newValue = this.controlInitialValue + (durationRatio * valueDelta);
+        console.log(`▶️ apply next-anim: step:${this.stepIndex} newValue::${newValue}`);
+        nextStep.control.value = newValue;
+      } else {
+        this.controlInitialValue = null;
+      }
+      return;
+    }
+
+    let durationRatio = delta / currentStep.duration;
+    let valueDelta = currentStep.value - this.controlInitialValue;
+    let newValue = this.controlInitialValue + (durationRatio * valueDelta);
+    console.log(`▶️ apply anim: step:${this.stepIndex} newValue::${newValue}`);
+    // console.log(`delta:${delta} durationRatio:${durationRatio} valueDelta::${valueDelta}`);
+    // console.log(`controlInitialValue:${this.controlInitialValue} currentStep.value:${currentStep.value}`);
+    currentStep.control.value = newValue;
+  }
+
+  controlStep(duration, control, value) {
+    let newStep = new rac.AnimatorStep(duration, control, value);
+    this.steps.push(newStep);
+  }
+
+  pauseStep(duration) {
+    let newStep = new rac.AnimatorStep(duration);
+    this.steps.push(newStep);
+  }
+
+}
+
+
+rac.AnimatorStep = class RacAnimatorStep {
+
+  constructor(duration, control = null, value = null) {
+    this.duration = duration;
+    this.control = control;
+    this.value = value;
+  }
+
+}
+
+
 
 //=========================================================================
 //=========================================================================
@@ -1247,7 +1333,9 @@ rac.Control.prototype.draw = function() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  noLoop();
+  // noLoop();
+  // TODO: low for testing
+  frameRate(5);
   noStroke();
   noFill();
 }
@@ -1304,6 +1392,8 @@ function mouseReleased(event) {
     rac.controlSelection = null;
   }
   redraw();
+  // TODO: to stop animations
+  noLoop();
 }
 
 
@@ -1320,8 +1410,26 @@ concentricControl.value = 17;
 rac.controls.push(concentricControl);
 
 
+// TODO: animation?
+let animator = new rac.Animator();
+animator.controlStep(2000, radiusControl, 200);
+animator.controlStep(2000, radiusControl, 120);
+// [1, 150, radiusControl] 1 second to 150
+// [1] 1 second pause
+// [2, 30, radiusControl]
+// [1, 70, radiusControl]
+// [0.5]
+// [1, 20, slopeControl]
+// [0.3]
+// [1.5, 300, slopeControl]
+// [0.3]
+// ...
+
+
 function draw() {
   clear();
+
+  animator.animate(millis());
 
   // Color schemes
   let colors = {
