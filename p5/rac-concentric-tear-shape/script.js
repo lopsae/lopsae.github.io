@@ -1265,15 +1265,15 @@ rac.Animator = class RacAnimator {
     }
 
     let currentStep = this.steps[this.stepIndex];
-    let delta = currentTime - this.startTime;
+    let timeDelta = currentTime - this.startTime;
 
-    if (delta < currentStep.duration) {
+    if (timeDelta < currentStep.duration) {
       // Apply animations for current time
-      let durationRatio = delta / currentStep.duration;
+      let durationRatio = timeDelta / currentStep.duration;
       let valueDelta = currentStep.value - this.startValue;
       let newValue = this.startValue + (durationRatio * valueDelta);
       console.log(`▶️ apply anim: step:${this.stepIndex} newValue::${newValue}`);
-      // console.log(`delta:${delta} durationRatio:${durationRatio} valueDelta::${valueDelta}`);
+      // console.log(`timeDelta:${timeDelta} durationRatio:${durationRatio} valueDelta::${valueDelta}`);
       // console.log(`startValue:${this.startValue} currentStep.value:${currentStep.value}`);
       currentStep.control.value = newValue;
       return;
@@ -1286,17 +1286,17 @@ rac.Animator = class RacAnimator {
 
     // Move to next step
     this.stepIndex = (this.stepIndex + 1) % this.steps.length;
-    console.log(`delta:${delta} currentStep.duration:${currentStep.duration}`);
+    console.log(`timeDelta:${timeDelta} currentStep.duration:${currentStep.duration}`);
     console.log(`currentTime:${currentTime}`);
-    this.startTime = currentTime - (delta - currentStep.duration);
+    this.startTime = currentTime - (timeDelta - currentStep.duration);
     console.log(`startTime:${this.startTime}`);
 
     // Applies animation of next step
     let nextStep = this.steps[this.stepIndex];
-    let nextDelta = currentTime - this.startTime;
+    let nextTimeDelta = currentTime - this.startTime;
     if (nextStep.control !== null) {
       this.startValue = nextStep.control.value;
-      let durationRatio = nextDelta / nextStep.duration;
+      let durationRatio = nextTimeDelta / nextStep.duration;
       let valueDelta = nextStep.value - this.startValue;
       let newValue = this.startValue + (durationRatio * valueDelta);
       console.log(`▶️ apply next-anim: step:${this.stepIndex} newValue::${newValue}`);
