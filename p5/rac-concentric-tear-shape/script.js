@@ -1242,31 +1242,30 @@ rac.Animator = class RacAnimator {
 
   constructor() {
     this.steps = [];
-    this.stepIndex = 0;
-    this.controlInitialValue = 0;
-    this.stepStartTime = 0;
-    this.lastTime = null;
+    this.stepIndex = null;
+    this.startValue = null;
+    this.startTime = null;
     this.loop = false;
   }
 
   // Animate with the current time. Time is expected in milliseconds.
   animate(currentTime) {
-    if (this.lastTime == null) {
+    // TODO: delete logs
+    if (this.startTime === null) {
       // first animate is no-op, time is recorded
       this.stepIndex = 0;
-      this.lastTime = currentTime;
-      this.stepStartTime = currentTime;
+      this.startTime = currentTime;
       let currentStep = this.steps[this.stepIndex];
       if (currentStep.control !== null) {
-        this.controlInitialValue = currentStep.control.value;
+        this.startValue = currentStep.control.value;
       } else {
-        this.controlInitialValue = null;
+        this.startValue = null;
       }
       return;
     }
     // applies animations for current time
     let currentStep = this.steps[this.stepIndex];
-    let delta = currentTime - this.stepStartTime;
+    let delta = currentTime - this.startTime;
     if (delta >= currentStep.duration) {
       if (currentStep.control !== null) {
         currentStep.control.value = currentStep.value;
@@ -1274,29 +1273,29 @@ rac.Animator = class RacAnimator {
       this.stepIndex = (this.stepIndex + 1) % this.steps.length;
       console.log(`delta:${delta} currentStep.duration:${currentStep.duration}`);
       console.log(`currentTime:${currentTime}`);
-      this.stepStartTime = currentTime - (delta - currentStep.duration);
-      console.log(`stepStartTime:${this.stepStartTime}`);
+      this.startTime = currentTime - (delta - currentStep.duration);
+      console.log(`startTime:${this.startTime}`);
       let nextStep = this.steps[this.stepIndex];
-      let nextDelta = currentTime - this.stepStartTime;
+      let nextDelta = currentTime - this.startTime;
       if (nextStep.control !== null) {
-        this.controlInitialValue = nextStep.control.value;
+        this.startValue = nextStep.control.value;
         let durationRatio = nextDelta / nextStep.duration;
-        let valueDelta = nextStep.value - this.controlInitialValue;
-        let newValue = this.controlInitialValue + (durationRatio * valueDelta);
+        let valueDelta = nextStep.value - this.startValue;
+        let newValue = this.startValue + (durationRatio * valueDelta);
         console.log(`▶️ apply next-anim: step:${this.stepIndex} newValue::${newValue}`);
         nextStep.control.value = newValue;
       } else {
-        this.controlInitialValue = null;
+        this.startValue = null;
       }
       return;
     }
 
     let durationRatio = delta / currentStep.duration;
-    let valueDelta = currentStep.value - this.controlInitialValue;
-    let newValue = this.controlInitialValue + (durationRatio * valueDelta);
+    let valueDelta = currentStep.value - this.startValue;
+    let newValue = this.startValue + (durationRatio * valueDelta);
     console.log(`▶️ apply anim: step:${this.stepIndex} newValue::${newValue}`);
     // console.log(`delta:${delta} durationRatio:${durationRatio} valueDelta::${valueDelta}`);
-    // console.log(`controlInitialValue:${this.controlInitialValue} currentStep.value:${currentStep.value}`);
+    // console.log(`startValue:${this.startValue} currentStep.value:${currentStep.value}`);
     currentStep.control.value = newValue;
   }
 
