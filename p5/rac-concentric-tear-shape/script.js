@@ -1263,40 +1263,47 @@ rac.Animator = class RacAnimator {
       }
       return;
     }
-    // applies animations for current time
+
     let currentStep = this.steps[this.stepIndex];
     let delta = currentTime - this.startTime;
-    if (delta >= currentStep.duration) {
-      if (currentStep.control !== null) {
-        currentStep.control.value = currentStep.value;
-      }
-      this.stepIndex = (this.stepIndex + 1) % this.steps.length;
-      console.log(`delta:${delta} currentStep.duration:${currentStep.duration}`);
-      console.log(`currentTime:${currentTime}`);
-      this.startTime = currentTime - (delta - currentStep.duration);
-      console.log(`startTime:${this.startTime}`);
-      let nextStep = this.steps[this.stepIndex];
-      let nextDelta = currentTime - this.startTime;
-      if (nextStep.control !== null) {
-        this.startValue = nextStep.control.value;
-        let durationRatio = nextDelta / nextStep.duration;
-        let valueDelta = nextStep.value - this.startValue;
-        let newValue = this.startValue + (durationRatio * valueDelta);
-        console.log(`▶️ apply next-anim: step:${this.stepIndex} newValue::${newValue}`);
-        nextStep.control.value = newValue;
-      } else {
-        this.startValue = null;
-      }
+
+    if (delta < currentStep.duration) {
+      // Apply animations for current time
+      let durationRatio = delta / currentStep.duration;
+      let valueDelta = currentStep.value - this.startValue;
+      let newValue = this.startValue + (durationRatio * valueDelta);
+      console.log(`▶️ apply anim: step:${this.stepIndex} newValue::${newValue}`);
+      // console.log(`delta:${delta} durationRatio:${durationRatio} valueDelta::${valueDelta}`);
+      // console.log(`startValue:${this.startValue} currentStep.value:${currentStep.value}`);
+      currentStep.control.value = newValue;
       return;
     }
 
-    let durationRatio = delta / currentStep.duration;
-    let valueDelta = currentStep.value - this.startValue;
-    let newValue = this.startValue + (durationRatio * valueDelta);
-    console.log(`▶️ apply anim: step:${this.stepIndex} newValue::${newValue}`);
-    // console.log(`delta:${delta} durationRatio:${durationRatio} valueDelta::${valueDelta}`);
-    // console.log(`startValue:${this.startValue} currentStep.value:${currentStep.value}`);
-    currentStep.control.value = newValue;
+    // Apply final state of current animation
+    if (currentStep.control !== null) {
+      currentStep.control.value = currentStep.value;
+    }
+
+    // Move to next step
+    this.stepIndex = (this.stepIndex + 1) % this.steps.length;
+    console.log(`delta:${delta} currentStep.duration:${currentStep.duration}`);
+    console.log(`currentTime:${currentTime}`);
+    this.startTime = currentTime - (delta - currentStep.duration);
+    console.log(`startTime:${this.startTime}`);
+
+    // Applies animation of next step
+    let nextStep = this.steps[this.stepIndex];
+    let nextDelta = currentTime - this.startTime;
+    if (nextStep.control !== null) {
+      this.startValue = nextStep.control.value;
+      let durationRatio = nextDelta / nextStep.duration;
+      let valueDelta = nextStep.value - this.startValue;
+      let newValue = this.startValue + (durationRatio * valueDelta);
+      console.log(`▶️ apply next-anim: step:${this.stepIndex} newValue::${newValue}`);
+      nextStep.control.value = newValue;
+    } else {
+      this.startValue = null;
+    }
   }
 
   controlStep(duration, control, value) {
