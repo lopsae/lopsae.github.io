@@ -1245,6 +1245,7 @@ rac.Animator = class RacAnimator {
     this.stepIndex = null;
     this.startValue = null;
     this.startTime = null;
+    // TODO: implement loop
     this.loop = false;
   }
 
@@ -1267,41 +1268,49 @@ rac.Animator = class RacAnimator {
     let currentStep = this.steps[this.stepIndex];
     let timeDelta = currentTime - this.startTime;
 
+    // Apply animations for current time
+    this.applyStep(currentStep, timeDelta, this.startValue);
+
     if (timeDelta < currentStep.duration) {
-      // Apply animations for current time
-      this.applyStep(currentStep, timeDelta, this.startValue);
+      // Still in current step
       return;
     }
 
-    // Apply final state of current animation
-    if (currentStep.control !== null) {
-      currentStep.control.value = currentStep.endValue;
-    }
+    // TODO: next step movement and apply should be in loop
+    // TODO: to account for zero duration steps
 
     // Move to next step
     this.stepIndex = (this.stepIndex + 1) % this.steps.length;
     console.log(`timeDelta:${timeDelta} currentStep.duration:${currentStep.duration}`);
     console.log(`currentTime:${currentTime}`);
-    this.startTime = currentTime - (timeDelta - currentStep.duration);
+    let overTime = timeDelta - currentStep.duration;
+    this.startTime = currentTime - overTime;
     console.log(`startTime:${this.startTime}`);
 
-    // TODO: next step movement and apply should be in loop
-    // TODO: to account for zero duration steps
-    // Applies animation of next step
+    // Update start value
     let nextStep = this.steps[this.stepIndex];
-    let nextTimeDelta = currentTime - this.startTime;
-    if (nextStep.control !== null) {
-      this.startValue = nextStep.control.value;
-      this.applyStep(nextStep, nextTimeDelta, this.startValue);
-    } else {
+    if (nextStep.control === null) {
       this.startValue = null;
+      return;
     }
+    this.startValue = nextStep.control.value;
+
+    // Applies animation of next step
+    let nextTimeDelta = currentTime - this.startTime;
+    this.applyStep(nextStep, nextTimeDelta, this.startValue);
   }
 
   applyStep(step, timeDelta, startValue) {
     if (step.control === null) {
       return;
     }
+
+    // Over duration only applies end value
+    if (timeDelta >= step.duration) {
+      step.control.value = step.endValue;
+      return;
+    }
+
     let durationRatio = timeDelta / step.duration;
     let valueDelta = step.endValue - this.startValue;
     let newValue = startValue + (durationRatio * valueDelta);
