@@ -1245,11 +1245,12 @@ rac.Animator = class RacAnimator {
     this.stepIndex = null;
     this.startValue = null;
     this.startTime = null;
-    // TODO: implement loop
-    this.loop = false;
+    this.isLoop = false;
   }
 
   // Animate with the current time. Time is expected in milliseconds.
+  // Returns `true` if there is still animations to perform, otherwise
+  // returns `false`.
   animate(currentTime) {
     // TODO: delete logs
     if (this.startTime === null) {
@@ -1262,7 +1263,7 @@ rac.Animator = class RacAnimator {
       } else {
         this.startValue = null;
       }
-      return;
+      return true;
     }
 
     let currentStep = this.steps[this.stepIndex];
@@ -1271,9 +1272,16 @@ rac.Animator = class RacAnimator {
     // Apply animations for current time
     this.applyStep(currentStep, timeDelta, this.startValue);
 
+    console.log(`timeDelta:${timeDelta} currentStep.duration:${currentStep.duration}`);
+
     if (timeDelta < currentStep.duration) {
       // Still in current step
-      return;
+      return true;
+    }
+
+    if (this.stepIndex >= this.steps.length -1 && !this.isLoop) {
+      // End of animations
+      return false;
     }
 
     // TODO: next step movement and apply should be in loop
@@ -1281,7 +1289,6 @@ rac.Animator = class RacAnimator {
 
     // Move to next step
     this.stepIndex = (this.stepIndex + 1) % this.steps.length;
-    console.log(`timeDelta:${timeDelta} currentStep.duration:${currentStep.duration}`);
     console.log(`currentTime:${currentTime}`);
     let overTime = timeDelta - currentStep.duration;
     this.startTime = currentTime - overTime;
@@ -1291,13 +1298,14 @@ rac.Animator = class RacAnimator {
     let nextStep = this.steps[this.stepIndex];
     if (nextStep.control === null) {
       this.startValue = null;
-      return;
+      return true;
     }
     this.startValue = nextStep.control.value;
 
     // Applies animation of next step
     let nextTimeDelta = currentTime - this.startTime;
     this.applyStep(nextStep, nextTimeDelta, this.startValue);
+    return true;
   }
 
   applyStep(step, timeDelta, startValue) {
@@ -1430,7 +1438,7 @@ concentricControl.value = 17;
 rac.controls.push(concentricControl);
 
 
-// TODO: animation?
+// TODO: Animation!
 let animator = new rac.Animator();
 animator.addControlStep(2000, radiusControl, 200);
 animator.addControlStep(2000, radiusControl, 120);
@@ -1449,7 +1457,11 @@ animator.addControlStep(2000, radiusControl, 120);
 function draw() {
   clear();
 
-  animator.animate(millis());
+  let hasMoreAnimations = animator.animate(millis());
+  if (!hasMoreAnimations) {
+    console.log(`Animations done!`);
+    noLoop();
+  }
 
   // Color schemes
   let colors = {
