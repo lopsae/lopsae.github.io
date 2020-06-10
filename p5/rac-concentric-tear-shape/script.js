@@ -1269,19 +1269,13 @@ rac.Animator = class RacAnimator {
 
     if (timeDelta < currentStep.duration) {
       // Apply animations for current time
-      let durationRatio = timeDelta / currentStep.duration;
-      let valueDelta = currentStep.value - this.startValue;
-      let newValue = this.startValue + (durationRatio * valueDelta);
-      console.log(`▶️ apply anim: step:${this.stepIndex} newValue::${newValue}`);
-      // console.log(`timeDelta:${timeDelta} durationRatio:${durationRatio} valueDelta::${valueDelta}`);
-      // console.log(`startValue:${this.startValue} currentStep.value:${currentStep.value}`);
-      currentStep.control.value = newValue;
+      this.applyStep(currentStep, timeDelta, this.startValue);
       return;
     }
 
     // Apply final state of current animation
     if (currentStep.control !== null) {
-      currentStep.control.value = currentStep.value;
+      currentStep.control.value = currentStep.endValue;
     }
 
     // Move to next step
@@ -1297,13 +1291,26 @@ rac.Animator = class RacAnimator {
     if (nextStep.control !== null) {
       this.startValue = nextStep.control.value;
       let durationRatio = nextTimeDelta / nextStep.duration;
-      let valueDelta = nextStep.value - this.startValue;
+      let valueDelta = nextStep.endValue - this.startValue;
       let newValue = this.startValue + (durationRatio * valueDelta);
       console.log(`▶️ apply next-anim: step:${this.stepIndex} newValue::${newValue}`);
       nextStep.control.value = newValue;
     } else {
       this.startValue = null;
     }
+  }
+
+  applyStep(step, timeDelta, startValue) {
+    if (step.control === null) {
+      return;
+    }
+    let durationRatio = timeDelta / step.duration;
+    let valueDelta = step.endValue - this.startValue;
+    let newValue = startValue + (durationRatio * valueDelta);
+    console.log(`▶️ apply anim: step:${this.stepIndex} newValue::${newValue}`);
+    // console.log(`timeDelta:${timeDelta} durationRatio:${durationRatio} valueDelta::${valueDelta}`);
+    // console.log(`startValue:${this.startValue} currentStep.endValue:${currentStep.endValue}`);
+    step.control.value = newValue;
   }
 
   addControlStep(duration, control, value) {
@@ -1321,10 +1328,10 @@ rac.Animator = class RacAnimator {
 
 rac.AnimatorStep = class RacAnimatorStep {
 
-  constructor(duration, control = null, value = null) {
+  constructor(duration, control = null, endValue = null) {
     this.duration = duration;
     this.control = control;
-    this.value = value;
+    this.endValue = endValue;
   }
 
 }
