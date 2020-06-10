@@ -1285,16 +1285,14 @@ rac.Animator = class RacAnimator {
     this.startTime = currentTime - (timeDelta - currentStep.duration);
     console.log(`startTime:${this.startTime}`);
 
+    // TODO: next step movement and apply should be in loop
+    // TODO: to account for zero duration steps
     // Applies animation of next step
     let nextStep = this.steps[this.stepIndex];
     let nextTimeDelta = currentTime - this.startTime;
     if (nextStep.control !== null) {
       this.startValue = nextStep.control.value;
-      let durationRatio = nextTimeDelta / nextStep.duration;
-      let valueDelta = nextStep.endValue - this.startValue;
-      let newValue = this.startValue + (durationRatio * valueDelta);
-      console.log(`▶️ apply next-anim: step:${this.stepIndex} newValue::${newValue}`);
-      nextStep.control.value = newValue;
+      this.applyStep(nextStep, nextTimeDelta, this.startValue);
     } else {
       this.startValue = null;
     }
