@@ -1306,12 +1306,12 @@ rac.Animator = class RacAnimator {
     }
   }
 
-  controlStep(duration, control, value) {
+  addControlStep(duration, control, value) {
     let newStep = new rac.AnimatorStep(duration, control, value);
     this.steps.push(newStep);
   }
 
-  pauseStep(duration) {
+  addPauseStep(duration) {
     let newStep = new rac.AnimatorStep(duration);
     this.steps.push(newStep);
   }
@@ -1418,8 +1418,8 @@ rac.controls.push(concentricControl);
 
 // TODO: animation?
 let animator = new rac.Animator();
-animator.controlStep(2000, radiusControl, 200);
-animator.controlStep(2000, radiusControl, 120);
+animator.addControlStep(2000, radiusControl, 200);
+animator.addControlStep(2000, radiusControl, 120);
 // [1, 150, radiusControl] 1 second to 150
 // [1] 1 second pause
 // [2, 30, radiusControl]
