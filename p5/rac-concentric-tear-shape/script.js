@@ -1279,42 +1279,46 @@ rac.Animator = class RacAnimator {
       return true;
     }
 
-    if (this.stepIndex >= this.steps.length -1 && !this.isLoop) {
-      // End of animations
-      return false;
+    while (timeDelta >= currentStep.duration) {
+      if (this.stepIndex >= this.steps.length -1 && !this.isLoop) {
+        // End of animations
+        return false;
+      }
+
+      // Move to next step, loop around
+      this.stepIndex = (this.stepIndex + 1) % this.steps.length;
+      console.log(`currentTime:${currentTime}`);
+      let overTime = timeDelta - currentStep.duration;
+      this.startTime = currentTime - overTime;
+      console.log(`new-startTime:${this.startTime}`);
+
+      // Update start value
+      currentStep = this.steps[this.stepIndex];
+      timeDelta = currentTime - this.startTime;
+      if (currentStep.control === null) {
+        // TODO: currentStep.currentValue() // null if no control
+        this.startValue = null;
+        continue;
+      }
+      this.startValue = currentStep.control.value;
+
+      // Applies animation of next step
+      console.log(`🔁 apply nextstep anim!`);
+      this.applyStep(currentStep, timeDelta, this.startValue);
     }
 
-    // TODO: next step movement and apply should be in loop
-    // TODO: to account for zero duration steps
-
-    // Move to next step
-    this.stepIndex = (this.stepIndex + 1) % this.steps.length;
-    console.log(`currentTime:${currentTime}`);
-    let overTime = timeDelta - currentStep.duration;
-    this.startTime = currentTime - overTime;
-    console.log(`startTime:${this.startTime}`);
-
-    // Update start value
-    let nextStep = this.steps[this.stepIndex];
-    if (nextStep.control === null) {
-      this.startValue = null;
-      return true;
-    }
-    this.startValue = nextStep.control.value;
-
-    // Applies animation of next step
-    let nextTimeDelta = currentTime - this.startTime;
-    this.applyStep(nextStep, nextTimeDelta, this.startValue);
     return true;
   }
 
   applyStep(step, timeDelta, startValue) {
     if (step.control === null) {
+      console.log(`⏸ apply pause step: step:${this.stepIndex}`);
       return;
     }
 
     // Over duration only applies end value
     if (timeDelta >= step.duration) {
+      console.log(`⏹ apply end-anim: step:${this.stepIndex} endValue::${step.endValue}`);
       step.control.value = step.endValue;
       return;
     }
@@ -1441,7 +1445,10 @@ rac.controls.push(concentricControl);
 // TODO: Animation!
 let animator = new rac.Animator();
 animator.addControlStep(2000, radiusControl, 200);
+animator.addControlStep(0, slopeControl, 60);
+animator.addPauseStep(500);
 animator.addControlStep(2000, radiusControl, 120);
+animator.addControlStep(0, slopeControl, 240);
 // [1, 150, radiusControl] 1 second to 150
 // [1] 1 second pause
 // [2, 30, radiusControl]
