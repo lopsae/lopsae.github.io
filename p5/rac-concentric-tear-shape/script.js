@@ -1253,7 +1253,7 @@ rac.Animator = class RacAnimator {
   // returns `false`.
   animate(currentTime) {
     // TODO: delete logs
-    if (this.startTime === null) {
+    if (this.stepIndex === null) {
       // first animate is no-op, time is recorded
       this.stepIndex = 0;
       this.startTime = currentTime;
@@ -1262,43 +1262,47 @@ rac.Animator = class RacAnimator {
       return true;
     }
 
+    if (this.stepIndex >= this.steps.length) {
+      // All steps have been animated
+      return false;
+    }
+
     let currentStep = this.steps[this.stepIndex];
     let timeDelta = currentTime - this.startTime;
 
-    // Apply animations for current time
-    this.applyStep(currentStep, timeDelta, this.startValue);
+    while (true) {
+      // Apply animations for current time
+      this.applyStep(currentStep, timeDelta, this.startValue);
 
-    console.log(`timeDelta:${timeDelta} currentStep.duration:${currentStep.duration}`);
-
-    if (timeDelta < currentStep.duration) {
-      // Still in current step
-      return true;
-    }
-
-    while (timeDelta >= currentStep.duration) {
-      if (this.stepIndex >= this.steps.length -1 && !this.isLoop) {
-        // End of animations
-        return false;
+      console.log(`timeDelta:${timeDelta} currentStep.duration:${currentStep.duration}`);
+      if (timeDelta < currentStep.duration) {
+        // Still in current step
+        return true;
       }
 
       // Move to next step, loop around
-      this.stepIndex = (this.stepIndex + 1) % this.steps.length;
+      this.stepIndex += 1;
+      if (this.isLoop) {
+        this.stepIndex %= this.steps.length;
+      }
+      if (this.stepIndex >= this.steps.length) {
+        // All steps have been animated
+        console.log(`⏹ Advanced to last step`);
+        return false;
+      }
+      console.log(`🔁 Advaced step! step:${this.stepIndex}`);
+
+      // Update start time for next step
       console.log(`currentTime:${currentTime}`);
       let overTime = timeDelta - currentStep.duration;
       this.startTime = currentTime - overTime;
       console.log(`new-startTime:${this.startTime}`);
 
-      // Update start value
+      // Update start value for next step
       currentStep = this.steps[this.stepIndex];
       timeDelta = currentTime - this.startTime;
       this.startValue = currentStep.currentValue();
-
-      // Applies animation of next step
-      console.log(`🔁 apply nextstep anim!`);
-      this.applyStep(currentStep, timeDelta, this.startValue);
     }
-
-    return true;
   }
 
   applyStep(step, timeDelta, startValue) {
@@ -1364,9 +1368,9 @@ rac.AnimatorStep = class RacAnimatorStep {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  // TODO: looping for animation
   // noLoop();
-  // TODO: low for testing
-  frameRate(5);
+  frameRate(30);
   noStroke();
   noFill();
 }
@@ -1412,6 +1416,7 @@ function mouseDragged(event) {
       newValue = anchorCopy.length()
     }
 
+    console.log(`🕹 Control updated to: ${newValue}`);
     rac.controlSelection.control.value = newValue;
   }
   redraw();
