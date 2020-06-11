@@ -1258,11 +1258,7 @@ rac.Animator = class RacAnimator {
       this.stepIndex = 0;
       this.startTime = currentTime;
       let currentStep = this.steps[this.stepIndex];
-      if (currentStep.control !== null) {
-        this.startValue = currentStep.control.value;
-      } else {
-        this.startValue = null;
-      }
+      this.startValue = currentStep.currentValue();
       return true;
     }
 
@@ -1295,12 +1291,7 @@ rac.Animator = class RacAnimator {
       // Update start value
       currentStep = this.steps[this.stepIndex];
       timeDelta = currentTime - this.startTime;
-      if (currentStep.control === null) {
-        // TODO: currentStep.currentValue() // null if no control
-        this.startValue = null;
-        continue;
-      }
-      this.startValue = currentStep.control.value;
+      this.startValue = currentStep.currentValue();
 
       // Applies animation of next step
       console.log(`🔁 apply nextstep anim!`);
@@ -1351,6 +1342,14 @@ rac.AnimatorStep = class RacAnimatorStep {
     this.duration = duration;
     this.control = control;
     this.endValue = endValue;
+  }
+
+
+  currentValue() {
+    if (this.control === null) {
+      return null;
+    }
+    return this.control.value;
   }
 
 }
