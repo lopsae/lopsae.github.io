@@ -1448,22 +1448,22 @@ rac.controls.push(concentricControl);
 
 // TODO: Animation!
 let animator = new rac.Animator();
-animator.addControlStep(2000, radiusControl, 200);
-animator.addControlStep(0, slopeControl, 60);
-animator.addPauseStep(500);
-animator.addControlStep(2000, radiusControl, 120);
-animator.addControlStep(0, slopeControl, 240);
-// [1, 150, radiusControl] 1 second to 150
-// [1] 1 second pause
-// [2, 30, radiusControl]
-// [1, 70, radiusControl]
-// [0.5]
-// [1, 20, slopeControl]
-// [0.3]
-// [1.5, 300, slopeControl]
-// [0.3]
-// ...
-
+animator.addControlStep(1500, radiusControl, 60);
+animator.addPauseStep(200);
+animator.addControlStep(1500, radiusControl, 140);
+animator.addPauseStep(200);
+animator.addControlStep(1500, slopeControl, 60);
+animator.addPauseStep(200);
+animator.addControlStep(1500, concentricControl, 87);
+animator.addPauseStep(200);
+animator.addControlStep(1500, concentricControl, 7);
+animator.addPauseStep(200);
+animator.addControlStep(1500, radiusControl, 120); // back to original
+animator.addPauseStep(200);
+animator.addControlStep(1500, slopeControl, 240); // back to original
+animator.addPauseStep(200);
+animator.addControlStep(1500, concentricControl, 17); // back to original
+animator.isLoop = true;
 
 function draw() {
   clear();
