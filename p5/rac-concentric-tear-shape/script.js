@@ -1305,6 +1305,9 @@ rac.Animator = class RacAnimator {
     }
   }
 
+  // step - current step being animated
+  // timeDelta - time elapsed since start of step
+  // startValue - initial value for the control in the step
   applyStep(step, timeDelta, startValue) {
     if (step.control === null) {
       console.log(`⏸ apply pause step: step:${this.stepIndex}`);
@@ -1319,10 +1322,15 @@ rac.Animator = class RacAnimator {
     }
 
     let durationRatio = timeDelta / step.duration;
-    let valueDelta = step.endValue - this.startValue;
-    let newValue = startValue + (durationRatio * valueDelta);
+    let valueTotalDelta = step.endValue - this.startValue;
+    // https://math.stackexchange.com/questions/121720/ease-in-out-function/121755#121755
+    // f(x) = (t^a)/(t^a+(1-t)^a)
+    let a = 2;
+    let t = durationRatio;
+    let easeRatio = Math.pow(t,a) / (Math.pow(t,a) + Math.pow(1-t,a));
+    let newValue = startValue + (easeRatio * valueTotalDelta);
     console.log(`▶️ apply anim: step:${this.stepIndex} newValue::${newValue}`);
-    // console.log(`timeDelta:${timeDelta} durationRatio:${durationRatio} valueDelta::${valueDelta}`);
+    // console.log(`timeDelta:${timeDelta} durationRatio:${durationRatio} valueTotalDelta::${valueTotalDelta}`);
     // console.log(`startValue:${this.startValue} currentStep.endValue:${currentStep.endValue}`);
     step.control.value = newValue;
   }
@@ -1450,17 +1458,17 @@ rac.controls.push(concentricControl);
 let animator = new rac.Animator();
 animator.addControlStep(1500, radiusControl, 60);
 animator.addPauseStep(200);
-animator.addControlStep(1500, radiusControl, 140);
+animator.addControlStep(1500, slopeControl, 80);
 animator.addPauseStep(200);
-animator.addControlStep(1500, slopeControl, 60);
+animator.addControlStep(1500, radiusControl, 180);
 animator.addPauseStep(200);
-animator.addControlStep(1500, concentricControl, 87);
+animator.addControlStep(1500, concentricControl, 67);
 animator.addPauseStep(200);
 animator.addControlStep(1500, concentricControl, 7);
 animator.addPauseStep(200);
-animator.addControlStep(1500, radiusControl, 120); // back to original
-animator.addPauseStep(200);
 animator.addControlStep(1500, slopeControl, 240); // back to original
+animator.addPauseStep(200);
+animator.addControlStep(1500, radiusControl, 120);
 animator.addPauseStep(200);
 animator.addControlStep(1500, concentricControl, 17); // back to original
 animator.isLoop = true;
