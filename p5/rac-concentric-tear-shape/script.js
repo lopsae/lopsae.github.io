@@ -1274,7 +1274,6 @@ rac.Animator = class RacAnimator {
       // Apply animations for current time
       this.applyStep(currentStep, timeDelta, this.startValue);
 
-      console.log(`timeDelta:${timeDelta} currentStep.duration:${currentStep.duration}`);
       if (timeDelta < currentStep.duration) {
         // Still in current step
         return true;
@@ -1287,16 +1286,12 @@ rac.Animator = class RacAnimator {
       }
       if (this.stepIndex >= this.steps.length) {
         // All steps have been animated
-        console.log(`⏹ Advanced to last step`);
         return false;
       }
-      console.log(`🔁 Advaced step! step:${this.stepIndex}`);
 
       // Update start time for next step
-      console.log(`currentTime:${currentTime}`);
       let overTime = timeDelta - currentStep.duration;
       this.startTime = currentTime - overTime;
-      console.log(`new-startTime:${this.startTime}`);
 
       // Update start value for next step
       currentStep = this.steps[this.stepIndex];
@@ -1310,13 +1305,11 @@ rac.Animator = class RacAnimator {
   // startValue - initial value for the control in the step
   applyStep(step, timeDelta, startValue) {
     if (step.control === null) {
-      console.log(`⏸ apply pause step: step:${this.stepIndex}`);
       return;
     }
 
     // Over duration only applies end value
     if (timeDelta >= step.duration) {
-      console.log(`⏹ apply end-anim: step:${this.stepIndex} endValue::${step.endValue}`);
       step.control.value = step.endValue;
       return;
     }
@@ -1329,9 +1322,6 @@ rac.Animator = class RacAnimator {
     let t = durationRatio;
     let easeRatio = Math.pow(t,a) / (Math.pow(t,a) + Math.pow(1-t,a));
     let newValue = startValue + (easeRatio * valueTotalDelta);
-    console.log(`▶️ apply anim: step:${this.stepIndex} newValue::${newValue}`);
-    // console.log(`timeDelta:${timeDelta} durationRatio:${durationRatio} valueTotalDelta::${valueTotalDelta}`);
-    // console.log(`startValue:${this.startValue} currentStep.endValue:${currentStep.endValue}`);
     step.control.value = newValue;
   }
 
@@ -1424,7 +1414,6 @@ function mouseDragged(event) {
       newValue = anchorCopy.length()
     }
 
-    console.log(`🕹 Control updated to: ${newValue}`);
     rac.controlSelection.control.value = newValue;
   }
   redraw();
