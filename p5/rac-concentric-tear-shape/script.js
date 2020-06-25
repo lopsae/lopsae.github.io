@@ -1,5 +1,6 @@
 "use strict";
 
+let animScale = 2;
 
 // Ruler and Compass
 let rac;
@@ -1107,7 +1108,10 @@ rac.drawControls = function() {
       pointerRadius = 10;
     }
   }
-  pointerCenter.arc(pointerRadius).draw(rac.pointerStyle);
+
+  if (mouseIsPressed) {
+    pointerCenter.arc(pointerRadius).draw(rac.pointerStyle);
+  }
 
   rac.controls.forEach(item => item.draw());
   // Pointer to anchor elements
@@ -1172,7 +1176,7 @@ rac.Control = function RacControl() {
   this.isSelected = false;
 }
 
-rac.Control.radius = 22;
+rac.Control.radius = 22/animScale;
 
 
 rac.Control.prototype.center = function() {
@@ -1424,47 +1428,53 @@ function mouseReleased(event) {
   noLoop();
 }
 
+let radiusStart = 120/animScale;
+let slopeStart = 240/animScale;
+let concentricStart = 17/animScale;
 
 let radiusControl = new rac.Control();
-radiusControl.value = 120;
+radiusControl.value = radiusStart;
+radiusControl.segmentLength = 300/animScale;
 rac.controls.push(radiusControl);
 
 let slopeControl = new rac.Control();
-slopeControl.value = 240;
+slopeControl.value = slopeStart;
+slopeControl.segmentLength = 300/animScale;
 rac.controls.push(slopeControl);
 
 let concentricControl = new rac.Control();
-concentricControl.value = 17;
+concentricControl.value = concentricStart;
+concentricControl.segmentLength = 300/animScale;
 rac.controls.push(concentricControl);
 
 
-// TODO: Animation!
 let animator = new rac.Animator();
-animator.addControlStep(1500, radiusControl, 60);
+animator.addControlStep(1500, radiusControl, 60/animScale);
 animator.addPauseStep(200);
-animator.addControlStep(1500, slopeControl, 80);
+animator.addControlStep(1500, slopeControl, 80/animScale);
 animator.addPauseStep(200);
-animator.addControlStep(1500, radiusControl, 180);
+animator.addControlStep(1500, radiusControl, 180/animScale);
 animator.addPauseStep(200);
-animator.addControlStep(1500, concentricControl, 67);
+animator.addControlStep(1500, concentricControl, 67/animScale);
 animator.addPauseStep(200);
-animator.addControlStep(1500, concentricControl, 7);
+animator.addControlStep(1500, concentricControl, 7/animScale);
 animator.addPauseStep(200);
-animator.addControlStep(1500, slopeControl, 240); // back to original
+animator.addControlStep(1500, slopeControl, slopeStart);
 animator.addPauseStep(200);
-animator.addControlStep(1500, radiusControl, 120);
+animator.addControlStep(1500, radiusControl, radiusStart);
 animator.addPauseStep(200);
-animator.addControlStep(1500, concentricControl, 17); // back to original
+animator.addControlStep(1500, concentricControl, concentricStart); // back to original
 animator.isLoop = false;
 
-
+let animFramerate = 20;
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
-  createCanvas(800, 800);
+  // createCanvas(windowWidth, windowHeight);
+  let canvasSide = 800/animScale;
+  createCanvas(canvasSide, canvasSide);
   // TODO: looping for animation
   // noLoop();
-  frameRate(20);
+  frameRate(animFramerate);
   noStroke();
   noFill();
   console.log(`Total animation duration: ${animator.totalDuration()}`);
@@ -1479,7 +1489,7 @@ function setup() {
 function draw() {
   clear();
 
-  let millisByFramerate = frameCount*1000/20;
+  let millisByFramerate = frameCount*1000/animFramerate;
   console.log(`millisByFramerate:${millisByFramerate}`);
   let hasMoreAnimations = animator.animate(millisByFramerate);
   if (!hasMoreAnimations) {
@@ -1500,7 +1510,7 @@ function draw() {
     },
     dark: {
       background:  new rac.Color( .1,  .1,  .1), // blackish
-      stroke:      new rac.Color( .9,  .2,  .2,  .5), // red,
+      stroke:      new rac.Color( .5,  .1,  .1,  .5), // red,
       marker:      new rac.Color( .7,  .3,  .3,  .3), // rose pink
       tear:        new rac.Color( .8,  .8,  .8,  .9), // whiteish
       controlFill: new rac.Color( .8,  .8,  .8, 1.0), // whiteish
@@ -1551,7 +1561,7 @@ function draw() {
     .segmentToAngle(rac.Angle.s, radius + rac.Control.radius * 3)
     .draw()
     // Control anchor
-    .end.segmentToAngle(rac.Angle.e, 300);
+    .end.segmentToAngle(rac.Angle.e, radiusControl.segmentLength);
 
   radiusControl.center()
     .segmentToPoint(center.pointToAngle(rac.Angle.e, radius))
@@ -1567,7 +1577,7 @@ function draw() {
     .draw()
     .end.segmentToAngle(rac.Angle.n, concentricMin)
     .draw()
-    .end.segmentToAngle(rac.Angle.n, 300);
+    .end.segmentToAngle(rac.Angle.n, concentricControl.segmentLength);
 
   center.pointToAngle(rac.Angle.s, radius - concentricWidth)
     .segmentToPoint(concentricControl.center())
@@ -1588,7 +1598,7 @@ function draw() {
     .segmentToAngle(rac.Angle.s, radius + rac.Control.radius * 6)
     .draw()
     // Control anchor
-    .end.segmentToAngle(rac.Angle.w, 300);
+    .end.segmentToAngle(rac.Angle.w, slopeControl.segmentLength);
 
   slopeControl.center()
     .segmentToPoint(center.pointToAngle(rac.Angle.w, slopeRadius))
