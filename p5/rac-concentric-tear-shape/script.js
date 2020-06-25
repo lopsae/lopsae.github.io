@@ -1248,6 +1248,12 @@ rac.Animator = class RacAnimator {
     this.isLoop = false;
   }
 
+  totalDuration() {
+    let duration = 0;
+    this.steps.forEach(item => duration += item.duration);
+    return duration;
+  }
+
   // Animate with the current time. Time is expected in milliseconds.
   // Returns `true` if there is still animations to perform, otherwise
   // returns `false`.
@@ -1363,17 +1369,6 @@ rac.AnimatorStep = class RacAnimatorStep {
 //=========================================================================
 
 
-
-function setup() {
-  createCanvas(windowWidth, windowHeight);
-  // TODO: looping for animation
-  // noLoop();
-  frameRate(30);
-  noStroke();
-  noFill();
-}
-
-
 function mousePressed(event) {
   let pointerCenter = new rac.Point.mouse();
 
@@ -1460,12 +1455,33 @@ animator.addPauseStep(200);
 animator.addControlStep(1500, radiusControl, 120);
 animator.addPauseStep(200);
 animator.addControlStep(1500, concentricControl, 17); // back to original
-animator.isLoop = true;
+animator.isLoop = false;
+
+
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  createCanvas(800, 800);
+  // TODO: looping for animation
+  // noLoop();
+  frameRate(20);
+  noStroke();
+  noFill();
+  console.log(`Total animation duration: ${animator.totalDuration()}`);
+  createLoop({
+    duration: animator.totalDuration()/1000,
+    gif:{
+      download: true
+    }});
+}
+
 
 function draw() {
   clear();
 
-  let hasMoreAnimations = animator.animate(millis());
+  let millisByFramerate = frameCount*1000/20;
+  console.log(`millisByFramerate:${millisByFramerate}`);
+  let hasMoreAnimations = animator.animate(millisByFramerate);
   if (!hasMoreAnimations) {
     console.log(`Animations done!`);
     noLoop();
@@ -1509,7 +1525,7 @@ function draw() {
 
 
   // Center of the tear circle
-  let center = new rac.Point(windowWidth/2, windowHeight/2);
+  let center = new rac.Point(width/2, height/2);
   // Radius of tear main arc
   let radius = radiusControl.value;
   // Width of the concentric circles
@@ -1725,5 +1741,5 @@ function draw() {
 
   rac.drawControls();
 
-  console.log(`👑 ~finis coronat opus ${Date.now()}`);
+  console.log(`👑 ~finis coronat opus ${frameCount},${millis()}`);
 }
