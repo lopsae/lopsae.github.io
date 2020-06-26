@@ -103,7 +103,6 @@ function draw() {
   // Base measure for drawing
   let measure = measureControl.value;
 
-  start.arc(measure).draw();
 
   // Measure control
   measureControl.anchorSegment = start
@@ -117,6 +116,23 @@ function draw() {
     .draw();
 
 
+  let baseline = start.segmentToAngle(rac.Angle.e, measure)
+    .draw();
+
+  // First stroke
+  let firstStrokeEndBottom = baseline.end
+    .segmentToAngle(rac.Angle.ne, measure).draw()
+    .end;
+
+  let secondStrokeStartTop = firstStrokeEndBottom
+    .pointToAngle(rac.Angle.n, measure/2);
+
+  // Rest of first stroke
+  secondStrokeStartTop
+    .segmentToAngle(rac.Angle.n, measure/2).draw()
+    .end.segmentToPoint(start).draw();
+
+  // Controls draw on top
   rac.drawControls();
 
   console.log(`👑 ~finis coronat opus ${Date.now()}`);
