@@ -12,7 +12,7 @@ function setup() {
 function mousePressed(event) {
   let pointerCenter = new rac.Point.mouse();
 
-  let selected = rac.controls.find(function(item) {
+  let selected = rac.controls.find(item => {
     let controlCenter = item.center();
     if (controlCenter === null) { return false; }
     if (controlCenter.distanceToPoint(pointerCenter) <= rac.Control.radius) {
@@ -28,6 +28,7 @@ function mousePressed(event) {
 
   redraw();
 }
+
 
 function mouseDragged(event) {
   if (rac.controlSelection !== null) {
@@ -54,6 +55,7 @@ function mouseDragged(event) {
   redraw();
 }
 
+
 function mouseReleased(event) {
   if (rac.controlSelection !== null) {
     rac.controlSelection.control.isSelected = false;
@@ -79,29 +81,15 @@ rac.controls.push(concentricControl);
 function draw() {
   clear();
 
-  // Color schemes
-  let colors = {
-    light: {
-      background:  new rac.Color(0.9, 0.9, 0.9), // whiteish
-      stroke:      new rac.Color(0.7, 0.3, 0.3, 0.5), // rose pink,
-      marker:      new rac.Color(0.9, 0.5, 0.5, 0.3), // rose pink
-      tear:        new rac.Color( .2,  .2,  .2,  .3), // blackish
-      controlFill: new rac.Color( .2,  .2,  .2,  .8), // blackish
-      pointer:     new rac.Color( .1,  .1,  .1,  .6), // blackish
-      highlight:   new rac.Color(1.0, 0.0, 1.0, 0.8) // magenta
-    },
-    dark: {
-      background:  new rac.Color( .1,  .1,  .1), // blackish
-      stroke:      new rac.Color( .9,  .2,  .2,  .5), // red,
-      marker:      new rac.Color( .7,  .3,  .3,  .3), // rose pink
-      tear:        new rac.Color( .8,  .8,  .8,  .9), // whiteish
-      controlFill: new rac.Color( .8,  .8,  .8, 1.0), // whiteish
-      pointer:     new rac.Color( .9,  .9,  .9,  .6), // whiteish
-      highlight:   new rac.Color(  0, 1.0, 1.0,  .8)// cyan
-    }
+  let colorScheme = {
+    background:  new rac.Color( .1,  .1,  .1), // blackish
+    stroke:      new rac.Color( .9,  .2,  .2,  .5), // red,
+    marker:      new rac.Color( .7,  .3,  .3,  .3), // rose pink
+    tear:        new rac.Color( .8,  .8,  .8,  .9), // whiteish
+    controlFill: new rac.Color( .8,  .8,  .8, 1.0), // whiteish
+    pointer:     new rac.Color( .9,  .9,  .9,  .6), // whiteish
+    highlight:   new rac.Color(  0, 1.0, 1.0,  .8)// cyan
   };
-
-  let colorScheme = colors.dark;
   colorScheme.background.applyBackground();
 
   let mainStroke = colorScheme.stroke.stroke(2);
