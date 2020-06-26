@@ -132,6 +132,16 @@ function draw() {
     .segmentToAngle(rac.Angle.n, measure/2).draw()
     .end.segmentToPoint(start).draw();
 
+  // Second stroke
+  let secondStrokeStartBottom = firstStrokeEndBottom
+    .segmentToAngle(rac.Angle.s, measure)
+    .intersectingPointWithSegment(baseline);
+
+  firstStrokeEndBottom.segmentToPoint(secondStrokeStartBottom).draw()
+    .end.segmentToAngle(rac.Angle.ne, measure*2).draw()
+    .end.segmentToAngle(rac.Angle.n, measure*1.5).draw()
+    .end.segmentToPoint(secondStrokeStartTop).draw();
+
   // Controls draw on top
   rac.drawControls();
 
