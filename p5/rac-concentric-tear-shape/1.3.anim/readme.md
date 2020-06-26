@@ -1,5 +1,7 @@
 # Tear shape
 
-A Pen created on CodePen.io. Original URL: [https://codepen.io/lopsae/pen/oNjxpJz](https://codepen.io/lopsae/pen/oNjxpJz).
+Ruler and compass construction of a tear shape with concentric inward pattern.
 
-Ruler and compass construction of a tear shape  with concentric inward pattern.
+Development experiment for RAC, a library to express ruler-and-compass constructions.
+
+Modified to animate and produce a gif file as output.
