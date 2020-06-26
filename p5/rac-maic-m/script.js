@@ -130,6 +130,7 @@ function draw() {
   // Rest of first stroke
   secondStrokeStartTop
     .segmentToAngle(rac.Angle.n, measure/2).draw()
+    // TODO: segment.segmentToPoint to draw from end to point
     .end.segmentToPoint(start).draw();
 
   // Second stroke
@@ -137,10 +138,24 @@ function draw() {
     .segmentToAngle(rac.Angle.s, measure)
     .intersectingPointWithSegment(baseline);
 
-  firstStrokeEndBottom.segmentToPoint(secondStrokeStartBottom).draw()
+  let secondStrokeEndBottom = firstStrokeEndBottom
+    .segmentToPoint(secondStrokeStartBottom).draw()
     .end.segmentToAngle(rac.Angle.ne, measure*2).draw()
-    .end.segmentToAngle(rac.Angle.n, measure*1.5).draw()
+    .end;
+
+  secondStrokeEndBottom
+    .segmentToAngle(rac.Angle.n, measure*1.5).draw()
     .end.segmentToPoint(secondStrokeStartTop).draw();
+
+  // Down stroke
+  let downStrokeEnd = secondStrokeEndBottom
+    .segmentToAngle(rac.Angle.s, measure)
+    .intersectingPointWithSegment(baseline);
+
+  // TODO: construction of segment to intersection starting with a point
+  // segmentToAngleIntersectingSegment?
+
+  secondStrokeEndBottom.segmentToPoint(downStrokeEnd).draw();
 
   // Controls draw on top
   rac.drawControls();
