@@ -127,8 +127,7 @@ function draw() {
 
   // Second stroke start bottom
   let secondStrokeStartBottom = firstStrokeEndBottom
-    .segmentToAngle(rac.Angle.s, measure)
-    .segmentToIntersectionWithSegment(baseline).draw()
+    .segmentToAngleToIntersectionWithSegment(rac.Angle.s, baseline).draw()
     .end;
 
   // Middle ascender guide
@@ -137,41 +136,28 @@ function draw() {
     .end.segmentToAngle(rac.Angle.n, measure*2.5).draw();
 
   // First stroke top
-  baseline.start.segmentToAngle(rac.Angle.ne, measure)
-    .segmentToIntersectionWithSegment(middleAscenderGuide).draw();
+  baseline.start
+    .segmentToAngleToIntersectionWithSegment(rac.Angle.ne, middleAscenderGuide)
+    .draw();
 
-
-  return;
-
-
-  let secondStrokeStartTop = firstStrokeEndBottom
-    .pointToAngle(rac.Angle.n, measure/2).draw(highlight);
-
-  // Rest of first stroke
-  secondStrokeStartTop
-    .segmentToAngle(rac.Angle.n, measure/2).draw()
-    // TODO: segment.segmentToPoint to draw from end to point
-    .end.segmentToPoint(start).draw();
-
-  let secondStrokeEndBottom = firstStrokeEndBottom
-    .segmentToPoint(secondStrokeStartBottom).draw()
-    .end.segmentToAngle(rac.Angle.ne, measure*2).draw()
+  // Second stroke start top
+  let secondStrokeStartTop = baseline.pointAtMiddle()
+    .segmentToAngleToIntersectionWithSegment(rac.Angle.ne, middleAscenderGuide).draw()
     .end;
 
-  secondStrokeEndBottom
-    .segmentToAngle(rac.Angle.n, measure*1.5).draw()
-    .end.segmentToPoint(secondStrokeStartTop).draw();
+  let secondStrokeEndBottom = secondStrokeStartBottom
+    .segmentToAngle(rac.Angle.ne, measure*2).draw()
+    .end;
 
-  // Down stroke
-  let downStrokeEnd = secondStrokeEndBottom
-    .segmentToAngle(rac.Angle.s, measure)
-    .pointIntersectingWithSegment(baseline);
+  let endAscenderGuide = secondStrokeEndBottom
+    .segmentToAngleToIntersectionWithSegment(rac.Angle.s, baseline).draw()
+    .end.segmentToAngle(rac.Angle.e, thin).draw()
+    .end.segmentToAngle(rac.Angle.n, measure*3.5).draw();
+    // TODO: segment.segmentToPoint to draw from end to point
 
-  // TODO: construction of segment to intersection starting with a point
-  // segmentToAngleIntersectingSegment?
-  // segmentToIntersectionWithSegment
+  secondStrokeStartTop
+    .segmentToAngleToIntersectionWithSegment(rac.Angle.ne, endAscenderGuide).draw();
 
-  secondStrokeEndBottom.segmentToPoint(downStrokeEnd).draw();
 
   // Controls draw on top
   rac.drawControls();

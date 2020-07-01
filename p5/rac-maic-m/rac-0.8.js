@@ -1,7 +1,7 @@
 "use strict";
 
 
-// Ruler and Compass - 0.8
+// Ruler and Compass - 0.8.x
 let rac;
 rac = rac ?? {};
 
@@ -501,6 +501,11 @@ rac.Point.prototype.segmentToAngle = function(someAngle, distance) {
   return new rac.Segment(this, end);
 };
 
+rac.Point.prototype.segmentToAngleToIntersectionWithSegment = function(someAngle, segment) {
+  let unit = this.segmentToAngle(someAngle, 1);
+  return unit.segmentToIntersectionWithSegment(segment);
+}
+
 rac.Point.prototype.segmentPerpendicularToSegment = function(segment) {
   let projectedPoint = segment.projectedPoint(this);
   return this.segmentToPoint(projectedPoint);
@@ -581,7 +586,7 @@ rac.Segment.prototype.withLength = function(newLength) {
   return new rac.Segment(this.start, newEnd);
 };
 
-rac.Segment.prototype.middle = function() {
+rac.Segment.prototype.pointAtMiddle = function() {
   return new rac.Point(
     this.start.x + (this.end.x - this.start.x) /2,
     this.start.y + (this.end.y - this.start.y) /2);
