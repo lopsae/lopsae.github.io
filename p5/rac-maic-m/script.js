@@ -102,6 +102,7 @@ function draw() {
 
   // Base measure for drawing
   let measure = measureControl.value;
+  let thin = 10;
 
 
   // Measure control
@@ -119,24 +120,38 @@ function draw() {
   let baseline = start.segmentToAngle(rac.Angle.e, measure)
     .draw();
 
-  // First stroke
+  // First stroke bottom
   let firstStrokeEndBottom = baseline.end
     .segmentToAngle(rac.Angle.ne, measure).draw()
     .end;
 
+  // Second stroke start bottom
+  let secondStrokeStartBottom = firstStrokeEndBottom
+    .segmentToAngle(rac.Angle.s, measure)
+    .segmentToIntersectionWithSegment(baseline).draw()
+    .end;
+
+  // Middle ascender guide
+  let middleAscenderGuide = secondStrokeStartBottom
+    .segmentToAngle(rac.Angle.e, thin).draw()
+    .end.segmentToAngle(rac.Angle.n, measure*2.5).draw();
+
+  // First stroke top
+  baseline.start.segmentToAngle(rac.Angle.ne, measure)
+    .segmentToIntersectionWithSegment(middleAscenderGuide).draw();
+
+
+  return;
+
+
   let secondStrokeStartTop = firstStrokeEndBottom
-    .pointToAngle(rac.Angle.n, measure/2);
+    .pointToAngle(rac.Angle.n, measure/2).draw(highlight);
 
   // Rest of first stroke
   secondStrokeStartTop
     .segmentToAngle(rac.Angle.n, measure/2).draw()
     // TODO: segment.segmentToPoint to draw from end to point
     .end.segmentToPoint(start).draw();
-
-  // Second stroke
-  let secondStrokeStartBottom = firstStrokeEndBottom
-    .segmentToAngle(rac.Angle.s, measure)
-    .intersectingPointWithSegment(baseline);
 
   let secondStrokeEndBottom = firstStrokeEndBottom
     .segmentToPoint(secondStrokeStartBottom).draw()
@@ -150,10 +165,11 @@ function draw() {
   // Down stroke
   let downStrokeEnd = secondStrokeEndBottom
     .segmentToAngle(rac.Angle.s, measure)
-    .intersectingPointWithSegment(baseline);
+    .pointIntersectingWithSegment(baseline);
 
   // TODO: construction of segment to intersection starting with a point
   // segmentToAngleIntersectingSegment?
+  // segmentToIntersectionWithSegment
 
   secondStrokeEndBottom.segmentToPoint(downStrokeEnd).draw();
 

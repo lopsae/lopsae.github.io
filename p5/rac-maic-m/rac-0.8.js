@@ -1,7 +1,7 @@
 "use strict";
 
 
-// Ruler and Compass
+// Ruler and Compass - 0.8
 let rac;
 rac = rac ?? {};
 
@@ -537,7 +537,7 @@ rac.Segment = class Segment {
   projectedPoint(point) {
     let perpendicular = this.angle().perpendicular();
     return point.segmentToAngle(perpendicular, this.length())
-      .intersectingPointWithSegment(this);
+      .pointIntersectingWithSegment(this);
   }
 
   // Returns the length of a segment from `start` to `point` being
@@ -619,6 +619,17 @@ rac.Segment.prototype.yIntercept = function() {
   return this.start.y - slope * this.start.x;
 };
 
+
+rac.Segment.prototype.pointAtX = function(x) {
+  let slope = this.slope();
+  if (slope === null) {
+    return null;
+  }
+
+  let y = slope*x + this.yIntercept();
+  return new rac.Point(x, y);
+}
+
 rac.Segment.prototype.reverseAngle = function() {
   return rac.Angle.fromSegment(this).inverse();
 };
@@ -634,7 +645,7 @@ rac.Segment.prototype.translateToStart = function(newStart) {
 
 // Returns the intersecting point of `this` and `other`. Both segments are
 // considered lines without endpoints.
-rac.Segment.prototype.intersectingPointWithSegment = function(other) {
+rac.Segment.prototype.pointIntersectingWithSegment = function(other) {
   // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
   let a = this.slope();
   let b = other.slope();
@@ -646,8 +657,8 @@ rac.Segment.prototype.intersectingPointWithSegment = function(other) {
   let c = this.yIntercept();
   let d = other.yIntercept();
 
-  if (a === null) { return this.start.withY(d); }
-  if (b === null) { return other.start.withY(c); }
+  if (a === null) { return other.pointAtX(this.start.x); }
+  if (b === null) { return this.pointAtX(other.start.x); }
 
   let x = (d - c) / (a - b);
   let y = a * x + c;
@@ -669,6 +680,7 @@ rac.Segment.prototype.pointAtLength = function(length) {
   return this.start.pointToAngle(this.angle(), length);
 };
 
+// TODO: unclear name
 rac.Segment.prototype.segmentExtending = function(distance) {
   return this.end.segmentToAngle(this.angle(), distance);
 };
@@ -700,6 +712,14 @@ rac.Segment.prototype.relativeArc = function(someAngle, clockwise = true) {
     this.start, this.length(),
     arcStart, arcEnd,
     clockwise);
+};
+
+rac.Segment.prototype.segmentToIntersectionWithSegment = function(other) {
+  let end = this.pointIntersectingWithSegment(other);
+  if (end === null) {
+    return null;
+  }
+  return new rac.Segment(this.start, end);
 };
 
 rac.Segment.prototype.segmentToRelativeAngle = function(
@@ -1200,7 +1220,7 @@ rac.Control.prototype.draw = function() {
     let posArc = center.arc(radius * 1.5, angle.add(-1/16), angle.add(1/16));
   let posPoint = posArc.startPoint()
     .segmentToAngle(angle.add(1/8), radius)
-    .intersectingPointWithSegment(
+    .pointIntersectingWithSegment(
       posArc.endPoint().segmentToAngle(angle.add(-1/8), radius));
 
   posPoint.segmentToPoint(posArc.startPoint())
@@ -1217,7 +1237,7 @@ rac.Control.prototype.draw = function() {
     let negArc = center.arc(radius * 1.5, angle.inverse().add(-1/16), angle.inverse().add(1/16));
   let negPoint = negArc.startPoint()
     .segmentToAngle(angle.add(1/8), radius)
-    .intersectingPointWithSegment(
+    .pointIntersectingWithSegment(
       negArc.endPoint().segmentToAngle(angle.add(-1/8), radius));
 
   negPoint.segmentToPoint(negArc.startPoint())
