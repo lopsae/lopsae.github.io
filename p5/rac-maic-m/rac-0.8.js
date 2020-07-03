@@ -77,6 +77,12 @@ rac.protoFunctions.peek = function() {
 rac.currentShape = null;
 rac.currentComposite = null;
 
+rac.popShape = function() {
+  let shape = rac.currentShape;
+  rac.currentShape = null;
+  return shape;
+}
+
 rac.popComposite = function() {
   let composite = rac.currentComposite;
   rac.currentComposite = null;
@@ -93,13 +99,11 @@ rac.protoFunctions.attachToShape = function() {
 }
 
 rac.protoFunctions.popShape = function() {
-  let shape = rac.currentShape;
-  rac.currentShape = null;
-  return shape;
+  return rac.popShape();
 }
 
 rac.protoFunctions.popShapeToComposite = function() {
-  let shape = this.popShape();
+  let shape = rac.popShape();
   shape.attachToComposite();
   return this;
 }

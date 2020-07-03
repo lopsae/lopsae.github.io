@@ -77,7 +77,7 @@ function draw() {
     background:  new rac.Color( .1,  .1,  .1), // blackish
     stroke:      new rac.Color( .9,  .2,  .2,  .8), // red,
     marker:      new rac.Color( .7,  .3,  .3,  .3), // rose pink
-    tear:        new rac.Color( .8,  .8,  .8,  .9), // whiteish
+    fill:        new rac.Color( .8,  .8,  .8,  .9), // whiteish
     controlFill: new rac.Color( .8,  .8,  .8, 1.0), // whiteish
     pointer:     new rac.Color( .9,  .9,  .9,  .6), // whiteish
     highlight:   new rac.Color(  0, 1.0, 1.0,  .8)// cyan
@@ -98,7 +98,7 @@ function draw() {
 
 
   // Start point of M
-  let start = new rac.Point(width/2, height/2);
+  let start = new rac.Point(width * 1/4, height * 2/3);
 
   // Base measure for drawing
   let measure = measureControl.value;
@@ -118,17 +118,37 @@ function draw() {
 
 
   let baseline = start.segmentToAngle(rac.Angle.e, measure)
-    .draw();
+    .draw()
+    .attachToShape();
 
   // First stroke bottom
   let firstStrokeEndBottom = baseline.end
     .segmentToAngle(rac.Angle.ne, measure).draw()
+    .attachToShape()
     .end;
 
   // Second stroke start bottom
   let secondStrokeStartBottom = firstStrokeEndBottom
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, baseline).draw()
+    .attachToShape()
     .end;
+
+  // Second stroke end bottom
+  let secondStrokeEndBottom = secondStrokeStartBottom
+    .segmentToAngle(rac.Angle.ne, measure*2).draw()
+    .attachToShape()
+    .end;
+
+  let endAscenderGuide = secondStrokeEndBottom
+    // End descender
+    .segmentToAngleToIntersectionWithSegment(rac.Angle.s, baseline).draw()
+    .attachToShape()
+    // End baseline
+    .end.segmentToAngle(rac.Angle.e, thin).draw()
+    .attachToShape()
+    // End ascender guide
+    .end.segmentToAngle(rac.Angle.n, measure*3.5).draw();
+    // TODO: segment.segmentToPoint to draw from end to point
 
   // Middle ascender guide
   let middleAscenderGuide = secondStrokeStartBottom
@@ -145,18 +165,11 @@ function draw() {
     .segmentToAngleToIntersectionWithSegment(rac.Angle.ne, middleAscenderGuide).draw()
     .end;
 
-  let secondStrokeEndBottom = secondStrokeStartBottom
-    .segmentToAngle(rac.Angle.ne, measure*2).draw()
-    .end;
-
-  let endAscenderGuide = secondStrokeEndBottom
-    .segmentToAngleToIntersectionWithSegment(rac.Angle.s, baseline).draw()
-    .end.segmentToAngle(rac.Angle.e, thin).draw()
-    .end.segmentToAngle(rac.Angle.n, measure*3.5).draw();
-    // TODO: segment.segmentToPoint to draw from end to point
-
   secondStrokeStartTop
     .segmentToAngleToIntersectionWithSegment(rac.Angle.ne, endAscenderGuide).draw();
+
+
+  rac.popShape().draw(colorScheme.fill.fill());
 
 
   // Controls draw on top
