@@ -590,7 +590,7 @@ rac.Segment.prototype.withLength = function(newLength) {
   return new rac.Segment(this.start, newEnd);
 };
 
-rac.Segment.prototype.pointAtMiddle = function() {
+rac.Segment.prototype.pointAtBisector = function() {
   return new rac.Point(
     this.start.x + (this.end.x - this.start.x) /2,
     this.start.y + (this.end.y - this.start.y) /2);
@@ -694,13 +694,22 @@ rac.Segment.prototype.segmentExtending = function(distance) {
   return this.end.segmentToAngle(this.angle(), distance);
 };
 
-rac.Segment.prototype.segmentToMiddle = function() {
+// Returns a new segment from `start` to the bisector of the segment, or
+// `pointAtBisector`.
+rac.Segment.prototype.segmentWithBisector = function() {
   return new rac.Segment(this.start, this.middle());
 };
 
-rac.Segment.prototype.segmentToRatio = function(ratio) {
+// Returns a new segment from `start` to a length determined by
+// `ratio*length`.
+rac.Segment.prototype.segmentWithRatioOfLength = function(ratio) {
   return this.start.segmentToAngle(this.angle(), this.length() * ratio);
 };
+
+// Returns a new segment from `end` to the given `nextEnd`.
+rac.Segment.prototype.nextSegmentToPoint = function(nextEnd) {
+  return new rac.Segment(this.end, nextEnd);
+}
 
 rac.Segment.prototype.segmentPerpendicular = function(clockwise = true) {
   let offset = this.start.add(this.end.negative());
@@ -723,6 +732,8 @@ rac.Segment.prototype.relativeArc = function(someAngle, clockwise = true) {
     clockwise);
 };
 
+// Returns a segment from `this.start` to the intersection between `this`
+// and `other`.
 rac.Segment.prototype.segmentToIntersectionWithSegment = function(other) {
   let end = this.pointAtIntersectionWithSegment(other);
   if (end === null) {
@@ -884,7 +895,7 @@ rac.Arc.prototype.intersectionChord = function(other) {
   return rayToChord.segmentPerpendicular(this.clockwise)
     .withLength(chordLength/2)
     .reverse()
-    .segmentToRatio(2);
+    .segmentWithRatioOfLength(2);
 };
 
 // Returns the section of `this` that is inside `other`.
@@ -1186,7 +1197,7 @@ rac.drawControls = function() {
 
     // Segment to dragged shadow center
     constrainedShadowCenter.segmentToPoint(draggedShadowCenter)
-      .segmentToRatio(2/3)
+      .segmentWithRatioOfLength(2/3)
       .draw(rac.pointerStyle);
 
   }

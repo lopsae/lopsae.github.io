@@ -145,29 +145,40 @@ function draw() {
     .attachToShape()
     // End baseline
     .end.segmentToAngle(rac.Angle.e, thin).draw()
+    // TODO nextSegmentToAngle?
     .attachToShape()
     // End ascender guide
     .end.segmentToAngle(rac.Angle.n, measure*3.5).draw();
-    // TODO: segment.segmentToPoint to draw from end to point
 
   // Middle ascender guide
   let middleAscenderGuide = secondStrokeStartBottom
     .segmentToAngle(rac.Angle.e, thin).draw()
     .end.segmentToAngle(rac.Angle.n, measure*2.5).draw();
 
-  let secondStrokeGuide = baseline.pointAtMiddle()
+  let secondStrokeGuide = baseline.pointAtBisector()
     .segmentToAngle(rac.Angle.ne, measure*4).draw();
 
-  let secondStrokeEndTop = secondStrokeGuide
-    .pointAtIntersectionWithSegment(endAscenderGuide).draw(highlight);
+  let secondStrokeStartTop = endAscenderGuide
+    // End ascender
+    .segmentToIntersectionWithSegment(secondStrokeGuide)
+    .attachToShape()
+    // Second stroke top
+    .end.segmentToAngleToIntersectionWithSegment(rac.Angle.sw, middleAscenderGuide)
+    .attachToShape()
+    .end;
 
-  let secondStrokeStartTop = secondStrokeGuide
-    .pointAtIntersectionWithSegment(middleAscenderGuide).draw(highlight);
-
-  // First stroke top
-  baseline.start
+  let firstStrokeTop = baseline.start
     .segmentToAngleToIntersectionWithSegment(rac.Angle.ne, middleAscenderGuide)
-    .draw();
+    .draw()
+
+  // Middle ascender
+  secondStrokeStartTop.segmentToPoint(firstStrokeTop.end)
+    .attachToShape();
+
+  // Close shape with first stroke
+  firstStrokeTop.reverse()
+    .attachToShape();
+
 
   rac.popShape().draw(colorScheme.fill.fill());
 
