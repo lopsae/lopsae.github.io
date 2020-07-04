@@ -155,19 +155,19 @@ function draw() {
     .segmentToAngle(rac.Angle.e, thin).draw()
     .end.segmentToAngle(rac.Angle.n, measure*2.5).draw();
 
+  let secondStrokeGuide = baseline.pointAtMiddle()
+    .segmentToAngle(rac.Angle.ne, measure*4).draw();
+
+  let secondStrokeEndTop = secondStrokeGuide
+    .pointAtIntersectionWithSegment(endAscenderGuide).draw(highlight);
+
+  let secondStrokeStartTop = secondStrokeGuide
+    .pointAtIntersectionWithSegment(middleAscenderGuide).draw(highlight);
+
   // First stroke top
   baseline.start
     .segmentToAngleToIntersectionWithSegment(rac.Angle.ne, middleAscenderGuide)
     .draw();
-
-  // Second stroke start top
-  let secondStrokeStartTop = baseline.pointAtMiddle()
-    .segmentToAngleToIntersectionWithSegment(rac.Angle.ne, middleAscenderGuide).draw()
-    .end;
-
-  secondStrokeStartTop
-    .segmentToAngleToIntersectionWithSegment(rac.Angle.ne, endAscenderGuide).draw();
-
 
   rac.popShape().draw(colorScheme.fill.fill());
 
