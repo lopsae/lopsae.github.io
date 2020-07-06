@@ -9,59 +9,20 @@ function setup() {
 }
 
 
-// TODO: how can these functions be migrated into RAC?
 function mousePressed(event) {
-  let pointerCenter = new rac.Point.mouse();
-
-  let selected = rac.controls.find(item => {
-    let controlCenter = item.center();
-    if (controlCenter === null) { return false; }
-    if (controlCenter.distanceToPoint(pointerCenter) <= rac.Control.radius) {
-      return true;
-    }
-    return false;
-  });
-
-  if (selected !== undefined) {
-    rac.controlSelection = new rac.ControlSelection(selected);
-    selected.isSelected = true;
-  }
-
+  rac.pointerPressed(rac.Point.mouse());
   redraw();
 }
 
 
 function mouseDragged(event) {
-  if (rac.controlSelection !== null) {
-    let pointerCenter = new rac.Point.mouse();
-    let anchorCopy = rac.controlSelection.anchorCopy;
-
-    let controlShadowCenter = rac.controlSelection.pointerOffset
-      .translateToStart(pointerCenter)
-      .end;
-
-    let newValue = anchorCopy
-      .lengthToProjectedPoint(controlShadowCenter);
-
-    if (newValue < rac.controlSelection.control.minValue) {
-      newValue = rac.controlSelection.control.minValue;
-    }
-
-    if (newValue > anchorCopy.length()) {
-      newValue = anchorCopy.length()
-    }
-
-    rac.controlSelection.control.value = newValue;
-  }
+  rac.pointerDragged(rac.Point.mouse());
   redraw();
 }
 
 
 function mouseReleased(event) {
-  if (rac.controlSelection !== null) {
-    rac.controlSelection.control.isSelected = false;
-    rac.controlSelection = null;
-  }
+  rac.pointerReleased();
   redraw();
 }
 

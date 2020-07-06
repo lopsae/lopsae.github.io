@@ -1140,6 +1140,62 @@ rac.controls = [];
 rac.controlSelection = null;
 rac.pointerStyle = null;
 
+
+rac.pointerPressed = function(pointerCenter) {
+  let selected = rac.controls.find(item => {
+    let controlCenter = item.center();
+    if (controlCenter === null) { return false; }
+    if (controlCenter.distanceToPoint(pointerCenter) <= rac.Control.radius) {
+      return true;
+    }
+    return false;
+  });
+
+  if (selected === undefined) {
+    return;
+  }
+
+  rac.controlSelection = new rac.ControlSelection(selected);
+  selected.isSelected = true;
+}
+
+
+rac.pointerDragged = function(pointerCenter){
+  if (rac.controlSelection === null) {
+    return;
+  }
+
+  let anchorCopy = rac.controlSelection.anchorCopy;
+
+  let controlShadowCenter = rac.controlSelection.pointerOffset
+    .translateToStart(pointerCenter)
+    .end;
+
+  let newValue = anchorCopy
+    .lengthToProjectedPoint(controlShadowCenter);
+
+  if (newValue < rac.controlSelection.control.minValue) {
+    newValue = rac.controlSelection.control.minValue;
+  }
+
+  if (newValue > anchorCopy.length()) {
+    newValue = anchorCopy.length()
+  }
+
+  rac.controlSelection.control.value = newValue;
+};
+
+
+rac.pointerReleased = function() {
+  if (rac.controlSelection === null) {
+    return;
+  }
+
+  rac.controlSelection.control.isSelected = false;
+  rac.controlSelection = null;
+}
+
+
 // Draws controls and the visuals of control selection
 rac.drawControls = function() {
   // Pointer position
@@ -1205,10 +1261,8 @@ rac.drawControls = function() {
     constrainedShadowCenter.segmentToPoint(draggedShadowCenter)
       .segmentWithRatioOfLength(2/3)
       .draw(rac.pointerStyle);
-
   }
-
-}
+};
 
 
 rac.Control = function RacControl() {
@@ -1217,7 +1271,7 @@ rac.Control = function RacControl() {
   this.minValue = 0;
   this.anchorSegment = null;
   this.isSelected = false;
-}
+};
 
 rac.Control.radius = 22;
 
