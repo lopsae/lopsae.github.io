@@ -1170,10 +1170,11 @@ rac.drawControls = function() {
     draggedShadowCenter.arc(2)
       .draw(rac.pointerStyle);
 
+    // TODO: draw a marker for minValue
     let constrainedLength = anchorCopy
       .lengthToProjectedPoint(draggedShadowCenter);
-    if (constrainedLength < 0) {
-      constrainedLength = 0;
+    if (constrainedLength < rac.controlSelection.control.minValue) {//maic
+      constrainedLength = rac.controlSelection.control.minValue;
     }
     if (constrainedLength > anchorCopy.length()) {
       constrainedLength = anchorCopy.length()
@@ -1213,6 +1214,7 @@ rac.drawControls = function() {
 rac.Control = function RacControl() {
   this.style = null;
   this.value = 0;
+  this.minValue = 0;
   this.anchorSegment = null;
   this.isSelected = false;
 }

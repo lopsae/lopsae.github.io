@@ -43,8 +43,8 @@ function mouseDragged(event) {
     let newValue = anchorCopy
       .lengthToProjectedPoint(controlShadowCenter);
 
-    if (newValue < 0) {
-      newValue = 0;
+    if (newValue < rac.controlSelection.control.minValue) {
+      newValue = rac.controlSelection.control.minValue;
     }
 
     if (newValue > anchorCopy.length()) {
@@ -68,6 +68,7 @@ function mouseReleased(event) {
 
 let wideControl = new rac.Control();
 wideControl.value = 120;
+wideControl.minValue = 10;
 rac.controls.push(wideControl);
 
 let thinControl = new rac.Control();
