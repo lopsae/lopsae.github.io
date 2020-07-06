@@ -110,7 +110,7 @@ function draw() {
     .segmentToAngle(rac.Angle.s, rac.Control.radius * 2)
     .draw()
     // TODO: range of control could be a control property
-    .end.segmentToAngle(rac.Angle.e, 250);
+    .nextSegmentToAngle(rac.Angle.e, 250);
 
   measureControl.center()
     .segmentToPoint(start.pointToAngle(rac.Angle.e, measure))
@@ -144,16 +144,15 @@ function draw() {
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, baseline).draw()
     .attachToShape()
     // End baseline
-    .end.segmentToAngle(rac.Angle.e, thin).draw()
-    // TODO nextSegmentToAngle?
+    .nextSegmentToAngle(rac.Angle.e, thin).draw()
     .attachToShape()
     // End ascender guide
-    .end.segmentToAngle(rac.Angle.n, measure*3.5).draw();
+    .nextSegmentToAngle(rac.Angle.n, measure*3.5).draw();
 
   // Middle ascender guide
   let middleAscenderGuide = secondStrokeStartBottom
     .segmentToAngle(rac.Angle.e, thin).draw()
-    .end.segmentToAngle(rac.Angle.n, measure*2.5).draw();
+    .nextSegmentToAngle(rac.Angle.n, measure*2.5).draw();
 
   let secondStrokeGuide = baseline.pointAtBisector()
     .segmentToAngle(rac.Angle.ne, measure*4).draw();

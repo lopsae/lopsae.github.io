@@ -711,6 +711,11 @@ rac.Segment.prototype.nextSegmentToPoint = function(nextEnd) {
   return new rac.Segment(this.end, nextEnd);
 }
 
+// Returns a new segment from `end` to the given `someAngle` and `distance`.
+rac.Segment.prototype.nextSegmentToAngle = function(someAngle, distance) {
+  return this.end.segmentToAngle(someAngle, distance);
+}
+
 rac.Segment.prototype.segmentPerpendicular = function(clockwise = true) {
   let offset = this.start.add(this.end.negative());
   let newEnd = this.end.add(offset.pointPerpendicular(clockwise));
