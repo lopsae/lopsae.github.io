@@ -9,6 +9,7 @@ function setup() {
 }
 
 
+// TODO: how can these functions be migrated into RAC?
 function mousePressed(event) {
   let pointerCenter = new rac.Point.mouse();
 
@@ -65,9 +66,15 @@ function mouseReleased(event) {
 }
 
 
-let measureControl = new rac.Control();
-measureControl.value = 120;
-rac.controls.push(measureControl);
+let wideControl = new rac.Control();
+wideControl.value = 120;
+rac.controls.push(wideControl);
+
+let thinControl = new rac.Control();
+thinControl.value = 10;
+rac.controls.push(thinControl);
+
+
 
 
 function draw() {
@@ -92,7 +99,9 @@ function draw() {
 
   let controlStyle = colorScheme.stroke.stroke(3)
     .styleWithFill(colorScheme.controlFill.fill());
-  measureControl.style = controlStyle;
+
+  wideControl.style = controlStyle;
+  thinControl.style = controlStyle;
 
   rac.pointerStyle = colorScheme.pointer.stroke(3);
 
@@ -100,30 +109,30 @@ function draw() {
   // Start point of M
   let start = new rac.Point(width * 1/4, height * 2/3);
 
-  // Base measure for drawing
-  let measure = measureControl.value;
-  let thin = 10;
+  // Base wide for drawing
+  let wide = wideControl.value;
+  let thin = thinControl.value;
 
 
-  // Measure control
-  measureControl.anchorSegment = start
+  // Wide control
+  wideControl.anchorSegment = start
     .segmentToAngle(rac.Angle.s, rac.Control.radius * 2)
     .draw()
     // TODO: range of control could be a control property
     .nextSegmentToAngle(rac.Angle.e, 250);
 
-  measureControl.center()
-    .segmentToPoint(start.pointToAngle(rac.Angle.e, measure))
+  wideControl.center()
+    .segmentToAngle(rac.Angle.n, rac.Control.radius * 2)
     .draw();
 
 
-  let baseline = start.segmentToAngle(rac.Angle.e, measure)
+  let baseline = start.segmentToAngle(rac.Angle.e, wide)
     .draw()
     .attachToShape();
 
   // First stroke bottom
   let firstStrokeEndBottom = baseline.end
-    .segmentToAngle(rac.Angle.ne, measure).draw()
+    .segmentToAngle(rac.Angle.ne, wide).draw()
     .attachToShape()
     .end;
 
@@ -135,7 +144,7 @@ function draw() {
 
   // Second stroke end bottom
   let secondStrokeEndBottom = secondStrokeStartBottom
-    .segmentToAngle(rac.Angle.ne, measure*2).draw()
+    .segmentToAngle(rac.Angle.ne, wide*2).draw()
     .attachToShape()
     .end;
 
@@ -147,15 +156,25 @@ function draw() {
     .nextSegmentToAngle(rac.Angle.e, thin).draw()
     .attachToShape()
     // End ascender guide
-    .nextSegmentToAngle(rac.Angle.n, measure*3.5).draw();
+    .nextSegmentToAngle(rac.Angle.n, wide*3.5).draw();
+
+  // Thin control
+  thinControl.anchorSegment = endAscenderGuide.start
+    .segmentToAngle(rac.Angle.s, rac.Control.radius*4)
+    .draw()
+    .nextSegmentToAngle(rac.Angle.w, 200);
+
+  thinControl.center()
+    .segmentToAngle(rac.Angle.n, rac.Control.radius*4)
+    .draw();
 
   // Middle ascender guide
   let middleAscenderGuide = secondStrokeStartBottom
     .segmentToAngle(rac.Angle.e, thin).draw()
-    .nextSegmentToAngle(rac.Angle.n, measure*2.5).draw();
+    .nextSegmentToAngle(rac.Angle.n, wide*2.5).draw();
 
   let secondStrokeGuide = baseline.pointAtBisector()
-    .segmentToAngle(rac.Angle.ne, measure*4).draw();
+    .segmentToAngle(rac.Angle.ne, wide*4).draw();
 
   let secondStrokeStartTop = endAscenderGuide
     // End ascender
