@@ -160,9 +160,10 @@ function draw() {
 
   // Thin control
   thinControl.anchorSegment = endAscenderGuide.start
+    .pointToAngle(rac.Angle.w, thin)
     .segmentToAngle(rac.Angle.s, rac.Control.radius*4)
     .draw()
-    .nextSegmentToAngle(rac.Angle.w, 200);
+    .nextSegmentToAngle(rac.Angle.e, 200);
 
   thinControl.center()
     .segmentToAngle(rac.Angle.n, rac.Control.radius*4)
