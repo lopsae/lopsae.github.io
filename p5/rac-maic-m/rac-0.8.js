@@ -689,21 +689,21 @@ rac.Segment.prototype.pointAtLength = function(length) {
   return this.start.pointToAngle(this.angle(), length);
 };
 
-// TODO: unclear name
-rac.Segment.prototype.segmentExtending = function(distance) {
-  return this.end.segmentToAngle(this.angle(), distance);
-};
-
-// Returns a new segment from `start` to the bisector of the segment, or
-// `pointAtBisector`.
-rac.Segment.prototype.segmentWithBisector = function() {
-  return new rac.Segment(this.start, this.middle());
+// Returns a new segment from `start` to `pointAtBisector`.
+rac.Segment.prototype.segmentToBisector = function() {
+  return new rac.Segment(this.start, this.pointAtBisector());
 };
 
 // Returns a new segment from `start` to a length determined by
 // `ratio*length`.
 rac.Segment.prototype.segmentWithRatioOfLength = function(ratio) {
   return this.start.segmentToAngle(this.angle(), this.length() * ratio);
+};
+
+// Returns a new segment from `end` with the given `length` with the same
+// angle as `self`.
+rac.Segment.prototype.nextSegmentWithLength = function(length) {
+  return this.end.segmentToAngle(this.angle(), length);
 };
 
 // Returns a new segment from `end` to the given `nextEnd`.
@@ -767,15 +767,17 @@ rac.Segment.prototype.oppositeWithHyp = function(hypotenuse, clockwise = true) {
   return this.end.segmentToPoint(hypSegment.end);
 };
 
-rac.Segment.prototype.bisector = function(length, clockwise = true) {
+// Returns a new segment that starts from `pointAtBisector` in the given
+// `clockwise` orientation.
+rac.Segment.prototype.segmentFromBisector = function(length, clockwise = true) {
   let angle = clockwise
     ? this.angle().add(rac.Angle.square)
     : this.angle().add(rac.Angle.square.negative());
-  return this.middle().segmentToAngle(angle, length);
+  return this.pointAtBisector().segmentToAngle(angle, length);
 };
 
 rac.Segment.prototype.bezierCentralAnchor = function(distance, clockwise = true) {
-  let bisector = this.bisector(distance, clockwise);
+  let bisector = this.segmentFromBisector(distance, clockwise);
   return new rac.Bezier(
     this.start, bisector.end,
     bisector.end, this.end);
