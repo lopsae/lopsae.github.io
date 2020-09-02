@@ -568,6 +568,16 @@ rac.Segment = class Segment {
     }
   }
 
+  withStartExtended(length) {
+    let newStart = this.reverse().nextSegmentWithLength(length).end;
+    return new rac.Segment(newStart, this.end);
+  }
+
+  withEndExtended(length) {
+    let newEnd = this.nextSegmentWithLength(length).end;
+    return new rac.Segment(this.start, newEnd);
+  }
+
 }
 
 rac.Drawer.setupDrawFunction(rac.Segment, function() {
@@ -1213,11 +1223,25 @@ rac.drawControls = function() {
   pointerCenter.arc(pointerRadius).draw(rac.pointerStyle);
 
   rac.controls.forEach(item => item.draw());
+
   // Pointer to anchor elements
   if (rac.controlSelection !== null && mouseIsPressed) {
     // Copied anchor segment
     let anchorCopy = rac.controlSelection.anchorCopy;
     anchorCopy.draw(rac.pointerStyle);
+
+    // Marker for min value
+    let minValue = rac.controlSelection.control.minValue;
+    if (minValue > 0) {
+      let minMarkerLength = 5;
+      let minPoint = anchorCopy.withLength(minValue).end;
+      anchorCopy.segmentPerpendicular()
+        .withLength(minMarkerLength)
+        .translateToStart(minPoint)
+        .withStartExtended(minMarkerLength)
+        .draw(rac.pointerStyle);
+    }
+
 
     // Ray from pointer to control shadow center
     let draggedShadowCenter = rac.controlSelection.pointerOffset
@@ -1228,11 +1252,10 @@ rac.drawControls = function() {
     draggedShadowCenter.arc(2)
       .draw(rac.pointerStyle);
 
-    // TODO: draw a marker for minValue
     let constrainedLength = anchorCopy
       .lengthToProjectedPoint(draggedShadowCenter);
-    if (constrainedLength < rac.controlSelection.control.minValue) {//maic
-      constrainedLength = rac.controlSelection.control.minValue;
+    if (constrainedLength < minValue) {
+      constrainedLength = minValue;
     }
     if (constrainedLength > anchorCopy.length()) {
       constrainedLength = anchorCopy.length()
