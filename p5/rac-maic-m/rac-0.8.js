@@ -1306,79 +1306,80 @@ rac.drawControls = function() {
   // All controls in display
   rac.controls.forEach(item => item.draw());
 
-  // Control selection
+  // Rest is Control selection visuals
+  if (rac.controlSelection === null) {
+    return;
+  }
 
   // Pointer to anchor elements
-  if (rac.controlSelection !== null && mouseIsPressed) {
-    // Copied anchor segment
-    let anchorCopy = rac.controlSelection.anchorCopy;
-    anchorCopy.draw(rac.pointerStyle);
+  // Copied anchor segment
+  let anchorCopy = rac.controlSelection.anchorCopy;
+  anchorCopy.draw(rac.pointerStyle);
 
-    // Marker for min value
-    let minValue = rac.controlSelection.control.minValue;
-    if (minValue > 0) {
-      let minMarkerLength = 5;
-      let minPoint = anchorCopy.withLength(minValue).end;
-      // TODO: needs update for arc anchors
-      anchorCopy.segmentPerpendicular()
-        .withLength(minMarkerLength)
-        .translateToStart(minPoint)
-        .withStartExtended(minMarkerLength)
-        .draw(rac.pointerStyle);
+  // Marker for min value
+  let minValue = rac.controlSelection.control.minValue;
+  // TODO: min check needs update for arc anchors
+  if (minValue > 0) {
+    let minMarkerLength = 5;
+    let minPoint = anchorCopy.withLength(minValue).end;
+    // TODO: needs update for arc anchors min value
+    anchorCopy.segmentPerpendicular()
+      .withLength(minMarkerLength)
+      .translateToStart(minPoint)
+      .withStartExtended(minMarkerLength)
+      .draw(rac.pointerStyle);
+  }
+
+  // Ray from pointer to control shadow center
+  let draggedShadowCenter = rac.controlSelection.pointerOffset
+    .translateToStart(pointerCenter)
+    .end;
+
+  // Control shadow center, attached to pointer
+  draggedShadowCenter.arc(2)
+    .draw(rac.pointerStyle);
+
+  // Segment anchor
+  if (anchorCopy instanceof rac.Segment) {
+    let constrainedLength = anchorCopy
+      .lengthToProjectedPoint(draggedShadowCenter);
+    if (constrainedLength < minValue) {
+      constrainedLength = minValue;
+    }
+    if (constrainedLength > anchorCopy.length()) {
+      constrainedLength = anchorCopy.length()
     }
 
-
-    // Ray from pointer to control shadow center
-    let draggedShadowCenter = rac.controlSelection.pointerOffset
-      .translateToStart(pointerCenter)
+    let constrainedAnchorCenter = anchorCopy
+      .withLength(constrainedLength)
       .end;
 
-    // Control shadow center, attached to pointer
-    draggedShadowCenter.arc(2)
+    // Control shadow at anchor
+    constrainedAnchorCenter.arc(rac.Control.radius)
       .draw(rac.pointerStyle);
 
-    // Segment anchor
-    if (anchorCopy instanceof rac.Segment) {
-      let constrainedLength = anchorCopy
-        .lengthToProjectedPoint(draggedShadowCenter);
-      if (constrainedLength < minValue) {
-        constrainedLength = minValue;
-      }
-      if (constrainedLength > anchorCopy.length()) {
-        constrainedLength = anchorCopy.length()
-      }
+    let constrainedShadowCenter = draggedShadowCenter
+      .segmentPerpendicularToSegment(anchorCopy)
+      // reverse and translated to constraint to anchor
+      .reverse()
+      .translateToStart(constrainedAnchorCenter)
+      // anchor to control shadow center
+      .draw(rac.pointerStyle)
+      .end;
 
-      let constrainedAnchorCenter = anchorCopy
-        .withLength(constrainedLength)
-        .end;
+    // Control shadow, dragged and constrained to anchor
+    constrainedShadowCenter.arc(rac.Control.radius / 2)
+      .draw(rac.pointerStyle);
 
-      // Control shadow at anchor
-      constrainedAnchorCenter.arc(rac.Control.radius)
-        .draw(rac.pointerStyle);
+    // Segment to dragged shadow center
+    constrainedShadowCenter.segmentToPoint(draggedShadowCenter)
+      .segmentWithRatioOfLength(2/3)
+      .draw(rac.pointerStyle);
+  }
 
-      let constrainedShadowCenter = draggedShadowCenter
-        .segmentPerpendicularToSegment(anchorCopy)
-        // reverse and translated to constraint to anchor
-        .reverse()
-        .translateToStart(constrainedAnchorCenter)
-        // anchor to control shadow center
-        .draw(rac.pointerStyle)
-        .end;
-
-      // Control shadow, dragged and constrained to anchor
-      constrainedShadowCenter.arc(rac.Control.radius / 2)
-        .draw(rac.pointerStyle);
-
-      // Segment to dragged shadow center
-      constrainedShadowCenter.segmentToPoint(draggedShadowCenter)
-        .segmentWithRatioOfLength(2/3)
-        .draw(rac.pointerStyle);
-    }
-
-    // Arc anchor
-    if (anchorCopy instanceof rac.Arc) {
-      // TODO: implement!
-    }
+  // Arc anchor
+  if (anchorCopy instanceof rac.Arc) {
+    // TODO: implement!
   }
 };
 
