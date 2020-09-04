@@ -703,14 +703,17 @@ rac.Segment.prototype.pointAtIntersectionWithSegment = function(other) {
   return new rac.Point(x, y);
 };
 
+// Returns an Arc using this segment `start` as center, `length()` as
+// radius, starting from the `angle()` to the given angle and orientation.
 rac.Segment.prototype.arc = function(
   someAngleEnd = this.angle(),
   clockwise = true)
 {
-  let end = rac.Angle.from(someAngleEnd);
+  let arcEnd = rac.Angle.from(someAngleEnd);
+  let arcStart = rac.Angle.fromSegment(this);
   return new rac.Arc(
     this.start, this.length(),
-    rac.Angle.fromSegment(this), end,
+    arcStart, arcEnd,
     clockwise);
 };
 
@@ -751,15 +754,16 @@ rac.Segment.prototype.segmentPerpendicular = function(clockwise = true) {
   return this.end.segmentToPoint(newEnd);
 };
 
+// Returns an Arc using this segment `start` as center, `length()` as
+// radius, starting from the `angle()` to the arc distance of the given
+// angle and orientation.
 rac.Segment.prototype.relativeArc = function(someAngle, clockwise = true) {
   let angle = rac.Angle.from(someAngle);
   let arcStart = this.angle();
-  let arcEnd;
-  if (clockwise) {
-    arcEnd = arcStart.add(angle);
-  } else {
-    arcEnd = arcStart.add(angle.negative());
-  }
+  let arcEnd = clockwise
+    ? arcStart.add(angle)
+    : arcStart.sub(angle);
+
   return new rac.Arc(
     this.start, this.length(),
     arcStart, arcEnd,
@@ -893,7 +897,7 @@ rac.Arc.prototype.containsAngle = function(someAngle) {
   }
 
   if (this.clockwise) {
-    // TODO: use substract instead
+    // TODO: use substract instead, fix when i actually have something that uses it
     let offset = angle.add(this.start.negative());
     let endOffset = this.end.add(this.start.negative());
     return offset.turn <= endOffset.turn;
