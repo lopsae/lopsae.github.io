@@ -79,6 +79,7 @@ function draw() {
   // Widths for drawing
   let wide = wideControl.value;
   let thin = thinControl.value;
+  let angle = angleControl.value.negative();
 
 
   // Wide control
@@ -110,7 +111,7 @@ function draw() {
 
   // First stroke bottom
   let firstStrokeEndBottom = baseline.end
-    .segmentToAngle(rac.Angle.ne, wide).draw()
+    .segmentToAngle(angle, wide).draw()
     .attachToShape()
     .end;
 
@@ -122,7 +123,7 @@ function draw() {
 
   // Second stroke end bottom
   let secondStrokeEndBottom = secondStrokeStartBottom
-    .segmentToAngle(rac.Angle.ne, wide*2).draw()
+    .segmentToAngle(angle, wide*2).draw()
     .attachToShape()
     .end;
 
@@ -153,19 +154,19 @@ function draw() {
     .nextSegmentToAngle(rac.Angle.n, wide*2.5).draw();
 
   let secondStrokeGuide = baseline.pointAtBisector()
-    .segmentToAngle(rac.Angle.ne, wide*4).draw();
+    .segmentToAngle(angle, wide*4).draw();
 
   let secondStrokeStartTop = endAscenderGuide
     // End ascender
     .segmentToIntersectionWithSegment(secondStrokeGuide)
     .attachToShape()
     // Second stroke top
-    .end.segmentToAngleToIntersectionWithSegment(rac.Angle.sw, middleAscenderGuide)
+    .end.segmentToAngleToIntersectionWithSegment(angle.inverse(), middleAscenderGuide)
     .attachToShape()
     .end;
 
   let firstStrokeTop = baseline.start
-    .segmentToAngleToIntersectionWithSegment(rac.Angle.ne, middleAscenderGuide)
+    .segmentToAngleToIntersectionWithSegment(angle, middleAscenderGuide)
     .draw()
 
   // Middle ascender
