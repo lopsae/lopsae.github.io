@@ -1184,15 +1184,25 @@ rac.ControlSelection = class ControlSelection{
     this.anchorCopy = control.anchor.copy();
     // Segment from the captured pointer position to the contro center,
     // used to attach the control to the point where interaction started.
+    // Starts at pointer and ends at control center.
     this.pointerOffset = rac.Point.mouse().segmentToPoint(control.center());
   }
 }
 
+
+// Collection of all controls that are drawn and evaluated for selection.
 rac.controls = [];
+
+// Current selected control, or null if there is no selection.
 rac.controlSelection = null;
+
+// Style used for visual elements related to selection and pointer interaction.
 rac.pointerStyle = null;
 
 
+// Call to signal the pointer being pressed. If the ponter hits a control
+// it will be considered selected. When a control is selected a copy of its
+// anchor is stored as to allow interaction with a fixed anchor.
 rac.pointerPressed = function(pointerCenter) {
   let selected = rac.controls.find(item => {
     let controlCenter = item.center();
@@ -1208,10 +1218,11 @@ rac.pointerPressed = function(pointerCenter) {
   }
 
   rac.controlSelection = new rac.ControlSelection(selected);
-  selected.isSelected = true;
 }
 
 
+// Call to signal the pointer being dragged. As the pointer moves the value
+// of the selected control is updated.
 rac.pointerDragged = function(pointerCenter){
   if (rac.controlSelection === null) {
     return;
@@ -1219,31 +1230,37 @@ rac.pointerDragged = function(pointerCenter){
 
   let anchorCopy = rac.controlSelection.anchorCopy;
 
-  let controlShadowCenter = rac.controlSelection.pointerOffset
+  // Center of dragged control in the pointer current position
+  let currentPointerControlCenter = rac.controlSelection.pointerOffset
     .translateToStart(pointerCenter)
     .end;
 
+  // TODO: needs update for arc anchors
+  // New value from the current pointer position, relative to anchorCopy
   let newValue = anchorCopy
-    .lengthToProjectedPoint(controlShadowCenter);
+    .lengthToProjectedPoint(currentPointerControlCenter);
 
+  // TODO: needs update for arc anchors
   if (newValue < rac.controlSelection.control.minValue) {
     newValue = rac.controlSelection.control.minValue;
   }
 
+  // TODO: needs update for arc anchors
   if (newValue > anchorCopy.length()) {
     newValue = anchorCopy.length()
   }
 
+  // Update control with new value
   rac.controlSelection.control.value = newValue;
 };
 
-
+// Call to signal the pointer being released. Upon release the selected
+// control is cleared.
 rac.pointerReleased = function() {
   if (rac.controlSelection === null) {
     return;
   }
 
-  rac.controlSelection.control.isSelected = false;
   rac.controlSelection = null;
 }
 
@@ -1263,7 +1280,10 @@ rac.drawControls = function() {
   }
   pointerCenter.arc(pointerRadius).draw(rac.pointerStyle);
 
+  // All controls in display
   rac.controls.forEach(item => item.draw());
+
+  // Control selection
 
   // Pointer to anchor elements
   if (rac.controlSelection !== null && mouseIsPressed) {
@@ -1342,7 +1362,6 @@ rac.Control = function RacControl() {
   this.value = 0;
   this.minValue = 0;
   this.anchor = null;
-  this.isSelected = false;
 };
 
 rac.Control.radius = 22;
@@ -1367,6 +1386,13 @@ rac.Control.prototype.center = function() {
   throw rac.Error.invalidObjectToConvert;
 };
 
+rac.Control.prototype.isSelected = function() {
+  if (rac.controlSelection === null) {
+    return false;
+  }
+  return rac.controlSelection.control === this;
+}
+
 rac.Control.prototype.draw = function() {
   if (this.anchor instanceof rac.Segment) {
     rac.Control.drawSegmentControl(this);
@@ -1376,7 +1402,7 @@ rac.Control.prototype.draw = function() {
     rac.Control.drawArcControl(this);
     return;
   }
-}
+};
 
 rac.Control.drawSegmentControl = function(control) {
   let anchor = control.anchor;
@@ -1403,8 +1429,7 @@ rac.Control.drawSegmentControl = function(control) {
   rac.popComposite().draw(control.style);
 
   // Selection
-  // TODO: Could this be replaced with a check for rac.controlSelection?
-  if (control.isSelected) {
+  if (control.isSelected()) {
     center.arc(rac.Control.radius * 1.5).draw(rac.pointerStyle);
   }
 };
@@ -1441,7 +1466,7 @@ rac.Control.drawArcControl = function(control) {
   rac.popComposite().draw(control.style);
 
   // Selection
-  if (control.isSelected) {
+  if (control.isSelected()) {
     center.arc(rac.Control.radius * 1.5).draw(rac.pointerStyle);
   }
 };
