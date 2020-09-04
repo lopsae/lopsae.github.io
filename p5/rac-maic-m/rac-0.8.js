@@ -1383,38 +1383,15 @@ rac.Control.prototype.drawSegmentControl = function() {
   let angle = this.anchor.angle();
 
   // Positive arrow
-  // TODO: use shared arrow function
   if (this.value <= this.anchor.length() - rac.equalityThreshold) {
-    let posArc = center.arc(radius * 1.5, angle.add(-1/16), angle.add(1/16));
-  let posPoint = posArc.startPoint()
-    .segmentToAngle(angle.add(1/8), radius)
-    .pointAtIntersectionWithSegment(
-      posArc.endPoint().segmentToAngle(angle.add(-1/8), radius));
-
-  posPoint.segmentToPoint(posArc.startPoint())
-    .attachToShape();
-
-  posArc.attachToShape()
-    .endPoint().segmentToPoint(posPoint)
-    .attachToShape()
-    .popShapeToComposite();
+    rac.Control.makeArrowShape(center, angle)
+      .attachToComposite();
   }
 
   // Negative arrow
   if (this.value >= this.minValue + rac.equalityThreshold) {
-    let negArc = center.arc(radius * 1.5, angle.inverse().add(-1/16), angle.inverse().add(1/16));
-  let negPoint = negArc.startPoint()
-    .segmentToAngle(angle.add(1/8), radius)
-    .pointAtIntersectionWithSegment(
-      negArc.endPoint().segmentToAngle(angle.add(-1/8), radius));
-
-  negPoint.segmentToPoint(negArc.startPoint())
-    .attachToShape();
-
-  negArc.attachToShape()
-    .endPoint().segmentToPoint(negPoint)
-    .attachToShape()
-    .popShapeToComposite();
+    rac.Control.makeArrowShape(center, angle.inverse())
+      .attachToComposite();
   }
 
   rac.popComposite().draw(this.style);
