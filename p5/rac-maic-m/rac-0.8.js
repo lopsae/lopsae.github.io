@@ -343,20 +343,14 @@ rac.Angle.prototype.set = function(turn) {
   return this;
 };
 
-rac.Angle.prototype.add = function(other) {
-  if (other instanceof rac.Angle) {
-    return new rac.Angle(this.turn + other.turn);
-  }
-
-  return new rac.Angle(this.turn + other);
+rac.Angle.prototype.add = function(someAngle) {
+  let other = rac.Angle.from(someAngle);
+  return new rac.Angle(this.turn + other.turn);
 };
 
-rac.Angle.prototype.substract = function(other) {
-  if (other instanceof rac.Angle) {
-    return new rac.Angle(this.turn - other.turn);
-  }
-
-  return new rac.Angle(this.turn - other);
+rac.Angle.prototype.substract = function(someAngle) {
+  let other = rac.Angle.from(someAngle);
+  return new rac.Angle(this.turn - other.turn);
 }
 
 rac.Angle.prototype.mult = function(factor) {
@@ -892,6 +886,7 @@ rac.Arc.prototype.containsAngle = function(someAngle) {
   }
 
   if (this.clockwise) {
+    // TODO: use substract instead
     let offset = angle.add(this.start.negative());
     let endOffset = this.end.add(this.start.negative());
     return offset.turn <= endOffset.turn;
@@ -1412,21 +1407,35 @@ rac.Control.prototype.drawArcControl = function() {
     .popShapeToComposite();
 
   // Positive arrow
-  // if (this.value <= this.anchor.length() - rac.equalityThreshold) {
-  //   let posArc = center.arc(radius * 1.5, angle.add(-1/16), angle.add(1/16));
-  // let posPoint = posArc.startPoint()
-  //   .segmentToAngle(angle.add(1/8), radius)
-  //   .pointAtIntersectionWithSegment(
-  //     posArc.endPoint().segmentToAngle(angle.add(-1/8), radius));
+  // TODO: could this be an arc lenght property?
+  let maxValue = this.anchor.clockwise
+    ? this.anchor.end.substract(this.anchor.start)
+    : this.anchor.start.substract(this.anchor.end);
+  if (this.value <= maxValue.turn - rac.equalityThreshold) {
+    // TODO: arc.relativeAngle?
+    let valueAngle = this.anchor.clockwise
+      ? this.anchor.start.add(this.value)
+      : this.anchor.start.substract(this.value);
 
-  // posPoint.segmentToPoint(posArc.startPoint())
-  //   .attachToShape();
+    let positiveAngle = this.anchor.clockwise
+      ? valueAngle.add(rac.Angle.square)
+      : valueAngle.substract(rac.Angle.square);
 
-  // posArc.attachToShape()
-  //   .endPoint().segmentToPoint(posPoint)
-  //   .attachToShape()
-  //   .popShapeToComposite();
-  // }
+    // TODO: can the drawing of the arrow be reused?
+    let posArc = center.arc(radius * 1.5, positiveAngle.add(-1/16), positiveAngle.add(1/16));
+    let posPoint = posArc.startPoint()
+      .segmentToAngle(positiveAngle.add(1/8), radius)
+      .pointAtIntersectionWithSegment(
+        posArc.endPoint().segmentToAngle(positiveAngle.add(-1/8), radius));
+
+    posPoint.segmentToPoint(posArc.startPoint())
+      .attachToShape();
+
+    posArc.attachToShape()
+      .endPoint().segmentToPoint(posPoint)
+      .attachToShape()
+      .popShapeToComposite();
+  }
 
   // Negative arrow
   // if (this.value >= rac.equalityThreshold) {

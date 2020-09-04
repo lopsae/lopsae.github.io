@@ -85,7 +85,7 @@ function draw() {
   wideControl.anchor = start
     .segmentToAngle(rac.Angle.s, rac.Control.radius * 2)
     .draw()
-    // TODO: range of control could be a control property
+    // TODO: range of control could be a control property?
     .nextSegmentToAngle(rac.Angle.e, 250);
 
   wideControl.center()
@@ -97,6 +97,10 @@ function draw() {
   angleControl.anchor = start
     .segmentToAngle(rac.Angle.w, rac.Control.radius * 5).draw()
     .arc(1/4, false);
+
+  angleControl.center()
+    .segmentToPoint(start)
+    .draw();
 
 
   // Baseline
