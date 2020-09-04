@@ -1380,24 +1380,23 @@ rac.Control.prototype.draw = function() {
 }
 
 rac.Control.prototype.drawSegmentControl = function() {
-  this.anchor.draw(this.style);
+  let anchor = this.anchor;
+  anchor.draw(this.style);
 
   let center = this.center();
   center.arc(rac.Control.radius)
     .attachToShape()
     .popShapeToComposite();
 
-  let angle = this.anchor.angle();
-
   // Positive arrow
-  if (this.value <= this.anchor.length() - rac.equalityThreshold) {
-    rac.Control.makeArrowShape(center, angle)
+  if (this.value <= anchor.length() - rac.equalityThreshold) {
+    rac.Control.makeArrowShape(center, anchor.angle())
       .attachToComposite();
   }
 
   // Negative arrow
   if (this.value >= this.minValue + rac.equalityThreshold) {
-    rac.Control.makeArrowShape(center, angle.inverse())
+    rac.Control.makeArrowShape(center, anchor.angle().inverse())
       .attachToComposite();
   }
 
@@ -1410,7 +1409,8 @@ rac.Control.prototype.drawSegmentControl = function() {
 };
 
 rac.Control.prototype.drawArcControl = function() {
-  this.anchor.draw(this.style.withFill(rac.Fill.none));
+  let anchor = this.anchor;
+  anchor.draw(this.style.withFill(rac.Fill.none));
 
   let center = this.center();
   center.arc(rac.Control.radius)
@@ -1419,11 +1419,11 @@ rac.Control.prototype.drawArcControl = function() {
 
   let angleValue = rac.Angle.from(this.value);
   // Angle of the current value relative to the arc anchor
-  let relativeAngleValue = this.anchor.relativeAngle(angleValue);
+  let relativeAngleValue = anchor.relativeAngle(angleValue);
 
   // Positive arrow
-  if (angleValue.turn <= this.anchor.arcLength().turn - rac.equalityThreshold) {
-    let posAngle = relativeAngleValue.perpendicular(this.anchor.clockwise);
+  if (angleValue.turn <= anchor.arcLength().turn - rac.equalityThreshold) {
+    let posAngle = relativeAngleValue.perpendicular(anchor.clockwise);
     rac.Control.makeArrowShape(center, posAngle)
       .attachToComposite();
   }
@@ -1431,7 +1431,7 @@ rac.Control.prototype.drawArcControl = function() {
   // Negative arrow
   let minValueAngle = rac.Angle.from(this.minValue);
   if (angleValue.turn >= minValueAngle.turn + rac.equalityThreshold) {
-    let negAngle = relativeAngleValue.perpendicular(this.anchor.clockwise).inverse();
+    let negAngle = relativeAngleValue.perpendicular(anchor.clockwise).inverse();
     rac.Control.makeArrowShape(center, negAngle)
       .attachToComposite();
   }
