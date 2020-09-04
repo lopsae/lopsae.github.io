@@ -1377,8 +1377,7 @@ rac.Control.prototype.drawSegmentControl = function() {
   }
 
   // Negative arrow
-  // TODO: arrow does not dissapear if there is a min value
-  if (this.value >= rac.equalityThreshold) {
+  if (this.value >= this.minValue + rac.equalityThreshold) {
     let negArc = center.arc(radius * 1.5, angle.inverse().add(-1/16), angle.inverse().add(1/16));
   let negPoint = negArc.startPoint()
     .segmentToAngle(angle.add(1/8), radius)
