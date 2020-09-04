@@ -201,7 +201,7 @@ rac.Color.cyan    = new rac.Color(0, 1, 1);
 rac.Color.white   = new rac.Color(1, 1, 1);
 
 
-rac.Stroke = class Stroke {
+rac.Stroke = class RacStroke {
 
   constructor(color = null, weight = 1) {
     this.color = color;
@@ -254,36 +254,54 @@ rac.Stroke = class Stroke {
 
 }
 
-rac.Stroke.no = new rac.Stroke(null);
+rac.Stroke.none = new rac.Stroke(null);
 
 
-rac.Fill = function RacFill(color = null) {
-  this.color = color;
+rac.Fill = class RacFill {
+
+  constructor(color = null) {
+    this.color = color;
+  }
+
+  apply() {
+    if (this.color === null) {
+      noFill();
+      return;
+    }
+
+    this.color.applyFill();
+  }
+
 }
 
-rac.Fill.prototype.apply = function() {
-  if (this.color === null) {
-    noFill();
-    return;
+rac.Fill.none = new rac.Fill(null);
+
+
+rac.Style = class RacStyle {
+
+  constructor(stroke = null, fill = null) {
+    this.stroke = stroke;
+    this.fill = fill;
   }
 
-  this.color.applyFill();
-};
+  apply() {
+    if (this.stroke !== null) {
+      this.stroke.apply();
+    }
+    if (this.fill !== null) {
+      this.fill.apply();
+    }
+  }
 
+  withStroke(stroke) {
+    return new rac.Style(stroke, this.fill);
+  }
 
-rac.Style = function RacStyle(stroke = null, fill = null) {
-  this.stroke = stroke;
-  this.fill = fill;
+  withFill(fill) {
+    return new rac.Style(this.stroke, fill);
+  }
+
 }
-
-rac.Style.prototype.apply = function() {
-  if (this.stroke !== null) {
-    this.stroke.apply();
-  }
-  if (this.fill !== null) {
-    this.fill.apply();
-  }
-};
 
 
 rac.Angle = function RacAngle(turn) {
@@ -1332,16 +1350,15 @@ rac.Control.prototype.draw = function() {
 }
 
 rac.Control.prototype.drawSegmentControl = function() {
-  let radius = rac.Control.radius;
-
-  let angle = this.anchor.angle();
-  let center = this.center();
-
   this.anchor.draw(this.style);
 
+  let radius = rac.Control.radius;
+  let center = this.center();
   center.arc(radius)
     .attachToShape()
     .popShapeToComposite();
+
+  let angle = this.anchor.angle();
 
   // Positive arrow
   if (this.value <= this.anchor.length() - rac.equalityThreshold) {
@@ -1386,12 +1403,10 @@ rac.Control.prototype.drawSegmentControl = function() {
 };
 
 rac.Control.prototype.drawArcControl = function() {
+  this.anchor.draw(this.style.withFill(rac.Fill.none));
+
   let radius = rac.Control.radius;
-
   let center = this.center();
-
-  this.anchor.draw(this.style);
-
   center.arc(radius)
     .attachToShape()
     .popShapeToComposite();
