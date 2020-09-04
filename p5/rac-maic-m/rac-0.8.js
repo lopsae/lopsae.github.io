@@ -1383,6 +1383,7 @@ rac.Control.prototype.drawSegmentControl = function() {
   let angle = this.anchor.angle();
 
   // Positive arrow
+  // TODO: use shared arrow function
   if (this.value <= this.anchor.length() - rac.equalityThreshold) {
     let posArc = center.arc(radius * 1.5, angle.add(-1/16), angle.add(1/16));
   let posPoint = posArc.startPoint()
@@ -1440,40 +1441,15 @@ rac.Control.prototype.drawArcControl = function() {
   // Positive arrow
   if (this.value <= this.anchor.arcLength().turn - rac.equalityThreshold) {
     let posAngle = valueAngle.perpendicular(this.anchor.clockwise);
-
-    // TODO: can the drawing of the arrow be reused?
-    let posArc = center.arc(radius * 1.5, posAngle.add(-1/16), posAngle.add(1/16));
-    let posPoint = posArc.startPoint()
-      .segmentToAngle(posAngle.add(1/8), radius)
-      .pointAtIntersectionWithSegment(
-        posArc.endPoint().segmentToAngle(posAngle.add(-1/8), radius));
-
-    posPoint.segmentToPoint(posArc.startPoint())
-      .attachToShape();
-
-    posArc.attachToShape()
-      .endPoint().segmentToPoint(posPoint)
-      .attachToShape()
-      .popShapeToComposite();
+    rac.Control.makeArrowShape(center, posAngle)
+      .attachToComposite();
   }
 
   // Negative arrow
   if (this.value >= this.minValue + rac.equalityThreshold) {
     let negAngle = valueAngle.perpendicular(this.anchor.clockwise).inverse();
-
-    let negArc = center.arc(radius * 1.5, negAngle.add(-1/16), negAngle.add(1/16));
-    let negPoint = negArc.startPoint()
-      .segmentToAngle(negAngle.add(1/8), radius)
-      .pointAtIntersectionWithSegment(
-        negArc.endPoint().segmentToAngle(negAngle.add(-1/8), radius));
-
-    negPoint.segmentToPoint(negArc.startPoint())
-      .attachToShape();
-
-    negArc.attachToShape()
-      .endPoint().segmentToPoint(negPoint)
-      .attachToShape()
-      .popShapeToComposite();
+    rac.Control.makeArrowShape(center, negAngle)
+      .attachToComposite();
   }
 
   rac.popComposite().draw(this.style);
@@ -1483,6 +1459,31 @@ rac.Control.prototype.drawArcControl = function() {
     center.arc(radius * 1.5).draw(rac.pointerStyle);
   }
 };
+
+rac.Control.makeArrowShape = function(center, angle) {
+  // Arc
+  let arcLength = rac.Angle.from(1/22);
+  let arc = center.arc(rac.Control.radius * 1.5,
+    angle.sub(arcLength), angle.add(arcLength));
+
+  // Arrow walls
+  let pointAngle = rac.Angle.from(1/8);
+  let rightWall = arc.startPoint().segmentToAngle(angle.add(pointAngle), 100);
+  let leftWall = arc.endPoint().segmentToAngle(angle.sub(pointAngle), 100);
+
+  // Arrow point
+  let point = rightWall.pointAtIntersectionWithSegment(leftWall);
+
+  // Shape
+  let arrow = new rac.Shape();
+  point.segmentToPoint(arc.startPoint())
+    .attachTo(arrow);
+  arc.attachTo(arrow)
+    .endPoint().segmentToPoint(point)
+    .attachTo(arrow);
+
+    return arrow;
+}
 
 
 
