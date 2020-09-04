@@ -37,7 +37,7 @@ thinControl.value = 10;
 rac.controls.push(thinControl);
 
 let angleControl = new rac.Control();
-angleControl.value = 1/8;
+angleControl.value = rac.Angle.from(1/8);
 rac.controls.push(angleControl);
 
 

@@ -1331,6 +1331,12 @@ rac.drawControls = function() {
 };
 
 
+// Creates a new Control instance with `value` and `minValue` of zero.
+// A control jave a Segment or Arc as the `anchor` shape.
+// For a Segment anchor the `value` and `minValue` can be integers.
+// For an Arch achor the `minValue` can be an integer or an Angle. `value`
+// can be set as a integer or Angle, but will be updated with an Angle
+// instance when the control is used.
 rac.Control = function RacControl() {
   this.style = null;
   this.value = 0;
@@ -1351,8 +1357,9 @@ rac.Control.prototype.center = function() {
     return this.anchor.withLength(this.value).end;
   }
   if (this.anchor instanceof rac.Arc) {
+    let angleValue = rac.Angle.from(this.value);
     return this.anchor.startSegment()
-      .relativeArc(this.value, this.anchor.clockwise)
+      .relativeArc(angleValue, this.anchor.clockwise)
       .endPoint();
   }
 
@@ -1360,6 +1367,7 @@ rac.Control.prototype.center = function() {
   throw rac.Error.invalidObjectToConvert;
 };
 
+// TODO: make drawXControl static functions
 rac.Control.prototype.draw = function() {
   if (this.anchor instanceof rac.Segment) {
     this.drawSegmentControl();
@@ -1374,9 +1382,8 @@ rac.Control.prototype.draw = function() {
 rac.Control.prototype.drawSegmentControl = function() {
   this.anchor.draw(this.style);
 
-  let radius = rac.Control.radius;
   let center = this.center();
-  center.arc(radius)
+  center.arc(rac.Control.radius)
     .attachToShape()
     .popShapeToComposite();
 
@@ -1398,33 +1405,33 @@ rac.Control.prototype.drawSegmentControl = function() {
 
   // Selection
   if (this.isSelected) {
-    center.arc(radius * 1.5).draw(rac.pointerStyle);
+    center.arc(rac.Control.radius * 1.5).draw(rac.pointerStyle);
   }
 };
 
-// TODO: control.value for archcontrol should be an Angle
-// TODO: control.minValue for archcontrol should be an Angle
 rac.Control.prototype.drawArcControl = function() {
   this.anchor.draw(this.style.withFill(rac.Fill.none));
 
-  let radius = rac.Control.radius;
   let center = this.center();
-  center.arc(radius)
+  center.arc(rac.Control.radius)
     .attachToShape()
     .popShapeToComposite();
 
-  let valueAngle = this.anchor.relativeAngle(this.value);
+  let angleValue = rac.Angle.from(this.value);
+  // Angle of the current value relative to the arc anchor
+  let relativeAngleValue = this.anchor.relativeAngle(angleValue);
 
   // Positive arrow
-  if (this.value <= this.anchor.arcLength().turn - rac.equalityThreshold) {
-    let posAngle = valueAngle.perpendicular(this.anchor.clockwise);
+  if (angleValue.turn <= this.anchor.arcLength().turn - rac.equalityThreshold) {
+    let posAngle = relativeAngleValue.perpendicular(this.anchor.clockwise);
     rac.Control.makeArrowShape(center, posAngle)
       .attachToComposite();
   }
 
   // Negative arrow
-  if (this.value >= this.minValue + rac.equalityThreshold) {
-    let negAngle = valueAngle.perpendicular(this.anchor.clockwise).inverse();
+  let minValueAngle = rac.Angle.from(this.minValue);
+  if (angleValue.turn >= minValueAngle.turn + rac.equalityThreshold) {
+    let negAngle = relativeAngleValue.perpendicular(this.anchor.clockwise).inverse();
     rac.Control.makeArrowShape(center, negAngle)
       .attachToComposite();
   }
@@ -1433,7 +1440,7 @@ rac.Control.prototype.drawArcControl = function() {
 
   // Selection
   if (this.isSelected) {
-    center.arc(radius * 1.5).draw(rac.pointerStyle);
+    center.arc(rac.Control.radius * 1.5).draw(rac.pointerStyle);
   }
 };
 
