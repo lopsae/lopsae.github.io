@@ -351,11 +351,21 @@ rac.Angle.prototype.add = function(someAngle) {
 rac.Angle.prototype.substract = function(someAngle) {
   let other = rac.Angle.from(someAngle);
   return new rac.Angle(this.turn - other.turn);
-}
+};
 
 rac.Angle.prototype.sub = function(someAngle) {
   return this.substract(someAngle);
-}
+};
+
+// Returns an Angle which turn is `this.turn` shifted by `otherAngle` in
+// the `clockwise` direction.
+// TODO: look for sub( and replace with shift
+rac.Angle.prototype.shift = function(someAngle, clockwise = true) {
+  let angle = rac.Angle.from(someAngle);
+  return clockwise
+    ? this.add(angle)
+    : this.sub(angle);
+};
 
 rac.Angle.prototype.mult = function(factor) {
   return new rac.Angle(this.turn * factor);
@@ -780,12 +790,13 @@ rac.Segment.prototype.segmentToIntersectionWithSegment = function(other) {
   return new rac.Segment(this.start, end);
 };
 
+// TODO: odd name, maybe should be nextSegment?
 rac.Segment.prototype.segmentToRelativeAngle = function(
   relativeAngle, distance, clockwise = true)
 {
   let angle = clockwise
     ? this.reverseAngle().add(relativeAngle)
-    : this.reverseAngle().add(relativeAngle.negative());
+    : this.reverseAngle().sub(relativeAngle);
   return this.end.segmentToAngle(angle, distance);
 };
 
@@ -817,27 +828,32 @@ rac.Segment.prototype.bezierCentralAnchor = function(distance, clockwise = true)
 };
 
 
-rac.Arc = function RacArc(
-  center, radius,
-  start = rac.Angle.zero,
-  end = start,
-  clockwise = true)
-{
-  this.center = center;
-  this.radius = radius;
-  this.start = start;
-  this.end = end;
-  this.clockwise = clockwise;
+rac.Arc = class RacArc {
+
+  constructor(
+    center, radius,
+    start = rac.Angle.zero,
+    end = start,
+    clockwise = true)
+  {
+    this.center = center;
+    this.radius = radius;
+    this.start = start;
+    this.end = end;
+    this.clockwise = clockwise;
+  }
+
+  copy() {
+    return new rac.Arc(
+      this.center,
+      this.radius,
+      this.start,
+      this.end,
+      this.clockwise);
+  }
+
 }
 
-rac.Arc.prototype.copy = function() {
-  return new rac.Arc(
-    this.center,
-    this.radius,
-    this.start,
-    this.end,
-    this.clockwise);
-}
 
 rac.Drawer.setupDrawFunction(rac.Arc, function() {
   let start = this.start;
@@ -897,13 +913,12 @@ rac.Arc.prototype.containsAngle = function(someAngle) {
   }
 
   if (this.clockwise) {
-    // TODO: use substract instead, fix when i actually have something that uses it
-    let offset = angle.add(this.start.negative());
-    let endOffset = this.end.add(this.start.negative());
+    let offset = angle.sub(this.start);
+    let endOffset = this.end.sub(this.start);
     return offset.turn <= endOffset.turn;
   } else {
-    let offset = angle.add(this.end.negative());
-    let startOffset = this.start.add(this.end.negative());
+    let offset = angle.sub(this.end);
+    let startOffset = this.start.sub(this.end);
     return offset.turn <= startOffset.turn;
   }
 };
@@ -996,6 +1011,13 @@ rac.Arc.prototype.startSegment = function() {
 rac.Arc.prototype.endSegment = function() {
   return new rac.Segment(this.endPoint(), this.center);
 };
+
+// Returns the Angle sum of `this.start` and `someAngle` in the orientation
+// of this arc.
+rac.Arc.prototype.relativeAngle = function(someAngle) {
+  let angle = rac.Angle.from(someAngle);
+  return this.start.shift(angle, this.clockwise);
+}
 
 rac.Arc.prototype.divideToSegments = function(segmentCount) {
   let arcLength = this.arcLength();
@@ -1421,10 +1443,7 @@ rac.Control.prototype.drawArcControl = function() {
     .attachToShape()
     .popShapeToComposite();
 
-  // TODO: arc.relativeAngle?
-  let valueAngle = this.anchor.clockwise
-    ? this.anchor.start.add(this.value)
-    : this.anchor.start.sub(this.value);
+  let valueAngle = this.anchor.relativeAngle(this.value);
 
   // Positive arrow
   if (this.value <= this.anchor.arcLength().turn - rac.equalityThreshold) {
