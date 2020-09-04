@@ -353,6 +353,10 @@ rac.Angle.prototype.substract = function(someAngle) {
   return new rac.Angle(this.turn - other.turn);
 }
 
+rac.Angle.prototype.sub = function(someAngle) {
+  return this.substract(someAngle);
+}
+
 rac.Angle.prototype.mult = function(factor) {
   return new rac.Angle(this.turn * factor);
 };
@@ -368,7 +372,7 @@ rac.Angle.prototype.negative = function() {
 rac.Angle.prototype.perpendicular = function(clockwise = true) {
   return clockwise
     ? this.add(rac.Angle.quarter)
-    : this.add(rac.Angle.quarter.negative())
+    : this.sub(rac.Angle.quarter)
 
 };
 
@@ -1373,6 +1377,7 @@ rac.Control.prototype.drawSegmentControl = function() {
   }
 
   // Negative arrow
+  // TODO: arrow does not dissapear if there is a min value
   if (this.value >= rac.equalityThreshold) {
     let negArc = center.arc(radius * 1.5, angle.inverse().add(-1/16), angle.inverse().add(1/16));
   let negPoint = negArc.startPoint()
@@ -1397,6 +1402,8 @@ rac.Control.prototype.drawSegmentControl = function() {
   }
 };
 
+// TODO: control.value for archcontrol should be an Angle
+// TODO: control.minValue for archcontrol should be an Angle
 rac.Control.prototype.drawArcControl = function() {
   this.anchor.draw(this.style.withFill(rac.Fill.none));
 
@@ -1406,27 +1413,29 @@ rac.Control.prototype.drawArcControl = function() {
     .attachToShape()
     .popShapeToComposite();
 
-  // Positive arrow
   // TODO: could this be an arc lenght property?
   let maxValue = this.anchor.clockwise
     ? this.anchor.end.substract(this.anchor.start)
     : this.anchor.start.substract(this.anchor.end);
-  if (this.value <= maxValue.turn - rac.equalityThreshold) {
-    // TODO: arc.relativeAngle?
-    let valueAngle = this.anchor.clockwise
-      ? this.anchor.start.add(this.value)
-      : this.anchor.start.substract(this.value);
 
-    let positiveAngle = this.anchor.clockwise
+  // TODO: arc.relativeAngle?
+  let valueAngle = this.anchor.clockwise
+    ? this.anchor.start.add(this.value)
+    : this.anchor.start.sub(this.value);
+
+  // Positive arrow
+  if (this.value <= maxValue.turn - rac.equalityThreshold) {
+    // TODO: use perpendicular
+    let posAngle = this.anchor.clockwise
       ? valueAngle.add(rac.Angle.square)
-      : valueAngle.substract(rac.Angle.square);
+      : valueAngle.sub(rac.Angle.square);
 
     // TODO: can the drawing of the arrow be reused?
-    let posArc = center.arc(radius * 1.5, positiveAngle.add(-1/16), positiveAngle.add(1/16));
+    let posArc = center.arc(radius * 1.5, posAngle.add(-1/16), posAngle.add(1/16));
     let posPoint = posArc.startPoint()
-      .segmentToAngle(positiveAngle.add(1/8), radius)
+      .segmentToAngle(posAngle.add(1/8), radius)
       .pointAtIntersectionWithSegment(
-        posArc.endPoint().segmentToAngle(positiveAngle.add(-1/8), radius));
+        posArc.endPoint().segmentToAngle(posAngle.add(-1/8), radius));
 
     posPoint.segmentToPoint(posArc.startPoint())
       .attachToShape();
@@ -1438,21 +1447,26 @@ rac.Control.prototype.drawArcControl = function() {
   }
 
   // Negative arrow
-  // if (this.value >= rac.equalityThreshold) {
-  //   let negArc = center.arc(radius * 1.5, angle.inverse().add(-1/16), angle.inverse().add(1/16));
-  // let negPoint = negArc.startPoint()
-  //   .segmentToAngle(angle.add(1/8), radius)
-  //   .pointAtIntersectionWithSegment(
-  //     negArc.endPoint().segmentToAngle(angle.add(-1/8), radius));
+  if (this.value >= this.minValue + rac.equalityThreshold) {
+    // TODO: use perpendicular
+    let negAngle = this.anchor.clockwise
+      ? valueAngle.sub(rac.Angle.square)
+      : valueAngle.add(rac.Angle.square);
 
-  // negPoint.segmentToPoint(negArc.startPoint())
-  //   .attachToShape();
+    let negArc = center.arc(radius * 1.5, negAngle.add(-1/16), negAngle.add(1/16));
+    let negPoint = negArc.startPoint()
+      .segmentToAngle(negAngle.add(1/8), radius)
+      .pointAtIntersectionWithSegment(
+        negArc.endPoint().segmentToAngle(negAngle.add(-1/8), radius));
 
-  // negArc.attachToShape()
-  //   .endPoint().segmentToPoint(negPoint)
-  //   .attachToShape()
-  //   .popShapeToComposite();
-  // }
+    negPoint.segmentToPoint(negArc.startPoint())
+      .attachToShape();
+
+    negArc.attachToShape()
+      .endPoint().segmentToPoint(negPoint)
+      .attachToShape()
+      .popShapeToComposite();
+  }
 
   rac.popComposite().draw(this.style);
 
