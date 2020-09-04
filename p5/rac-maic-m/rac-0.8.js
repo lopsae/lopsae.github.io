@@ -359,7 +359,6 @@ rac.Angle.prototype.sub = function(someAngle) {
 
 // Returns an Angle which turn is `this.turn` shifted by `otherAngle` in
 // the `clockwise` direction.
-// TODO: look for sub( and replace with shift
 rac.Angle.prototype.shift = function(someAngle, clockwise = true) {
   let angle = rac.Angle.from(someAngle);
   return clockwise
@@ -380,10 +379,7 @@ rac.Angle.prototype.negative = function() {
 };
 
 rac.Angle.prototype.perpendicular = function(clockwise = true) {
-  return clockwise
-    ? this.add(rac.Angle.square)
-    : this.sub(rac.Angle.square)
-
+  return this.shift(rac.Angle.square, clockwise);
 };
 
 // Returns an Angle that represents the distance from `this` to `someAngle`
@@ -770,9 +766,7 @@ rac.Segment.prototype.segmentPerpendicular = function(clockwise = true) {
 rac.Segment.prototype.relativeArc = function(someAngle, clockwise = true) {
   let angle = rac.Angle.from(someAngle);
   let arcStart = this.angle();
-  let arcEnd = clockwise
-    ? arcStart.add(angle)
-    : arcStart.sub(angle);
+  let arcEnd = arcStart.shift(angle, clockwise);
 
   return new rac.Arc(
     this.start, this.length(),
@@ -794,9 +788,7 @@ rac.Segment.prototype.segmentToIntersectionWithSegment = function(other) {
 rac.Segment.prototype.segmentToRelativeAngle = function(
   relativeAngle, distance, clockwise = true)
 {
-  let angle = clockwise
-    ? this.reverseAngle().add(relativeAngle)
-    : this.reverseAngle().sub(relativeAngle);
+  let angle = this.reverseAngle().shift(relativeAngle, clockwise);
   return this.end.segmentToAngle(angle, distance);
 };
 
