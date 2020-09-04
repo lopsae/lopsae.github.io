@@ -36,6 +36,11 @@ let thinControl = new rac.Control();
 thinControl.value = 10;
 rac.controls.push(thinControl);
 
+let angleControl = new rac.Control();
+angleControl.value = 1/8;
+// TODO: enable
+rac.controls.push(angleControl);
+
 
 
 
@@ -64,6 +69,7 @@ function draw() {
 
   wideControl.style = controlStyle;
   thinControl.style = controlStyle;
+  angleControl.style = controlStyle;
 
   rac.pointerStyle = colorScheme.pointer.stroke(3);
 
@@ -71,13 +77,13 @@ function draw() {
   // Start point of M
   let start = new rac.Point(width * 1/4, height * 2/3);
 
-  // Base wide for drawing
+  // Widths for drawing
   let wide = wideControl.value;
   let thin = thinControl.value;
 
 
   // Wide control
-  wideControl.anchorSegment = start
+  wideControl.anchor = start
     .segmentToAngle(rac.Angle.s, rac.Control.radius * 2)
     .draw()
     // TODO: range of control could be a control property
@@ -88,6 +94,13 @@ function draw() {
     .draw();
 
 
+  // Angle control
+  angleControl.anchor = start
+    .segmentToAngle(rac.Angle.w, rac.Control.radius * 5).draw()
+    .arc(1/4, false);
+
+
+  // Baseline
   let baseline = start.segmentToAngle(rac.Angle.e, wide)
     .draw()
     .attachToShape();
@@ -121,7 +134,7 @@ function draw() {
     .nextSegmentToAngle(rac.Angle.n, wide*3.5).draw();
 
   // Thin control
-  thinControl.anchorSegment = endAscenderGuide.start
+  thinControl.anchor = endAscenderGuide.start
     .pointToAngle(rac.Angle.w, thin)
     .segmentToAngle(rac.Angle.s, rac.Control.radius*4)
     .draw()

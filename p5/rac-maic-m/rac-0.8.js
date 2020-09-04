@@ -1141,7 +1141,7 @@ rac.ControlSelection = class ControlSelection{
     this.control = control;
     // Copy of the control anchor, so that the control can move tied to
     // the drawing, while the interaction range remains fixed.
-    this.anchorCopy = control.anchorSegment.copy();
+    this.anchorCopy = control.anchor.copy();
     // Segment from the captured pointer position to the contro center,
     // used to attach the control to the point where interaction started.
     this.pointerOffset = rac.Point.mouse().segmentToPoint(control.center());
@@ -1208,7 +1208,8 @@ rac.pointerReleased = function() {
 }
 
 
-// Draws controls and the visuals of control selection
+// Draws controls and the visuals of control selection. Usually called at
+// the end of `draw` so that controls sit on top of the drawing.
 rac.drawControls = function() {
   // Pointer position
   let pointerCenter = rac.Point.mouse();
@@ -1294,7 +1295,7 @@ rac.Control = function RacControl() {
   this.style = null;
   this.value = 0;
   this.minValue = 0;
-  this.anchorSegment = null;
+  this.anchor = null;
   this.isSelected = false;
 };
 
@@ -1302,27 +1303,48 @@ rac.Control.radius = 22;
 
 
 rac.Control.prototype.center = function() {
-  if (this.anchorSegment === null) {
+  if (this.anchor === null) {
     return null;
   }
 
-  return this.anchorSegment.withLength(this.value).end;
+  if (this.anchor instanceof rac.Segment) {
+    return this.anchor.withLength(this.value).end;
+  }
+  if (this.anchor instanceof rac.Arc) {
+    return this.anchor.startSegment()
+      .relativeArc(this.value, this.anchor.clockwise)
+      .endPoint();
+  }
+
+  console.trace(`Cannot produce control center - constructorName:${this.anchor.constructor.name}`);
+  throw rac.Error.invalidObjectToConvert;
 };
 
 rac.Control.prototype.draw = function() {
+  if (this.anchor instanceof rac.Segment) {
+    this.drawSegmentControl();
+    return;
+  }
+  if (this.anchor instanceof rac.Arc) {
+    this.drawArcControl();
+    return;
+  }
+}
+
+rac.Control.prototype.drawSegmentControl = function() {
   let radius = rac.Control.radius;
 
-  let angle = this.anchorSegment.angle();
+  let angle = this.anchor.angle();
   let center = this.center();
 
-  this.anchorSegment.draw(this.style);
+  this.anchor.draw(this.style);
 
   center.arc(radius)
     .attachToShape()
     .popShapeToComposite();
 
   // Positive arrow
-  if (this.value <= this.anchorSegment.length() - rac.equalityThreshold) {
+  if (this.value <= this.anchor.length() - rac.equalityThreshold) {
     let posArc = center.arc(radius * 1.5, angle.add(-1/16), angle.add(1/16));
   let posPoint = posArc.startPoint()
     .segmentToAngle(angle.add(1/8), radius)
@@ -1362,4 +1384,59 @@ rac.Control.prototype.draw = function() {
     center.arc(radius * 1.5).draw(rac.pointerStyle);
   }
 };
+
+rac.Control.prototype.drawArcControl = function() {
+  let radius = rac.Control.radius;
+
+  let center = this.center();
+
+  this.anchor.draw(this.style);
+
+  center.arc(radius)
+    .attachToShape()
+    .popShapeToComposite();
+
+  // Positive arrow
+  // if (this.value <= this.anchor.length() - rac.equalityThreshold) {
+  //   let posArc = center.arc(radius * 1.5, angle.add(-1/16), angle.add(1/16));
+  // let posPoint = posArc.startPoint()
+  //   .segmentToAngle(angle.add(1/8), radius)
+  //   .pointAtIntersectionWithSegment(
+  //     posArc.endPoint().segmentToAngle(angle.add(-1/8), radius));
+
+  // posPoint.segmentToPoint(posArc.startPoint())
+  //   .attachToShape();
+
+  // posArc.attachToShape()
+  //   .endPoint().segmentToPoint(posPoint)
+  //   .attachToShape()
+  //   .popShapeToComposite();
+  // }
+
+  // Negative arrow
+  // if (this.value >= rac.equalityThreshold) {
+  //   let negArc = center.arc(radius * 1.5, angle.inverse().add(-1/16), angle.inverse().add(1/16));
+  // let negPoint = negArc.startPoint()
+  //   .segmentToAngle(angle.add(1/8), radius)
+  //   .pointAtIntersectionWithSegment(
+  //     negArc.endPoint().segmentToAngle(angle.add(-1/8), radius));
+
+  // negPoint.segmentToPoint(negArc.startPoint())
+  //   .attachToShape();
+
+  // negArc.attachToShape()
+  //   .endPoint().segmentToPoint(negPoint)
+  //   .attachToShape()
+  //   .popShapeToComposite();
+  // }
+
+  rac.popComposite().draw(this.style);
+
+  // Selection
+  if (this.isSelected) {
+    center.arc(radius * 1.5).draw(rac.pointerStyle);
+  }
+};
+
+
 
