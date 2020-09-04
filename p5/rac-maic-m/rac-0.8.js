@@ -376,11 +376,14 @@ rac.Angle.prototype.perpendicular = function(clockwise = true) {
 
 };
 
-rac.Angle.prototype.distance = function(other, clockwise = true) {
-  let offset = other.add(this.negative());
+// Returns an Angle that represents the distance from `this` to `someAngle`
+// traveling in the `clockwise` direction.
+rac.Angle.prototype.distance = function(someAngle, clockwise = true) {
+  let other = rac.Angle.from(someAngle);
+  let distance = other.substract(this);
   return clockwise
-    ? offset
-    : offset.negative();
+    ? distance
+    : distance.negative();
 };
 
 rac.Angle.prototype.radians = function() {
@@ -968,6 +971,8 @@ rac.Arc.prototype.intersectingPointsWithArc = function(other) {
   return intersections;
 };
 
+// Returns an Angle that represents the distance between `this.start` and
+// `this.end`, in the direction of the arc.
 rac.Arc.prototype.arcLength = function() {
   return this.start.distance(this.end, this.clockwise);
 };
@@ -1412,18 +1417,13 @@ rac.Control.prototype.drawArcControl = function() {
     .attachToShape()
     .popShapeToComposite();
 
-  // TODO: could this be an arc lenght property?
-  let maxValue = this.anchor.clockwise
-    ? this.anchor.end.substract(this.anchor.start)
-    : this.anchor.start.substract(this.anchor.end);
-
   // TODO: arc.relativeAngle?
   let valueAngle = this.anchor.clockwise
     ? this.anchor.start.add(this.value)
     : this.anchor.start.sub(this.value);
 
   // Positive arrow
-  if (this.value <= maxValue.turn - rac.equalityThreshold) {
+  if (this.value <= this.anchor.arcLength().turn - rac.equalityThreshold) {
     let posAngle = valueAngle.perpendicular(this.anchor.clockwise);
 
     // TODO: can the drawing of the arrow be reused?
