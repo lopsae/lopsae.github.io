@@ -1228,6 +1228,7 @@ rac.pointerDragged = function(pointerCenter){
     return;
   }
 
+  let control = rac.controlSelection.control;
   let anchorCopy = rac.controlSelection.anchorCopy;
 
   // Center of dragged control in the pointer current position
@@ -1235,24 +1236,46 @@ rac.pointerDragged = function(pointerCenter){
     .translateToStart(pointerCenter)
     .end;
 
-  // TODO: needs update for arc anchors
-  // New value from the current pointer position, relative to anchorCopy
-  let newValue = anchorCopy
-    .lengthToProjectedPoint(currentPointerControlCenter);
+  let newValue = control.value;
 
-  // TODO: needs update for arc anchors
-  if (newValue < rac.controlSelection.control.minValue) {
-    newValue = rac.controlSelection.control.minValue;
+  // Segment anchor
+  if (anchorCopy instanceof rac.Segment) {
+    // New value from the current pointer position, relative to anchorCopy
+    newValue = anchorCopy
+      .lengthToProjectedPoint(currentPointerControlCenter);
+
+    // Clamping value (javascript has no Math.clamp)
+    newValue = Math.max(newValue, control.minValue);
+    newValue = Math.min(newValue, anchorCopy.length());
   }
 
-  // TODO: needs update for arc anchors
-  if (newValue > anchorCopy.length()) {
-    newValue = anchorCopy.length()
+  // Arc anchor
+  if (anchorCopy instanceof rac.Arc) {
+    // TODO: needs update for arc anchors
+    let selectionAngle = anchorCopy.center.angleToPoint(currentPointerControlCenter);
+    // TODO: arc.relativeAngle?
+    selectionAngle = selectionAngle.substract(anchorCopy.start);
+    selectionAngle = anchorCopy.clockwise
+      ? selectionAngle
+      : selectionAngle.negative();
+
+    let newTurn = selectionAngle.turn;
+    // Clamping value (javascript has no Math.clamp)
+    let minValueAngle = rac.Angle.from(control.minValue)
+    newTurn = Math.max(newTurn, minValueAngle.turn);
+    // TODO: arc.relativeEndAngle?
+    let maxValueAngle = anchorCopy.clockwise
+      ? anchorCopy.end.substract(anchorCopy.start)
+      : anchorCopy.end.substract(anchorCopy.start).negative();
+    newTurn = Math.min(newTurn, maxValueAngle.turn);
+
+    newValue = rac.Angle.from(newTurn);
   }
 
   // Update control with new value
   rac.controlSelection.control.value = newValue;
 };
+
 
 // Call to signal the pointer being released. Upon release the selected
 // control is cleared.
@@ -1296,6 +1319,7 @@ rac.drawControls = function() {
     if (minValue > 0) {
       let minMarkerLength = 5;
       let minPoint = anchorCopy.withLength(minValue).end;
+      // TODO: needs update for arc anchors
       anchorCopy.segmentPerpendicular()
         .withLength(minMarkerLength)
         .translateToStart(minPoint)
@@ -1313,40 +1337,48 @@ rac.drawControls = function() {
     draggedShadowCenter.arc(2)
       .draw(rac.pointerStyle);
 
-    let constrainedLength = anchorCopy
-      .lengthToProjectedPoint(draggedShadowCenter);
-    if (constrainedLength < minValue) {
-      constrainedLength = minValue;
+    // Segment anchor
+    if (anchorCopy instanceof rac.Segment) {
+      let constrainedLength = anchorCopy
+        .lengthToProjectedPoint(draggedShadowCenter);
+      if (constrainedLength < minValue) {
+        constrainedLength = minValue;
+      }
+      if (constrainedLength > anchorCopy.length()) {
+        constrainedLength = anchorCopy.length()
+      }
+
+      let constrainedAnchorCenter = anchorCopy
+        .withLength(constrainedLength)
+        .end;
+
+      // Control shadow at anchor
+      constrainedAnchorCenter.arc(rac.Control.radius)
+        .draw(rac.pointerStyle);
+
+      let constrainedShadowCenter = draggedShadowCenter
+        .segmentPerpendicularToSegment(anchorCopy)
+        // reverse and translated to constraint to anchor
+        .reverse()
+        .translateToStart(constrainedAnchorCenter)
+        // anchor to control shadow center
+        .draw(rac.pointerStyle)
+        .end;
+
+      // Control shadow, dragged and constrained to anchor
+      constrainedShadowCenter.arc(rac.Control.radius / 2)
+        .draw(rac.pointerStyle);
+
+      // Segment to dragged shadow center
+      constrainedShadowCenter.segmentToPoint(draggedShadowCenter)
+        .segmentWithRatioOfLength(2/3)
+        .draw(rac.pointerStyle);
     }
-    if (constrainedLength > anchorCopy.length()) {
-      constrainedLength = anchorCopy.length()
+
+    // Arc anchor
+    if (anchorCopy instanceof rac.Arc) {
+      // TODO: implement!
     }
-
-    let constrainedAnchorCenter = anchorCopy
-      .withLength(constrainedLength)
-      .end;
-
-    // Control shadow at anchor
-    constrainedAnchorCenter.arc(rac.Control.radius)
-      .draw(rac.pointerStyle);
-
-    let constrainedShadowCenter = draggedShadowCenter
-      .segmentPerpendicularToSegment(anchorCopy)
-      // reverse and translated to constraint to anchor
-      .reverse()
-      .translateToStart(constrainedAnchorCenter)
-      // anchor to control shadow center
-      .draw(rac.pointerStyle)
-      .end;
-
-    // Control shadow, dragged and constrained to anchor
-    constrainedShadowCenter.arc(rac.Control.radius / 2)
-      .draw(rac.pointerStyle);
-
-    // Segment to dragged shadow center
-    constrainedShadowCenter.segmentToPoint(draggedShadowCenter)
-      .segmentWithRatioOfLength(2/3)
-      .draw(rac.pointerStyle);
   }
 };
 
