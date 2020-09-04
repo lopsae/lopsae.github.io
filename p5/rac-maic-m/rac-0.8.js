@@ -371,8 +371,8 @@ rac.Angle.prototype.negative = function() {
 
 rac.Angle.prototype.perpendicular = function(clockwise = true) {
   return clockwise
-    ? this.add(rac.Angle.quarter)
-    : this.sub(rac.Angle.quarter)
+    ? this.add(rac.Angle.square)
+    : this.sub(rac.Angle.square)
 
 };
 
@@ -1425,10 +1425,7 @@ rac.Control.prototype.drawArcControl = function() {
 
   // Positive arrow
   if (this.value <= maxValue.turn - rac.equalityThreshold) {
-    // TODO: use perpendicular
-    let posAngle = this.anchor.clockwise
-      ? valueAngle.add(rac.Angle.square)
-      : valueAngle.sub(rac.Angle.square);
+    let posAngle = valueAngle.perpendicular(this.anchor.clockwise);
 
     // TODO: can the drawing of the arrow be reused?
     let posArc = center.arc(radius * 1.5, posAngle.add(-1/16), posAngle.add(1/16));
@@ -1448,10 +1445,7 @@ rac.Control.prototype.drawArcControl = function() {
 
   // Negative arrow
   if (this.value >= this.minValue + rac.equalityThreshold) {
-    // TODO: use perpendicular
-    let negAngle = this.anchor.clockwise
-      ? valueAngle.sub(rac.Angle.square)
-      : valueAngle.add(rac.Angle.square);
+    let negAngle = valueAngle.perpendicular(this.anchor.clockwise).inverse();
 
     let negArc = center.arc(radius * 1.5, negAngle.add(-1/16), negAngle.add(1/16));
     let negPoint = negArc.startPoint()
