@@ -1367,57 +1367,59 @@ rac.Control.prototype.center = function() {
   throw rac.Error.invalidObjectToConvert;
 };
 
-// TODO: make drawXControl static functions
 rac.Control.prototype.draw = function() {
   if (this.anchor instanceof rac.Segment) {
-    this.drawSegmentControl();
+    rac.Control.drawSegmentControl(this);
     return;
   }
   if (this.anchor instanceof rac.Arc) {
-    this.drawArcControl();
+    rac.Control.drawArcControl(this);
     return;
   }
 }
 
-rac.Control.prototype.drawSegmentControl = function() {
-  let anchor = this.anchor;
-  anchor.draw(this.style);
+rac.Control.drawSegmentControl = function(control) {
+  let anchor = control.anchor;
+  anchor.draw(control.style);
 
-  let center = this.center();
+  // Control button
+  let center = control.center();
   center.arc(rac.Control.radius)
     .attachToShape()
     .popShapeToComposite();
 
   // Positive arrow
-  if (this.value <= anchor.length() - rac.equalityThreshold) {
+  if (control.value <= anchor.length() - rac.equalityThreshold) {
     rac.Control.makeArrowShape(center, anchor.angle())
       .attachToComposite();
   }
 
   // Negative arrow
-  if (this.value >= this.minValue + rac.equalityThreshold) {
+  if (control.value >= control.minValue + rac.equalityThreshold) {
     rac.Control.makeArrowShape(center, anchor.angle().inverse())
       .attachToComposite();
   }
 
-  rac.popComposite().draw(this.style);
+  rac.popComposite().draw(control.style);
 
   // Selection
-  if (this.isSelected) {
+  // TODO: Could this be replaced with a check for rac.controlSelection?
+  if (control.isSelected) {
     center.arc(rac.Control.radius * 1.5).draw(rac.pointerStyle);
   }
 };
 
-rac.Control.prototype.drawArcControl = function() {
-  let anchor = this.anchor;
-  anchor.draw(this.style.withFill(rac.Fill.none));
+rac.Control.drawArcControl = function(control) {
+  let anchor = control.anchor;
+  anchor.draw(control.style.withFill(rac.Fill.none));
 
-  let center = this.center();
+  // Control button
+  let center = control.center();
   center.arc(rac.Control.radius)
     .attachToShape()
     .popShapeToComposite();
 
-  let angleValue = rac.Angle.from(this.value);
+  let angleValue = rac.Angle.from(control.value);
   // Angle of the current value relative to the arc anchor
   let relativeAngleValue = anchor.relativeAngle(angleValue);
 
@@ -1429,17 +1431,17 @@ rac.Control.prototype.drawArcControl = function() {
   }
 
   // Negative arrow
-  let minValueAngle = rac.Angle.from(this.minValue);
+  let minValueAngle = rac.Angle.from(control.minValue);
   if (angleValue.turn >= minValueAngle.turn + rac.equalityThreshold) {
     let negAngle = relativeAngleValue.perpendicular(anchor.clockwise).inverse();
     rac.Control.makeArrowShape(center, negAngle)
       .attachToComposite();
   }
 
-  rac.popComposite().draw(this.style);
+  rac.popComposite().draw(control.style);
 
   // Selection
-  if (this.isSelected) {
+  if (control.isSelected) {
     center.arc(rac.Control.radius * 1.5).draw(rac.pointerStyle);
   }
 };
