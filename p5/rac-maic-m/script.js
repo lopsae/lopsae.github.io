@@ -30,6 +30,7 @@ function mouseReleased(event) {
 let wideControl = new rac.Control();
 wideControl.value = 120;
 wideControl.minLimit = 10;
+wideControl.maxLimit = 10;
 rac.controls.push(wideControl);
 
 let thinControl = new rac.Control();
