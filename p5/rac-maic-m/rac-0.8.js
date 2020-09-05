@@ -432,7 +432,7 @@ rac.Angle.left = rac.Angle.w;
 rac.Angle.up = rac.Angle.n;
 
 
-rac.Point = class Point{
+rac.Point = class RacPoint{
 
   constructor(x, y) {
     this.x = x;
@@ -545,7 +545,7 @@ rac.Point.prototype.arc = function(radius, start = rac.Angle.zero, end = start, 
 };
 
 
-rac.Segment = class Segment {
+rac.Segment = class RacSegment {
 
   constructor(start, end) {
     this.start = start;
@@ -1188,7 +1188,7 @@ rac.Shape.prototype.addContour = function(element) {
 };
 
 
-rac.ControlSelection = class ControlSelection{
+rac.ControlSelection = class RacControlSelection{
   constructor(control) {
     this.control = control;
     // Copy of the control anchor, so that the control can move tied to
@@ -1263,7 +1263,6 @@ rac.pointerDragged = function(pointerCenter){
 
   // Arc anchor
   if (anchorCopy instanceof rac.Arc) {
-    // TODO: needs update for arc anchors
     let selectionAngle = anchorCopy.center.angleToPoint(currentPointerControlCenter);
     // TODO: arc.relativeAngle?
     selectionAngle = selectionAngle.substract(anchorCopy.start);
