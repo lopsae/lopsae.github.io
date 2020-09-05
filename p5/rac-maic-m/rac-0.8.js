@@ -1245,7 +1245,7 @@ rac.pointerDragged = function(pointerCenter){
       .lengthToProjectedPoint(currentPointerControlCenter);
 
     // Clamping value (javascript has no Math.clamp)
-    newValue = Math.max(newValue, control.minValue);
+    newValue = Math.max(newValue, control.minLimit);
     newValue = Math.min(newValue, anchorCopy.length());
   }
 
@@ -1261,8 +1261,8 @@ rac.pointerDragged = function(pointerCenter){
 
     let newTurn = selectionAngle.turn;
     // Clamping value (javascript has no Math.clamp)
-    let minValueAngle = rac.Angle.from(control.minValue)
-    newTurn = Math.max(newTurn, minValueAngle.turn);
+    let minLimitAngle = rac.Angle.from(control.minLimit)
+    newTurn = Math.max(newTurn, minLimitAngle.turn);
     // TODO: arc.relativeEndAngle?
     let maxValueAngle = anchorCopy.clockwise
       ? anchorCopy.end.substract(anchorCopy.start)
@@ -1317,11 +1317,11 @@ rac.drawControls = function() {
   anchorCopy.draw(rac.pointerStyle);
 
   // Marker for min value
-  let minValue = rac.controlSelection.control.minValue;
+  let minLimit = rac.controlSelection.control.minLimit;
   // TODO: min check needs update for arc anchors
-  if (minValue > 0) {
+  if (minLimit > 0) {
     let minMarkerLength = 5;
-    let minPoint = anchorCopy.withLength(minValue).end;
+    let minPoint = anchorCopy.withLength(minLimit).end;
     // TODO: needs update for arc anchors min value
     anchorCopy.segmentPerpendicular()
       .withLength(minMarkerLength)
@@ -1343,8 +1343,8 @@ rac.drawControls = function() {
   if (anchorCopy instanceof rac.Segment) {
     let constrainedLength = anchorCopy
       .lengthToProjectedPoint(draggedShadowCenter);
-    if (constrainedLength < minValue) {
-      constrainedLength = minValue;
+    if (constrainedLength < minLimit) {
+      constrainedLength = minLimit;
     }
     if (constrainedLength > anchorCopy.length()) {
       constrainedLength = anchorCopy.length()
@@ -1384,16 +1384,17 @@ rac.drawControls = function() {
 };
 
 
-// Creates a new Control instance with `value` and `minValue` of zero.
-// A control jave a Segment or Arc as the `anchor` shape.
-// For a Segment anchor the `value` and `minValue` can be integers.
-// For an Arch achor the `minValue` can be an integer or an Angle. `value`
+// Creates a new Control instance with `value` and limits` of zero.
+// A control may have a Segment or Arc as the `anchor` shape.
+// For a Segment anchor the `value` and limits can be integers.
+// For an Arch achor the limits can be an integer or an Angle. `value`
 // can be set as a integer or Angle, but will be updated with an Angle
 // instance when the control is used.
 rac.Control = function RacControl() {
   this.style = null;
   this.value = 0;
-  this.minValue = 0;
+  this.minLimit = 0;
+  this.maxLimit = 0;
   this.anchor = null;
 };
 
@@ -1454,7 +1455,7 @@ rac.Control.drawSegmentControl = function(control) {
   }
 
   // Negative arrow
-  if (control.value >= control.minValue + rac.equalityThreshold) {
+  if (control.value >= control.minLimit + rac.equalityThreshold) {
     rac.Control.makeArrowShape(center, anchor.angle().inverse())
       .attachToComposite();
   }
@@ -1489,8 +1490,8 @@ rac.Control.drawArcControl = function(control) {
   }
 
   // Negative arrow
-  let minValueAngle = rac.Angle.from(control.minValue);
-  if (angleValue.turn >= minValueAngle.turn + rac.equalityThreshold) {
+  let minLimitAngle = rac.Angle.from(control.minLimit);
+  if (angleValue.turn >= minLimitAngle.turn + rac.equalityThreshold) {
     let negAngle = relativeAngleValue.perpendicular(anchor.clockwise).inverse();
     rac.Control.makeArrowShape(center, negAngle)
       .attachToComposite();
