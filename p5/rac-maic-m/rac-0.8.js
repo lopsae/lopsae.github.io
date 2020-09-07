@@ -167,32 +167,47 @@ rac.Error = {
 };
 
 
-rac.Color = function RacColor(r, g, b, alpha = 1) {
-  this.r = r;
-  this.g = g;
-  this.b = b;
-  this.alpha = alpha;
-};
+rac.Color = class RacColor {
+  constructor(r, g, b, alpha = 1) {
+    this.r = r;
+    this.g = g;
+    this.b = b;
+    this.alpha = alpha;
+  }
 
-rac.Color.prototype.copy = function () {
-  return new rac.Color(this.r, this.g, this.b, this.alpha);
-};
+  copy() {
+    return new rac.Color(this.r, this.g, this.b, this.alpha);
+  }
 
-rac.Color.prototype.fill = function() {
+  fill() {
   return new rac.Fill(this);
-};
+  }
 
-rac.Color.prototype.stroke = function(weight = 1) {
-  return new rac.Stroke(this, weight);
-};
+  stroke(weight = 1) {
+    return new rac.Stroke(this, weight);
+  }
 
-rac.Color.prototype.applyBackground = function() {
-  background(this.r * 255, this.g * 255, this.b * 255);
-};
+  applyBackground() {
+    background(this.r * 255, this.g * 255, this.b * 255);
+  }
 
-rac.Color.prototype.applyFill = function() {
-  fill(this.r * 255, this.g * 255, this.b * 255, this.alpha * 255);
-};
+  applyFill = function() {
+    fill(this.r * 255, this.g * 255, this.b * 255, this.alpha * 255);
+  }
+
+  withAlpha(alpha) {
+    let copy = this.copy();
+    copy.alpha = alpha;
+    return copy;
+  }
+
+  withAlphaRatio(ratio) {
+    let copy = this.copy();
+    copy.alpha = this.color.alpha * ratio;
+    return copy;
+  }
+
+}
 
 rac.Color.black   = new rac.Color(0, 0, 0);
 rac.Color.red     = new rac.Color(1, 0, 0);
@@ -217,18 +232,6 @@ rac.Stroke = class RacStroke {
       colorCopy = this.color.copy();
     }
     return new rac.Stroke(colorCopy, this.weight);
-  }
-
-  withAlpha(alpha) {
-    let copy = this.copy();
-    copy.color.alpha = alpha;
-    return copy;
-  }
-
-  withAlphaRatio(ratio) {
-    let copy = this.copy();
-    copy.color.alpha = this.color.alpha * ratio;
-    return copy;
   }
 
   withWeight(weight) {

@@ -40,7 +40,7 @@ function draw() {
   let colorScheme = {
     background:  new rac.Color( .1,  .1,  .1), // blackish
     stroke:      new rac.Color( .9,  .2,  .2,  .8), // red,
-    marker:      new rac.Color( .7,  .3,  .3,  .5), // rose pink
+    rosePink:    new rac.Color( .7,  .3,  .3,  .5),
     fill:        new rac.Color( .8,  .8,  .8,  .9), // whiteish
     controlFill: new rac.Color( .8,  .8,  .8, 1.0), // whiteish
     pointer:     new rac.Color( .9,  .9,  .9,  .6), // whiteish
@@ -51,7 +51,8 @@ function draw() {
   let mainStroke = colorScheme.stroke.stroke(2);
   mainStroke.apply();
 
-  let marker = colorScheme.marker.stroke(2);
+  let controlMarker = colorScheme.rosePink.withAlpha(.3).stroke(2);
+  let noEaseMarker = colorScheme.rosePink.withAlpha(.5).stroke(2);
 
   // Testing highlight
   let highlight = colorScheme.highlight.stroke(5);
@@ -76,7 +77,7 @@ function draw() {
   let lastLinePos = linesOffset + linesSpacing * (linesCount - 1);
 
   // NoEase marker
-  noEaseControl.center().segmentToAngle(rac.Angle.s, lastLinePos).draw(marker);
+  noEaseControl.center().segmentToAngle(rac.Angle.s, lastLinePos).draw(controlMarker);
 
   let noEaseDistance = noEaseControl.value;
   let easeDistance = rac.Control.radius * 10;
@@ -84,11 +85,11 @@ function draw() {
 
   // EaseDistance marker
   start.pointToAngle(rac.Angle.e, noEaseDistance + easeDistance)
-    .segmentToAngle(rac.Angle.s, lastLinePos).draw(marker);
+    .segmentToAngle(rac.Angle.s, lastLinePos).draw(controlMarker);
 
   // EaseLength marker
   start.pointToAngle(rac.Angle.e, noEaseDistance + easedLength)
-    .segmentToAngle(rac.Angle.s, lastLinePos).draw(marker);
+    .segmentToAngle(rac.Angle.s, lastLinePos).draw(controlMarker);
 
   for (let index = 0; index < linesCount; index++) {
     let linePos = linesOffset + linesSpacing * index;
@@ -99,8 +100,9 @@ function draw() {
     if (lineLength < noEaseDistance) {
       lineStart.segmentToAngle(rac.Angle.e, lineLength).draw();
     } else {
+      // No ease marker
       lineStart.pointToAngle(rac.Angle.s, 3)
-        .segmentToAngle(rac.Angle.e, lineLength).draw(marker);
+        .segmentToAngle(rac.Angle.e, lineLength).draw(noEaseMarker);
 
       let lengthRatio = (lineLength - noEaseDistance) / easeDistance;
       // https://math.stackexchange.com/questions/121720/ease-in-out-function/121755#121755
