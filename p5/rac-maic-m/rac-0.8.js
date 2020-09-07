@@ -1,5 +1,8 @@
 "use strict";
 
+// TODO: to test/visualize
+// angle.shift, shiftWithOrigin
+// arc.clampToArcLength
 
 // Ruler and Compass - 0.8.x
 let rac;
@@ -578,11 +581,12 @@ rac.Segment = class RacSegment {
   // Returns `value` clamped to zero and the length of the segment. If
   // `minClamp` or `maxClamp` are provided, these are added to zero or
   // substracted from the length value for the clamp.
+  // If the `min/maxClamp` values result in a contradictory range, the
+  // returned value will comply with `minClamp`.
   clampToLength(value, minClamp = 0, maxClamp = 0) {
     let clamped = value;
     clamped = Math.min(clamped, this.length() - maxClamp);
-    // If the min/maxClamp values are contradictory, the returned value
-    // will comply with minClamp.
+    // Comply at least with minClamp
     clamped = Math.max(clamped, minClamp);
     return clamped;
   }
@@ -868,10 +872,82 @@ rac.Arc = class RacArc {
       this.clockwise);
   }
 
+  vertex() {
+    let arcLength = this.arcLength();
+    let beziersPerTurn = 5;
+    let divisions = arcLength.turn == 0
+      ? beziersPerTurn
+      : Math.ceil(arcLength.turn * beziersPerTurn);
+
+    this.divideToBeziers(divisions).vertex();
+    return this;
+  }
+
+  reverse() {
+    return new rac.Arc(
+      this.center, this.radius,
+      this.end, this.start,
+      !this.clockwise);
+  }
+
+  // Returns `true` if this arc is a complete circle.
+  isCircle() {
+    let distance = Math.abs(this.end.turn - this.start.turn);
+    return distance <= rac.equalityThreshold;
+  }
+
+  // Returns `someAngle` clamped to `this.start` and `this.end`, whichever
+  // is closest in distance if `someAngle` is outside the arc.
+  // Returns `someAngle` as an angle if the arc is a complete circle,
+  // unless if `min/maxClamp` are provided.
+  // If `minClamp` or `maxClamp` are provided, these are added to `start`,
+  // or substracted from `end` in the orientation of the arc, including in
+  // complete circle arcs.
+  // If the `min/maxClamp` values result in a contradictory range, the
+  // returned value will comply with `minClamp + this.start`.
+  clampToArcLength(someAngle, someAngleMinClamp = rac.Angle.zero, someAngleMaxClamp = rac.Angle.zero) {
+    let angle = rac.Angle.from(someAngle);
+    let minClamp = rac.Angle.from(someAngleMinClamp);
+    let maxClamp = rac.Angle.from(someAngleMaxClamp);
+
+    if (this.isCircle() && minClamp.turn == 0 && maxClamp.turn == 0) {
+      // Complete circle
+      return angle;
+    }
+
+    // Angle in arc, with arc as origin
+    // All comparisons are made in a clockwise orientation
+    let shiftedAngle = this.distanceFromStart(angle);
+    let shiftedMin = minClamp;
+    let shiftedMax = this.arcLength().substract(maxClamp);
+
+    if (shiftedAngle.turn >= shiftedMin.turn && shiftedAngle.turn <= shiftedMax.turn) {
+      // Inside clamp range
+      return angle;
+    }
+
+    // Outside range, figure out closest limit
+    let distanceToMin = shiftedMin.distance(shiftedAngle, false);
+    let distanceToMax = shiftedMax.distance(shiftedAngle);
+    if (distanceToMin.turn <= distanceToMax.turn) {
+      return this.shiftAngle(minClamp);
+    } else {
+      return this.reverse().shiftAngle(maxClamp);
+    }
+  }
+
 }
 
 
 rac.Drawer.setupDrawFunction(rac.Arc, function() {
+  if (this.isCircle()) {
+    let startRad = this.start.radians();
+    arc(this.center.x, this.center.y,
+      this.radius * 2, this.radius * 2,
+      startRad, startRad);
+    return;
+  }
+
   let start = this.start;
   let end = this.end;
   if (!this.clockwise) {
@@ -886,23 +962,6 @@ rac.Drawer.setupDrawFunction(rac.Arc, function() {
 
 rac.setupProtoFunctions(rac.Arc);
 
-rac.Arc.prototype.vertex = function() {
-  let arcLength = this.arcLength();
-  let beziersPerTurn = 5;
-  let divisions = arcLength.turn == 0
-    ? beziersPerTurn
-    : Math.ceil(arcLength.turn * beziersPerTurn);
-
-  this.divideToBeziers(divisions).vertex();
-  return this;
-};
-
-rac.Arc.prototype.reverse = function() {
-  return new rac.Arc(
-    this.center, this.radius,
-    this.end, this.start,
-    !this.clockwise);
-};
 
 // TODO: use constructor instead of copy?
 rac.Arc.prototype.withCenter = function(newCenter) {
@@ -924,13 +983,11 @@ rac.Arc.prototype.withEndTowardsPoint = function(point) {
 };
 
 // Returns `true` if the given angle is positioned between `start` and
-// `end` in the `clockwise` orientation. For full circle arcs `true` is
+// `end` in the `clockwise` orientation. For complete circle arcs `true` is
 // always returned.
 rac.Arc.prototype.containsAngle = function(someAngle) {
   let angle = rac.Angle.from(someAngle);
-  if (this.start.turn == this.end.turn) {
-    return true;
-  }
+  if (this.isCircle()) { return true; }
 
   if (this.clockwise) {
     let offset = angle.sub(this.start);
@@ -1297,25 +1354,15 @@ rac.pointerDragged = function(pointerCenter){
 
   // Arc anchor
   if (anchorCopy instanceof rac.Arc) {
+    let minLimitAngle = rac.Angle.from(control.minLimit);
+    let maxLimitAngle = rac.Angle.from(control.maxLimit);
     let selectionAngle = anchorCopy.center
       .angleToPoint(currentPointerControlCenter);
-    selectionAngle = anchorCopy.distanceFromStart(selectionAngle);
 
-    let newTurn = selectionAngle.turn;
-    // Clamping value (javascript has no Math.clamp)
-    // TODO: arc.clampToArcLength
-    let minLimitAngle = rac.Angle.from(control.minLimit);
-    newTurn = Math.max(newTurn, minLimitAngle.turn);
 
-    let maxLimitAngle = rac.Angle.from(control.maxLimit);
-    // TODO: arc.relativeEndAngle?
-    let maxValueAngle = anchorCopy.clockwise
-      ? anchorCopy.end.substract(anchorCopy.start)
-      : anchorCopy.end.substract(anchorCopy.start).negative();
-    maxValueAngle = maxValueAngle.substract(maxLimitAngle);
-    newTurn = Math.min(newTurn, maxValueAngle.turn);
-
-    newValue = rac.Angle.from(newTurn);
+    selectionAngle = anchorCopy.clampToArcLength(selectionAngle,
+      minLimitAngle, maxLimitAngle);
+    newValue = anchorCopy.distanceFromStart(selectionAngle);
   }
 
   // Update control with new value
