@@ -39,6 +39,8 @@ rac.controls.push(thinControl);
 
 let angleControl = new rac.Control();
 angleControl.value = rac.Angle.from(1/8);
+angleControl.minLimit = 1/100;
+angleControl.maxLimit = 1/100;
 rac.controls.push(angleControl);
 
 
