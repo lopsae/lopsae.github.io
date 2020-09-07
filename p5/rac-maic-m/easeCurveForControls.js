@@ -84,26 +84,31 @@ function draw() {
 
   let noEaseMarkerOffset = 3;
 
-  let lastLinePos = linesOffset + linesSpacing * (linesCount - 1)
+  let lastLineDistance = linesOffset + linesSpacing * (linesCount - 1)
     + noEaseMarkerOffset;
+  let lastLineGuide = start.pointToAngle(rac.Angle.s, lastLineDistance)
+    .segmentToAngle(rac.Angle.e, 100);
 
   // NoEase control + marker
   noEaseControl.anchor = start.segmentToAngle(rac.Angle.e, 200);
-  noEaseControl.center().segmentToAngle(rac.Angle.s, lastLinePos)
+  noEaseControl.center()
+    .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
     .draw(controlMarker);
 
   // Distance control + marker
   distanceControl.anchor = start.pointToAngle(rac.Angle.s, rac.Control.radius * 3)
     .pointToAngle(rac.Angle.e, noEaseControl.value)
     .segmentToAngle(rac.Angle.e, 400);
-  distanceControl.center().segmentToAngle(rac.Angle.s, lastLinePos)
+  distanceControl.center()
+    .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
     .draw(controlMarker);
 
   // AppliedLength control + marker
   appliedLengthControl.anchor = start.pointToAngle(rac.Angle.s, rac.Control.radius * 6)
     .pointToAngle(rac.Angle.e, noEaseControl.value)
     .segmentToAngle(rac.Angle.e, 200);
-  appliedLengthControl.center().segmentToAngle(rac.Angle.s, lastLinePos)
+  appliedLengthControl.center()
+    .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
     .draw(controlMarker);
 
   let noEaseDistance = noEaseControl.value;
