@@ -1506,6 +1506,29 @@ rac.drawControls = function() {
     constrainedShadowCenter.segmentToPoint(draggedShadowCenter)
       .segmentWithRatioOfLength(2/3)
       .draw(rac.pointerStyle);
+
+    let hightlight = rac.Color.cyan.stroke(3);
+    let noEaseDistance = rac.Control.radius * 2;
+    let easeDistance = rac.Control.radius * 6;
+    let easedLength = rac.Control.radius * 3;
+    let segmentToDraggedCenter = constrainedShadowCenter
+      .segmentToPoint(draggedShadowCenter);
+    if (segmentToDraggedCenter.length() < noEaseDistance) {
+      segmentToDraggedCenter.draw(hightlight);
+    } else {
+    	// TODO: dummy code!
+      let lengthRatio = (segmentToDraggedCenter.length() - noEaseDistance) / easeDistance;
+      // https://math.stackexchange.com/questions/121720/ease-in-out-function/121755#121755
+      // f(x) = (t^a)/(t^a+(1-t)^a)
+      let a = 2;
+      let t = 1 - lengthRatio;
+      let easeRatio = Math.pow(t,a) / (Math.pow(t,a) + Math.pow(1-t,a));
+      easeRatio = 1 - easeRatio;
+      let newlength = noEaseDistance + (easeRatio * easedLength);
+      segmentToDraggedCenter.withLength(newlength).draw(hightlight);
+    }
+
+
   }
 
   // Arc anchor
