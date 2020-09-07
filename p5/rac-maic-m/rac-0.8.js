@@ -890,6 +890,28 @@ rac.Arc = class RacArc {
       !this.clockwise);
   }
 
+  withCenter(newCenter) {
+    return new rac.Arc(
+      newCenter, this.radius,
+      this.start, this.end,
+      this.clockwise);
+  }
+
+  withRadius(newRadius) {
+    return new rac.Arc(
+      this.center, newRadius,
+      this.start, this.end,
+      this.clockwise);
+  }
+
+  withEndTowardsPoint(point) {
+    let newEnd = this.center.angleToPoint(point);
+    return new rac.Arc(
+      this.center, this.radius,
+      this.start, newEnd,
+      this.clockwise);
+  }
+
   // Returns `true` if this arc is a complete circle.
   isCircle() {
     let distance = Math.abs(this.end.turn - this.start.turn);
@@ -962,25 +984,6 @@ rac.Drawer.setupDrawFunction(rac.Arc, function() {
 
 rac.setupProtoFunctions(rac.Arc);
 
-
-// TODO: use constructor instead of copy?
-rac.Arc.prototype.withCenter = function(newCenter) {
-  let copy = this.copy();
-  copy.center = newCenter;
-  return copy;
-}
-
-rac.Arc.prototype.withRadius = function(newRadius) {
-  let copy = this.copy();
-  copy.radius = newRadius;
-  return copy;
-}
-
-rac.Arc.prototype.withEndTowardsPoint = function(point) {
-  let copy = this.copy();
-  copy.end = this.center.angleToPoint(point);
-  return copy;
-};
 
 // Returns `true` if the given angle is positioned between `start` and
 // `end` in the `clockwise` orientation. For complete circle arcs `true` is
