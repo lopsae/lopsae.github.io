@@ -98,7 +98,7 @@ function draw() {
   // Angle control
   angleControl.anchor = start
     .segmentToAngle(rac.Angle.w, rac.Control.radius * 5).draw()
-    .arc(1/4, false);
+    .arcWithEnd(1/4, false);
 
   angleControl.center()
     .segmentToPoint(start)

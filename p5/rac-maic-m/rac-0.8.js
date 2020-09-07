@@ -357,13 +357,20 @@ rac.Angle.prototype.sub = function(someAngle) {
   return this.substract(someAngle);
 };
 
-// Returns an Angle which turn is `this.turn` shifted by `otherAngle` in
-// the `clockwise` direction.
+// Returns the equivalent to `someAngle` when `this` is considered the
+// origin, in the `clockwise` orientation.
 rac.Angle.prototype.shift = function(someAngle, clockwise = true) {
   let angle = rac.Angle.from(someAngle);
   return clockwise
     ? this.add(angle)
     : this.sub(angle);
+};
+
+// Returns the equivalent of `self` when `someOrigin` is considered the
+// origin, in the `clockwise` orientation.
+rac.Angle.prototype.shiftToOrigin = function(someOrigin, clockwise) {
+  let origin = rac.Angle.from(someOrigin);
+  return origin.shift(this, clockwise);
 };
 
 rac.Angle.prototype.mult = function(factor) {
@@ -383,7 +390,7 @@ rac.Angle.prototype.perpendicular = function(clockwise = true) {
 };
 
 // Returns an Angle that represents the distance from `this` to `someAngle`
-// traveling in the `clockwise` direction.
+// traveling in the `clockwise` orientation.
 rac.Angle.prototype.distance = function(someAngle, clockwise = true) {
   let other = rac.Angle.from(someAngle);
   let distance = other.substract(this);
@@ -721,20 +728,6 @@ rac.Segment.prototype.pointAtIntersectionWithSegment = function(other) {
   return new rac.Point(x, y);
 };
 
-// Returns an Arc using this segment `start` as center, `length()` as
-// radius, starting from the `angle()` to the given angle and orientation.
-rac.Segment.prototype.arc = function(
-  someAngleEnd = this.angle(),
-  clockwise = true)
-{
-  let arcEnd = rac.Angle.from(someAngleEnd);
-  let arcStart = rac.Angle.fromSegment(this);
-  return new rac.Arc(
-    this.start, this.length(),
-    arcStart, arcEnd,
-    clockwise);
-};
-
 rac.Segment.prototype.pointAtLength = function(length) {
   return this.start.pointToAngle(this.angle(), length);
 };
@@ -773,12 +766,26 @@ rac.Segment.prototype.segmentPerpendicular = function(clockwise = true) {
 };
 
 // Returns an Arc using this segment `start` as center, `length()` as
+// radius, starting from the `angle()` to the given angle and orientation.
+rac.Segment.prototype.arcWithEnd = function(
+  someAngleEnd = this.angle(),
+  clockwise = true)
+{
+  let arcEnd = rac.Angle.from(someAngleEnd);
+  let arcStart = rac.Angle.fromSegment(this);
+  return new rac.Arc(
+    this.start, this.length(),
+    arcStart, arcEnd,
+    clockwise);
+};
+
+// Returns an Arc using this segment `start` as center, `length()` as
 // radius, starting from the `angle()` to the arc distance of the given
 // angle and orientation.
-rac.Segment.prototype.relativeArc = function(someAngle, clockwise = true) {
-  let angle = rac.Angle.from(someAngle);
+rac.Segment.prototype.arcWithArcLength = function(someAngleArcLength, clockwise = true) {
+  let arcLength = rac.Angle.from(someAngleArcLength);
   let arcStart = this.angle();
-  let arcEnd = arcStart.shift(angle, clockwise);
+  let arcEnd = arcStart.shift(arcLength, clockwise);
 
   return new rac.Arc(
     this.start, this.length(),
@@ -842,8 +849,13 @@ rac.Arc = class RacArc {
   {
     this.center = center;
     this.radius = radius;
+    // Start angle of the arc. Arc will draw from this angle towards `end`
+    // in the `clockwise` orientaton.
     this.start = start;
+    // End angle of the arc. Arc will draw from `start` to this angle in
+    // the `clockwise` orientaton.
     this.end = end;
+    // Orientation of the arc
     this.clockwise = clockwise;
   }
 
@@ -892,6 +904,7 @@ rac.Arc.prototype.reverse = function() {
     !this.clockwise);
 };
 
+// TODO: use constructor instead of copy?
 rac.Arc.prototype.withCenter = function(newCenter) {
   let copy = this.copy();
   copy.center = newCenter;
@@ -910,6 +923,9 @@ rac.Arc.prototype.withEndTowardsPoint = function(point) {
   return copy;
 };
 
+// Returns `true` if the given angle is positioned between `start` and
+// `end` in the `clockwise` orientation. For full circle arcs `true` is
+// always returned.
 rac.Arc.prototype.containsAngle = function(someAngle) {
   let angle = rac.Angle.from(someAngle);
   if (this.start.turn == this.end.turn) {
@@ -927,8 +943,11 @@ rac.Arc.prototype.containsAngle = function(someAngle) {
   }
 };
 
-// Returns chord regardless of actual intersection. Both arcs are
-// considered complete circle arcs.
+// Returns a segment for the chord formed by the intersection of `self` and
+// `other`, or `null` if there is no intersection.
+// Both arcs are considered complete circles for the calculation of the
+// chord, thus the endpoints of the returned segment may not lay inside the
+// actual arcs.
 rac.Arc.prototype.intersectionChord = function(other) {
   // https://mathworld.wolfram.com/Circle-CircleIntersection.html
   // R=this, r=other
@@ -995,7 +1014,7 @@ rac.Arc.prototype.intersectingPointsWithArc = function(other) {
 };
 
 // Returns an Angle that represents the distance between `this.start` and
-// `this.end`, in the direction of the arc.
+// `this.end`, in the orientation of the arc.
 rac.Arc.prototype.arcLength = function() {
   return this.start.distance(this.end, this.clockwise);
 };
@@ -1016,11 +1035,26 @@ rac.Arc.prototype.endSegment = function() {
   return new rac.Segment(this.endPoint(), this.center);
 };
 
-// Returns the Angle sum of `this.start` and `someAngle` in the orientation
-// of this arc.
-rac.Arc.prototype.relativeAngle = function(someAngle) {
+// Returns the equivalent to `someAngle` shifted to have `this.start` as
+// origin, in the orientation of the arc.
+// Useful to determine an angle inside the arc, where the arc is considered
+// the origin coordinate system.
+// For a clockwise arc starting at `0.5`, a `shiftAngle(0.1)` is `0.6`.
+// For a clockwise orientation, equivalent to `this.start + someAngle`.
+rac.Arc.prototype.shiftAngle = function(someAngle) {
   let angle = rac.Angle.from(someAngle);
   return this.start.shift(angle, this.clockwise);
+}
+
+// Returns an Angle that represents the distance from `this.start` to
+// `someAngle` traveling in the `clockwise` orientation.
+// Useful to determine for a given angle, where it sits inside the arc if
+// the arc was the origin coordinate system.
+// For a clockwise arc starting at `0.1`, a `distanceFromStart(0.5)` is `0.4`.
+// For a clockwise orientation, equivalent to `someAngle - this.start`.
+rac.Arc.prototype.distanceFromStart = function(someAngle) {
+  let angle = rac.Angle.from(someAngle);
+  return this.start.distance(angle, this.clockwise);
 }
 
 rac.Arc.prototype.divideToSegments = function(segmentCount) {
@@ -1263,12 +1297,9 @@ rac.pointerDragged = function(pointerCenter){
 
   // Arc anchor
   if (anchorCopy instanceof rac.Arc) {
-    let selectionAngle = anchorCopy.center.angleToPoint(currentPointerControlCenter);
-    // TODO: arc.relativeAngle?
-    selectionAngle = selectionAngle.substract(anchorCopy.start);
-    selectionAngle = anchorCopy.clockwise
-      ? selectionAngle
-      : selectionAngle.negative();
+    let selectionAngle = anchorCopy.center
+      .angleToPoint(currentPointerControlCenter);
+    selectionAngle = anchorCopy.distanceFromStart(selectionAngle);
 
     let newTurn = selectionAngle.turn;
     // Clamping value (javascript has no Math.clamp)
@@ -1334,7 +1365,7 @@ rac.drawControls = function() {
   // Marker for minLimit
   let limitMarkerLength = 5;
   let minLimit = rac.controlSelection.control.minLimit;
-  // TODO: min check needs update for arc anchors
+  // TODO: min mark needs update for arc anchors
   if (minLimit > 0) {
     let minPoint = anchorCopy.withLength(minLimit).end;
     // TODO: needs update for arc anchors min value
@@ -1347,7 +1378,7 @@ rac.drawControls = function() {
 
   // Marker for maxLimit
   let maxLimit = rac.controlSelection.control.maxLimit;
-  // TODO: max check needs update for arc anchors
+  // TODO: max mark needs update for arc anchors
   if (maxLimit > 0) {
     let maxMarkerLength = 5;
     let maxPoint = anchorCopy.reverse().withLength(maxLimit).end;
@@ -1438,7 +1469,7 @@ rac.Control.prototype.center = function() {
   if (this.anchor instanceof rac.Arc) {
     let angleValue = rac.Angle.from(this.value);
     return this.anchor.startSegment()
-      .relativeArc(angleValue, this.anchor.clockwise)
+      .arcWithArcLength(angleValue, this.anchor.clockwise)
       .endPoint();
   }
 
@@ -1506,7 +1537,7 @@ rac.Control.drawArcControl = function(control) {
 
   let angleValue = rac.Angle.from(control.value);
   // Angle of the current value relative to the arc anchor
-  let relativeAngleValue = anchor.relativeAngle(angleValue);
+  let relativeAngleValue = anchor.shiftAngle(angleValue);
 
   // Negative arrow
   let minLimitAngle = rac.Angle.from(control.minLimit);
