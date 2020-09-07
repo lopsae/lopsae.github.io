@@ -129,8 +129,7 @@ function draw() {
         .segmentToAngle(rac.Angle.e, lineLength).draw(noEaseMarker);
 
       let lengthRatio = (lineLength - noEaseDistance) / easeDistance;
-      // https://math.stackexchange.com/questions/121720/ease-in-out-function/121755#121755
-      // f(x) = (t^a)/(t^a+(1-t)^a)
+
       let a = 2;
       let t = lengthRatio;
       let easeRatio = Math.pow(t,a) / (Math.pow(t,a) + Math.pow(1-t,a));
@@ -146,4 +145,25 @@ function draw() {
 
   console.log(`👑 ~finis coronat opus ${Date.now()}`);
 }
+
+// Source:
+// https://math.stackexchange.com/questions/121720/ease-in-out-function/121755#121755
+// f(x) = (t^a)/(t^a+(1-t)^a)
+
+// Ploted:
+// https://www.wolframalpha.com/input/?i=%28t%5E2%29%2F%28t%5E2%2B%281-t%29%5E2%29+from+t%3D-1+to+2
+
+// Derivate with max: max slope is 2, at t=1/2 baby!
+// https://www.wolframalpha.com/input/?i=derivate+%28t%5E2%29%2F%28t%5E2%2B%281-t%29%5E2%29+max+from+t%3D-1+to+2
+
+// When t is split in half t = (0.5 + t/2), slope becomes 1 at t=1!
+// which is a/2
+// https://www.wolframalpha.com/input/?i=derivate+%28%280.5+%2B+t%2F2%29%5E2%29%2F%28%280.5+%2B+t%2F2%29%5E2%2B%281-%280.5+%2B+t%2F2%29%29%5E2%29+max+from+t%3D-1+to+2
+
+// a controls the slope at 1/2
+// https://www.wolframalpha.com/input/?i=derivate+%28t%5E3%29%2F%28t%5E3%2B%281-t%29%5E3%29+max+from+t%3D-1+to+2
+
+// Comparision of ease function vs t^a
+// https://www.wolframalpha.com/input/?i=2%28%28t%2F2%29%5E2%29%2F%28%28t%2F2%29%5E2%2B%281-%28t%2F2%29%29%5E2%29+vs+t%5E2+from+t%3D-1+to+2
+
 
