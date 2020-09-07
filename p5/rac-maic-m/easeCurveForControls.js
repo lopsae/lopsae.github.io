@@ -31,6 +31,14 @@ let noEaseControl = new rac.Control();
 noEaseControl.value = 100;
 rac.controls.push(noEaseControl);
 
+let distanceControl = new rac.Control();
+distanceControl.value = rac.Control.radius * 10;
+rac.controls.push(distanceControl);
+
+let appliedLengthControl = new rac.Control();
+appliedLengthControl.value = rac.Control.radius * 5;
+rac.controls.push(appliedLengthControl);
+
 
 
 
@@ -61,35 +69,46 @@ function draw() {
     .styleWithFill(colorScheme.controlFill.fill());
 
   noEaseControl.style = controlStyle;
+  distanceControl.style = controlStyle;
+  appliedLengthControl.style = controlStyle;
 
   rac.pointerStyle = colorScheme.pointer.stroke(3);
 
 
   let start  = new rac.Point(100, 100);
 
-  noEaseControl.anchor = start.segmentToAngle(rac.Angle.e, 200);
-
   let linesOffset = rac.Control.radius * 2;
   let linesSpacing = 10;
   let linesStep = 10;
-  let linesCount = 40;
+  let linesCount = 50;
 
-  let lastLinePos = linesOffset + linesSpacing * (linesCount - 1);
+  let noEaseMarkerOffset = 3;
 
-  // NoEase marker
-  noEaseControl.center().segmentToAngle(rac.Angle.s, lastLinePos).draw(controlMarker);
+  let lastLinePos = linesOffset + linesSpacing * (linesCount - 1)
+    + noEaseMarkerOffset;
+
+  // NoEase control + marker
+  noEaseControl.anchor = start.segmentToAngle(rac.Angle.e, 200);
+  noEaseControl.center().segmentToAngle(rac.Angle.s, lastLinePos)
+    .draw(controlMarker);
+
+  // Distance control + marker
+  distanceControl.anchor = start.pointToAngle(rac.Angle.s, rac.Control.radius * 3)
+    .pointToAngle(rac.Angle.e, noEaseControl.value)
+    .segmentToAngle(rac.Angle.e, 400);
+  distanceControl.center().segmentToAngle(rac.Angle.s, lastLinePos)
+    .draw(controlMarker);
+
+  // AppliedLength control + marker
+  appliedLengthControl.anchor = start.pointToAngle(rac.Angle.s, rac.Control.radius * 6)
+    .pointToAngle(rac.Angle.e, noEaseControl.value)
+    .segmentToAngle(rac.Angle.e, 200);
+  appliedLengthControl.center().segmentToAngle(rac.Angle.s, lastLinePos)
+    .draw(controlMarker);
 
   let noEaseDistance = noEaseControl.value;
-  let easeDistance = rac.Control.radius * 10;
-  let easedLength = rac.Control.radius * 5;
-
-  // EaseDistance marker
-  start.pointToAngle(rac.Angle.e, noEaseDistance + easeDistance)
-    .segmentToAngle(rac.Angle.s, lastLinePos).draw(controlMarker);
-
-  // EaseLength marker
-  start.pointToAngle(rac.Angle.e, noEaseDistance + easedLength)
-    .segmentToAngle(rac.Angle.s, lastLinePos).draw(controlMarker);
+  let easeDistance = distanceControl.value;
+  let appliedLength = appliedLengthControl.value;
 
   for (let index = 0; index < linesCount; index++) {
     let linePos = linesOffset + linesSpacing * index;
@@ -101,7 +120,7 @@ function draw() {
       lineStart.segmentToAngle(rac.Angle.e, lineLength).draw();
     } else {
       // No ease marker
-      lineStart.pointToAngle(rac.Angle.s, 3)
+      lineStart.pointToAngle(rac.Angle.s, noEaseMarkerOffset)
         .segmentToAngle(rac.Angle.e, lineLength).draw(noEaseMarker);
 
       let lengthRatio = (lineLength - noEaseDistance) / easeDistance;
@@ -110,7 +129,7 @@ function draw() {
       let a = 2;
       let t = lengthRatio;
       let easeRatio = Math.pow(t,a) / (Math.pow(t,a) + Math.pow(1-t,a));
-      let newlength = noEaseDistance + (easeRatio * easedLength);
+      let newlength = noEaseDistance + (easeRatio * appliedLength);
 
       lineStart.segmentToAngle(rac.Angle.e, newlength).draw();
     }
