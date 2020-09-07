@@ -1314,11 +1314,17 @@ rac.ControlSelection = class RacControlSelection{
 }
 
 
-// Collection of all controls that are drawn and evaluated for selection.
+// Collection of all controls that are drawn with `drawControls`
+// and evaluated for selection with the `pointer...` functions.
 rac.controls = [];
 
 // Current selected control, or null if there is no selection.
 rac.controlSelection = null;
+
+// Last Point of the pointer position when it was pressed, or last Control
+// interacted with. Set to `null` when there has been no interaction yet
+// and while there is a selected control.
+rac.lastPointer = null;
 
 // Style used for visual elements related to selection and pointer interaction.
 rac.pointerStyle = null;
@@ -1328,6 +1334,8 @@ rac.pointerStyle = null;
 // it will be considered selected. When a control is selected a copy of its
 // anchor is stored as to allow interaction with a fixed anchor.
 rac.pointerPressed = function(pointerCenter) {
+  rac.lastPointer = null;
+
   let selected = rac.controls.find(item => {
     let controlCenter = item.center();
     if (controlCenter === null) { return false; }
@@ -1395,27 +1403,35 @@ rac.pointerDragged = function(pointerCenter){
 // control is cleared.
 rac.pointerReleased = function() {
   if (rac.controlSelection === null) {
+    rac.lastPointer = rac.Point.mouse();
     return;
   }
 
+  rac.lastPointer = rac.controlSelection.control;
   rac.controlSelection = null;
 }
 
 
-// Draws controls and the visuals of control selection. Usually called at
-// the end of `draw` so that controls sit on top of the drawing.
+// Draws controls and the visuals of pointer and control selection. Usually
+// called at the end of `draw` so that controls sits on top of the drawing.
 rac.drawControls = function() {
-  // Pointer position
+  // Last pointer or control
+  if (rac.lastPointer instanceof rac.Point) {
+    rac.lastPointer.arc(12).draw(rac.pointerStyle);
+  }
+  if (rac.lastPointer instanceof rac.Control) {
+    // TODO: last selected control state
+  }
+
+  // Pointer pressed
   let pointerCenter = rac.Point.mouse();
-  let pointerRadius = 12;
   if (mouseIsPressed) {
-    if (rac.controlSelection !== null) {
-      pointerRadius = 5;
+    if (rac.controlSelection === null) {
+      pointerCenter.arc(10).draw(rac.pointerStyle);
     } else {
-      pointerRadius = 10;
+      pointerCenter.arc(5).draw(rac.pointerStyle);
     }
   }
-  pointerCenter.arc(pointerRadius).draw(rac.pointerStyle);
 
   // All controls in display
   rac.controls.forEach(item => item.draw());

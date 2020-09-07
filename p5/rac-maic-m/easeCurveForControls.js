@@ -50,7 +50,7 @@ function draw() {
     stroke:      new rac.Color( .9,  .2,  .2,  .8), // red,
     rosePink:    new rac.Color( .7,  .3,  .3,  .5),
     fill:        new rac.Color( .8,  .8,  .8,  .9), // whiteish
-    controlFill: new rac.Color( .8,  .8,  .8, 1.0), // whiteish
+    controlFill: new rac.Color( .1,  .1,  .1), // blackish
     pointer:     new rac.Color( .9,  .9,  .9,  .6), // whiteish
     highlight:   new rac.Color(  0, 1.0, 1.0,  .8)// cyan
   };
