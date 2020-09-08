@@ -1310,7 +1310,7 @@ rac.EaseFunction = class RacEaseFunction {
 
   constructor() {
     this.a = 2;
-    this.prefix = null;
+    this.prefix = 0;
     this.inRange = 1;
     this.outRange = 1;
 
@@ -1336,39 +1336,27 @@ rac.EaseFunction = class RacEaseFunction {
 
   easeRange(range) {
     let behavior = rac.EaseFunction.Behavior;
-    if (this.prefix === null) {
-      // Without prefix, values before 0 pass through
-      let ratio = range / this.inRange;
-      let easedRatio = this.easeRatio(ratio);
-
-      if (ratio <= 1 || this.postBehavior === behavior.pass) {
-        return easedRatio * this.outRange;
-      }
-      if (this.postBehavior === behavior.clamp) {
-        return this.outRange;
-      }
-      if (this.postBehavior === behavior.continue) {
-        return range - this.inRange + this.outRange;
-      }
-    }
 
     if (range < this.prefix) {
       // TODO: option to passthrough for before prefix too?
       return range;
     }
 
-    range = range - this.prefix;
-    let ratio = range / this.inRange;
-    let easedRatio = this.easeRatio(ratio);
+    let shiftedRange = range - this.prefix;
+    let ratio = shiftedRange / this.inRange;
 
     if (ratio <= 1 || this.postBehavior === behavior.pass) {
+      let easedRatio = this.easeRatio(ratio);
       return this.prefix + easedRatio * this.outRange;
     }
     if (this.postBehavior === behavior.clamp) {
       return this.prefix + this.outRange;
     }
     if (this.postBehavior === behavior.continue) {
-      return range - this.inRange + this.prefix+ this.outRange;
+      // equivalent to easing 1 inRange to 1 outRange
+      let continum = shiftedRange - this.inRange + this.outRange;
+      // TODO: apply postFactor here
+      return this.prefix + continum;
     }
   }
 
