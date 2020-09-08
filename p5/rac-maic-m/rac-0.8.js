@@ -1352,8 +1352,8 @@ rac.EaseFunction = class RacEaseFunction {
     if (range < this.prefix) {
       if (this.preBehavior === behavior.pass) {
         let distancetoPrefix = range - this.prefix;
-        // TODO: merge formula?
-        return this.prefix + distancetoPrefix * this.preFactor;
+        // With a preFactor of 1 this is equivalent to `return range`
+        return this.prefix + (distancetoPrefix * this.preFactor);
       }
       if (this.preBehavior === behavior.clamp) {
         return this.prefix;
@@ -1373,10 +1373,12 @@ rac.EaseFunction = class RacEaseFunction {
       return this.prefix + easedRatio * this.outRange;
     }
     if (this.postBehavior === behavior.pass) {
+
       // equivalent to easing 1 inRange to 1 outRange
-      let continum = shiftedRange - this.inRange + this.outRange;
-      // TODO: apply postFactor here
-      return this.prefix + continum;
+      let shiftedPost = shiftedRange - this.inRange + this.outRange;
+      let distanceToOut = shiftedPost - this.outRange;
+      // TODO: simplify?
+      return this.prefix + this.outRange + distanceToOut * this.postFactor;
     }
     if (this.postBehavior === behavior.clamp) {
       return this.prefix + this.outRange;
