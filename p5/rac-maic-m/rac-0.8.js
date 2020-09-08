@@ -1318,6 +1318,10 @@ rac.EaseFunction = class RacEaseFunction {
 
   constructor() {
     this.a = 2;
+
+    this.easeOffset = 0
+    this.easeFactor = 1;
+
     this.prefix = 0;
     this.inRange = 1;
     this.outRange = 1;
@@ -1342,6 +1346,15 @@ rac.EaseFunction = class RacEaseFunction {
     return ra / (ra + ira);
   }
 
+  // TODO: better name?
+  // easeRatioParametrized
+  // easeRatioOffsetFactor
+  // other could be easeRatioUnit or just easeUnit!
+  easeRatioComplex(ratio) {
+    let complexRatio = (ratio + this.easeOffset) * this.easeFactor
+    return this.easeRatio(complexRatio);
+  }
+
   easeRange(range) {
     let behavior = rac.EaseFunction.Behavior;
 
@@ -1359,7 +1372,7 @@ rac.EaseFunction = class RacEaseFunction {
         return this.prefix;
       }
       if (this.preBehavior === behavior.continue) {
-        let easedRatio = this.easeRatio(ratio);
+        let easedRatio = this.easeRatioComplex(ratio);
         return this.prefix + easedRatio * this.outRange;
       }
 
@@ -1369,7 +1382,7 @@ rac.EaseFunction = class RacEaseFunction {
 
     // After prefix
     if (ratio <= 1 || this.postBehavior === behavior.continue) {
-      let easedRatio = this.easeRatio(ratio);
+      let easedRatio = this.easeRatioComplex(ratio);
       return this.prefix + easedRatio * this.outRange;
     }
     if (this.postBehavior === behavior.pass) {

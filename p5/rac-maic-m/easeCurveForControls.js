@@ -39,6 +39,14 @@ let appliedLengthControl = new rac.Control();
 appliedLengthControl.value = rac.Control.radius * 5;
 rac.controls.push(appliedLengthControl);
 
+let easeOffsetControl = new rac.Control();
+easeOffsetControl.value = 100;
+rac.controls.push(easeOffsetControl);
+
+let easeFactorControl = new rac.Control();
+easeFactorControl.value = 100;
+rac.controls.push(easeFactorControl);
+
 
 
 
@@ -68,9 +76,7 @@ function draw() {
   let controlStyle = colorScheme.stroke.stroke(3)
     .styleWithFill(colorScheme.controlFill.fill());
 
-  noEaseControl.style = controlStyle;
-  distanceControl.style = controlStyle;
-  appliedLengthControl.style = controlStyle;
+  rac.controls.forEach(item => item.style = controlStyle);
 
   rac.pointerStyle = colorScheme.pointer.stroke(3);
 
@@ -111,9 +117,26 @@ function draw() {
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
     .draw(controlMarker);
 
+  // Ease Offset control
+  easeOffsetControl.anchor = lastLineGuide.start
+    .pointToAngle(rac.Angle.s, rac.Control.radius * 2)
+    .segmentToAngle(rac.Angle.e, 200);
+
+  // Ease Factor control
+  easeFactorControl.anchor = easeOffsetControl.anchor.end
+    .pointToAngle(rac.Angle.e, 50)
+    .segmentToAngle(rac.Angle.e, 200);
+
+  // Control value mapping
   let noEaseDistance = noEaseControl.value;
   let easeDistance = distanceControl.value;
   let appliedLength = appliedLengthControl.value;
+  let easeOffset = (easeOffsetControl.value - 100) / 50;
+  let easeFactor = ((easeFactorControl.value -100) / 50) + 1;
+
+  // TODO: figure out text api for drawing now damn
+  text(easeOffset, easeOffsetControl.anchor.end.x, easeOffsetControl.anchor.end.y);
+  text(easeFactor, easeFactorControl.anchor.end.x, easeFactorControl.anchor.end.y);
 
   for (let index = 0; index < linesCount; index++) {
     let linePos = linesOffset + linesSpacing * index;
@@ -125,19 +148,23 @@ function draw() {
     lineStart.pointToAngle(rac.Angle.s, noEaseMarkerOffset)
       .segmentToAngle(rac.Angle.e, lineLength).draw(noEaseMarker);
 
-    let rangedEasing = new rac.EaseFunction();
-    rangedEasing.prefix = noEaseDistance;
-    rangedEasing.inRange = easeDistance;
-    rangedEasing.outRange = appliedLength;
+    let rangedEase = new rac.EaseFunction();
+    rangedEase.prefix = noEaseDistance;
+    rangedEase.inRange = easeDistance;
+    rangedEase.outRange = appliedLength;
 
-    rangedEasing.preBehavior = rac.EaseFunction.Behavior.pass;
-    rangedEasing.postBehavior = rac.EaseFunction.Behavior.pass;
+    rangedEase.easeOffset = easeOffset;
+    rangedEase.easeFactor = easeFactor;
 
-    rangedEasing.preFactor = 1/2;
-    rangedEasing.postFactor = 1/2;
+    rangedEase.preBehavior = rac.EaseFunction.Behavior.pass;
+    rangedEase.postBehavior = rac.EaseFunction.Behavior.pass;
 
-    let newlength = rangedEasing.easeRange(lineLength);
+    rangedEase.preFactor = 1/2;
+    rangedEase.postFactor = 1/2;
 
+    let newlength = rangedEase.easeRange(lineLength);
+
+    // TODO: draw an unmodified ease for baseline
     // let lengthRatio = (lineLength - noEaseDistance) / easeDistance;
 
     // let easing = new rac.EaseFunction();
