@@ -1302,11 +1302,21 @@ rac.Shape.prototype.addContour = function(element) {
 
 rac.EasingFunction = class RacEasingFunction {
 
+  static Behavior = {
+    pass: "pass",
+    clamp: "clamp",
+    continue: "continue"
+  };
+
   constructor() {
     this.a = 2;
     this.prefix = null;
     this.inRange = 1;
     this.outRange = 1;
+
+    // TODO: implement preRange
+    this.preRange = rac.EasingFunction.Behavior.pass;
+    this.postRange = rac.EasingFunction.Behavior.pass;
   }
 
   // Returns the corresponding eased value for `ratio`. Both the given
@@ -1326,7 +1336,20 @@ rac.EasingFunction = class RacEasingFunction {
       // Without prefix, values before 0 pass through
       let ratio = range / this.inRange;
       let easedRatio = this.easeRatio(ratio);
-      return easedRatio * this.outRange;
+      // TODO: can be more DRY
+      if (ratio <= 1) {
+        return easedRatio * this.outRange;
+      }
+
+      if (this.postRange === rac.EasingFunction.Behavior.pass) {
+        return easedRatio * this.outRange;
+      }
+      if (this.postRange === rac.EasingFunction.Behavior.clamp) {
+        return this.outRange;
+      }
+      if (this.postRange === rac.EasingFunction.Behavior.continue) {
+        return range - this.inRange + this.outRange;
+      }
     }
 
     if (range < this.prefix) {
@@ -1337,12 +1360,20 @@ rac.EasingFunction = class RacEasingFunction {
     range = range - this.prefix;
     let ratio = range / this.inRange;
     let easedRatio = this.easeRatio(ratio);
-    return this.prefix + easedRatio * this.outRange;
+    // TODO: can be more DRY
+    if (ratio <= 1) {
+      return this.prefix + easedRatio * this.outRange;
+    }
 
-    // TODO: What to do when bigger that range?
-    // + passthrough, just continue using easeRatio
-    // + clamp to value
-    // + continue range
+    if (this.postRange === rac.EasingFunction.Behavior.pass) {
+      return this.prefix + easedRatio * this.outRange;
+    }
+    if (this.postRange === rac.EasingFunction.Behavior.clamp) {
+      return this.prefix + this.outRange;
+    }
+    if (this.postRange === rac.EasingFunction.Behavior.continue) {
+      return range - this.inRange + this.prefix+ this.outRange;
+    }
   }
 
 }
