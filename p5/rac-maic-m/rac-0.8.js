@@ -1300,6 +1300,27 @@ rac.Shape.prototype.addContour = function(element) {
 };
 
 
+rac.EasingFunction = class RacEasingFunction {
+
+  constructor() {
+    this.a = 2;
+  }
+
+  // Returns the corresponding eased value for `ratio`. Both the given
+  // `ratio` and the returned value are in the [0,1] range. If `ratio` is
+  // outside the [0,1] range invalid values may be returned.
+  easeRatio(ratio) {
+    // Source:
+    // https://math.stackexchange.com/questions/121720/ease-in-out-function/121755#121755
+    // f(t) = (t^a)/(t^a+(1-t)^a)
+    let ra = Math.pow(ratio, this.a);
+    let ira = Math.pow(1-ratio, this.a);
+    return ra / (ra + ira);
+  }
+
+}
+
+
 rac.ControlSelection = class RacControlSelection{
   constructor(control) {
     this.control = control;
@@ -1546,8 +1567,6 @@ rac.drawControls = function() {
       let newlength = noEaseDistance + (easeRatio * easedLength);
       segmentToDraggedCenter.withLength(newlength).draw(hightlight);
     }
-
-
   }
 
   // Arc anchor

@@ -130,10 +130,9 @@ function draw() {
 
       let lengthRatio = (lineLength - noEaseDistance) / easeDistance;
 
-      let a = 2;
-      let t = lengthRatio;
-      let easeRatio = Math.pow(t,a) / (Math.pow(t,a) + Math.pow(1-t,a));
-      let newlength = noEaseDistance + (easeRatio * appliedLength);
+      let easing = new rac.EasingFunction();
+      let easedRatio = easing.easeRatio(lengthRatio);
+      let newlength = noEaseDistance + (easedRatio * appliedLength);
 
       lineStart.segmentToAngle(rac.Angle.e, newlength).draw();
     }
