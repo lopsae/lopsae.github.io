@@ -1317,6 +1317,9 @@ rac.EasingFunction = class RacEasingFunction {
     // TODO: implement preRange
     this.preRange = rac.EasingFunction.Behavior.pass;
     this.postRange = rac.EasingFunction.Behavior.pass;
+
+    // TODO: implement preFactor
+    // TODO: implement postFactor
   }
 
   // Returns the corresponding eased value for `ratio`. Both the given
@@ -1332,22 +1335,19 @@ rac.EasingFunction = class RacEasingFunction {
   }
 
   easeRange(range) {
+    let behavior = rac.EasingFunction.Behavior;
     if (this.prefix === null) {
       // Without prefix, values before 0 pass through
       let ratio = range / this.inRange;
       let easedRatio = this.easeRatio(ratio);
-      // TODO: can be more DRY
-      if (ratio <= 1) {
-        return easedRatio * this.outRange;
-      }
 
-      if (this.postRange === rac.EasingFunction.Behavior.pass) {
+      if (ratio <= 1 || this.postRange === behavior.pass) {
         return easedRatio * this.outRange;
       }
-      if (this.postRange === rac.EasingFunction.Behavior.clamp) {
+      if (this.postRange === behavior.clamp) {
         return this.outRange;
       }
-      if (this.postRange === rac.EasingFunction.Behavior.continue) {
+      if (this.postRange === behavior.continue) {
         return range - this.inRange + this.outRange;
       }
     }
@@ -1360,18 +1360,14 @@ rac.EasingFunction = class RacEasingFunction {
     range = range - this.prefix;
     let ratio = range / this.inRange;
     let easedRatio = this.easeRatio(ratio);
-    // TODO: can be more DRY
-    if (ratio <= 1) {
-      return this.prefix + easedRatio * this.outRange;
-    }
 
-    if (this.postRange === rac.EasingFunction.Behavior.pass) {
+    if (ratio <= 1 || this.postRange === behavior.pass) {
       return this.prefix + easedRatio * this.outRange;
     }
-    if (this.postRange === rac.EasingFunction.Behavior.clamp) {
+    if (this.postRange === behavior.clamp) {
       return this.prefix + this.outRange;
     }
-    if (this.postRange === rac.EasingFunction.Behavior.continue) {
+    if (this.postRange === behavior.continue) {
       return range - this.inRange + this.prefix+ this.outRange;
     }
   }
