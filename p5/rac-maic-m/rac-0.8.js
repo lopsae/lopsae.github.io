@@ -1304,6 +1304,9 @@ rac.EasingFunction = class RacEasingFunction {
 
   constructor() {
     this.a = 2;
+    this.prefix = null;
+    this.inRange = 1;
+    this.outRange = 1;
   }
 
   // Returns the corresponding eased value for `ratio`. Both the given
@@ -1316,6 +1319,30 @@ rac.EasingFunction = class RacEasingFunction {
     let ra = Math.pow(ratio, this.a);
     let ira = Math.pow(1-ratio, this.a);
     return ra / (ra + ira);
+  }
+
+  easeRange(range) {
+    if (this.prefix === null) {
+      // Without prefix, values before 0 pass through
+      let ratio = range / this.inRange;
+      let easedRatio = this.easeRatio(ratio);
+      return easedRatio * this.outRange;
+    }
+
+    if (range < this.prefix) {
+      // TODO: option to passthrough for before prefix too?
+      return range;
+    }
+
+    range = range - this.prefix;
+    let ratio = range / this.inRange;
+    let easedRatio = this.easeRatio(ratio);
+    return this.prefix + easedRatio * this.outRange;
+
+    // TODO: What to do when bigger that range?
+    // + passthrough, just continue using easeRatio
+    // + clamp to value
+    // + continue range
   }
 
 }

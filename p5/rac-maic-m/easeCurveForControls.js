@@ -128,11 +128,18 @@ function draw() {
       lineStart.pointToAngle(rac.Angle.s, noEaseMarkerOffset)
         .segmentToAngle(rac.Angle.e, lineLength).draw(noEaseMarker);
 
-      let lengthRatio = (lineLength - noEaseDistance) / easeDistance;
+      let rangedEasing = new rac.EasingFunction();
+      rangedEasing.prefix = noEaseDistance;
+      rangedEasing.inRange = easeDistance;
+      rangedEasing.outRange = appliedLength;
 
-      let easing = new rac.EasingFunction();
-      let easedRatio = easing.easeRatio(lengthRatio);
-      let newlength = noEaseDistance + (easedRatio * appliedLength);
+      let newlength = rangedEasing.easeRange(lineLength);
+
+      // let lengthRatio = (lineLength - noEaseDistance) / easeDistance;
+
+      // let easing = new rac.EasingFunction();
+      // let easedRatio = easing.easeRatio(lengthRatio);
+      // let newlength = noEaseDistance + (easedRatio * appliedLength);
 
       lineStart.segmentToAngle(rac.Angle.e, newlength).draw();
     }
