@@ -1373,12 +1373,9 @@ rac.EaseFunction = class RacEaseFunction {
       return this.prefix + easedRatio * this.outRange;
     }
     if (this.postBehavior === behavior.pass) {
-
-      // equivalent to easing 1 inRange to 1 outRange
-      let shiftedPost = shiftedRange - this.inRange + this.outRange;
-      let distanceToOut = shiftedPost - this.outRange;
-      // TODO: simplify?
-      return this.prefix + this.outRange + distanceToOut * this.postFactor;
+      // Shifted to have inRange as origin
+      let shiftedPost = shiftedRange - this.inRange;
+      return this.prefix + this.outRange + shiftedPost * this.postFactor;
     }
     if (this.postBehavior === behavior.clamp) {
       return this.prefix + this.outRange;
