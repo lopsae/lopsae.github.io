@@ -162,6 +162,7 @@ rac.equalityThreshold = 0.001;
 
 rac.Error = {
   invalidParameterCombination: "Invalid parameter combination",
+  invalidObjectConfiguration: "Invalid object configuration",
   invalidObjectToConvert: "Invalid object to convert",
   invalidObjectToDraw: "Invalid object to draw"
 };
@@ -1302,9 +1303,16 @@ rac.Shape.prototype.addContour = function(element) {
 
 rac.EaseFunction = class RacEaseFunction {
 
+  // Behaviors for the `easeRange` function when `range` falls before the
+  // `prefix` and after the ease transformation.
   static Behavior = {
+    // The `range` value is returned without any easing transformation and
+    // applying `preFactor` or `postFactor`.
     pass: "pass",
+    // Clamps the returned value to `prefix` or `prefix+outRange`;
     clamp: "clamp",
+    // The `range` is applied the easing transformation before `prefix`
+    // and after `outRange`.
     continue: "continue"
   };
 
@@ -1324,7 +1332,8 @@ rac.EaseFunction = class RacEaseFunction {
 
   // Returns the corresponding eased value for `ratio`. Both the given
   // `ratio` and the returned value are in the [0,1] range. If `ratio` is
-  // outside the [0,1] range invalid values may be returned.
+  // outside the [0,1] the returned value follows the curve of the easing
+  // function, with which some values of `a` becomes invalid.
   easeRatio(ratio) {
     // Source:
     // https://math.stackexchange.com/questions/121720/ease-in-out-function/121755#121755
@@ -1337,27 +1346,44 @@ rac.EaseFunction = class RacEaseFunction {
   easeRange(range) {
     let behavior = rac.EaseFunction.Behavior;
 
-    if (range < this.prefix) {
-      // TODO: option to passthrough for before prefix too?
-      return range;
-    }
-
     let shiftedRange = range - this.prefix;
     let ratio = shiftedRange / this.inRange;
 
-    if (ratio <= 1 || this.postBehavior === behavior.pass) {
+    // Before prefix
+    if (range < this.prefix) {
+      if (this.preBehavior === behavior.pass) {
+        // TODO: apply preFactor here
+        return range;
+      }
+      if (this.preBehavior === behavior.clamp) {
+        return this.prefix;
+      }
+      if (this.preBehavior === behavior.continue) {
+        let easedRatio = this.easeRatio(ratio);
+        return this.prefix + easedRatio * this.outRange;
+      }
+
+      console.trace(`Invalid preBehavior configuration - preBehavior:${this.postBehavior}`);
+      throw rac.Error.invalidObjectConfiguration;
+    }
+
+    // After prefix
+    if (ratio <= 1 || this.postBehavior === behavior.continue) {
       let easedRatio = this.easeRatio(ratio);
       return this.prefix + easedRatio * this.outRange;
     }
-    if (this.postBehavior === behavior.clamp) {
-      return this.prefix + this.outRange;
-    }
-    if (this.postBehavior === behavior.continue) {
+    if (this.postBehavior === behavior.pass) {
       // equivalent to easing 1 inRange to 1 outRange
       let continum = shiftedRange - this.inRange + this.outRange;
       // TODO: apply postFactor here
       return this.prefix + continum;
     }
+    if (this.postBehavior === behavior.clamp) {
+      return this.prefix + this.outRange;
+    }
+
+    console.trace(`Invalid postBehavior configuration - postBehavior:${this.postBehavior}`);
+    throw rac.Error.invalidObjectConfiguration;
   }
 
 }
