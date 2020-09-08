@@ -1322,12 +1322,11 @@ rac.EaseFunction = class RacEaseFunction {
     this.inRange = 1;
     this.outRange = 1;
 
-    // TODO: implement preRange
     this.preBehavior = rac.EaseFunction.Behavior.pass;
     this.postBehavior = rac.EaseFunction.Behavior.pass;
 
-    // TODO: implement preFactor
-    // TODO: implement postFactor
+    this.preFactor = 1;
+    this.postFactor = 1;
   }
 
   // Returns the corresponding eased value for `ratio`. Both the given
@@ -1352,8 +1351,9 @@ rac.EaseFunction = class RacEaseFunction {
     // Before prefix
     if (range < this.prefix) {
       if (this.preBehavior === behavior.pass) {
-        // TODO: apply preFactor here
-        return range;
+        let distancetoPrefix = range - this.prefix;
+        // TODO: merge formula?
+        return this.prefix + distancetoPrefix * this.preFactor;
       }
       if (this.preBehavior === behavior.clamp) {
         return this.prefix;

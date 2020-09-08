@@ -133,6 +133,9 @@ function draw() {
     rangedEasing.preBehavior = rac.EaseFunction.Behavior.pass;
     rangedEasing.postBehavior = rac.EaseFunction.Behavior.pass;
 
+    rangedEasing.preFactor = 1/2;
+    // rangedEasing.postFactor = 2;
+
     let newlength = rangedEasing.easeRange(lineLength);
 
     // let lengthRatio = (lineLength - noEaseDistance) / easeDistance;
