@@ -67,8 +67,8 @@ function draw() {
 
   // Default root styles
   colorScheme.main.stroke(2).apply();
-  rac.Drawer.styles.text = colorScheme.brightRose.fill()
-    .styleWithStroke(rac.Stroke.none);
+  rac.defaultDrawer.setClassStyle(rac.Text, colorScheme.brightRose.fill()
+    .styleWithStroke(rac.Stroke.none));
 
   let controlMarker = colorScheme.rosePink.withAlpha(.3).stroke(2);
   let noEaseMarker = colorScheme.rosePink.withAlpha(.5).stroke(2);

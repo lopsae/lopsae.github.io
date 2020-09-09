@@ -13,10 +13,10 @@ rac.protoFunctions = {};
 rac.Drawer = class RacDrawer {
 
   static Routine = class RacDrawerRoutine {
-    constructor (classObj, drawElement, styleType = null) {
+    constructor (classObj, drawElement, style = null) {
       this.classObj = classObj;
       this.drawElement = drawElement
-      this.styleType = styleType;
+      this.style = style;
     }
   }
 
@@ -28,9 +28,31 @@ rac.Drawer = class RacDrawer {
   // Adds a routine for the given class. The `drawElement` function will be
   // called passing the element to be drawn as `this`.
   setDrawFunction(classObj, drawElement, styleType = null) {
-    let routine = new rac.Drawer.Routine(classObj, drawElement, styleType);
-    // TODO: duplicates are possible
+    let index = this.routines
+      .findIndex(routine => routine.classObj === classObj);
+
+    let routine;
+    if (index === -1) {
+      routine = new rac.Drawer.Routine(classObj, drawElement, styleType);
+    } else {
+      routine = this.routines[index];
+      routine.drawElement = drawElement;
+      // Delete routine
+      this.routine.splice(index, 1);
+    }
+
     this.routines.push(routine);
+  }
+
+  setClassStyle(classObj, style) {
+    let routine = this.routines
+      .find(routine => routine.classObj === classObj);
+    if (routine === undefined) {
+      console.log(`Cannot find route for class - className:${classObj.name}`);
+      throw rac.Error.invalidObjectConfiguration
+    }
+
+    routine.style = style;
   }
 
   drawElement(element, style = null) {
@@ -41,19 +63,12 @@ rac.Drawer = class RacDrawer {
       throw rac.Error.invalidObjectToDraw;
     }
 
-    let styleType = rac.Drawer.StyleType;
-    let styleForClass = null;
-    switch (routine.styleType) {
-      case null: break;
-      case styleType.text: styleForClass = rac.Drawer.styles.text; break;
-    }
-
-    if (style === null && styleForClass === null) {
+    if (style === null && routine.style === null) {
       routine.drawElement.call(element);
     } else {
       push();
-      if (styleForClass !== null) {
-        styleForClass.apply();
+      if (routine.style !== null) {
+        routine.style.apply();
       }
       if (style !== null) {
         style.apply();
@@ -66,19 +81,6 @@ rac.Drawer = class RacDrawer {
 }
 
 rac.defaultDrawer = new rac.Drawer();
-
-// TODO: styles and routines could be properties of drawer?
-// Set of styles types for which the drawer can keep a default style. When
-// a drawing function, a StyleType can be associated with a class. This
-// style will be applied every time that class is drawn.
-rac.Drawer.StyleType = {
-  text: "text"
-};
-
-
-rac.Drawer.styles = {
-  text: null
-};
 
 
 rac.protoFunctions.draw = function(style = null){
@@ -673,9 +675,7 @@ rac.defaultDrawer.setDrawFunction(rac.Text, function() {
   text(this.string, this.point.x, this.point.y);
 
   pop();
-}, rac.Drawer.StyleType.text);
-// TODO: the style association could be done just on the drawer instance
-// which will make it vesatile and part of the script configuration!
+});
 
 rac.setupProtoFunctions(rac.Text);
 
