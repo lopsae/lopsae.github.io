@@ -1,8 +1,5 @@
 "use strict";
 
-// TODO: to test/visualize
-// angle.shift, shiftWithOrigin
-// arc.clampToArcLength
 
 // Ruler and Compass - 0.8.x
 let rac;
@@ -13,18 +10,64 @@ rac.protoFunctions = {};
 
 
 // Draws using p5js canvas
-rac.Drawer = function RacDrawer() {
-  this.enabled = true;
-};
+rac.Drawer = class RacDrawer {
+
+  static Routine = class RacDrawerRoutine {
+    constructor (classObj, drawElement, styleType = null) {
+      this.classObj = classObj;
+      this.drawElement = drawElement
+      this.styleType = styleType;
+    }
+  }
+
+  constructor() {
+    this.routines = [];
+    this.enabled = true;
+  }
+
+  // Adds a routine for the given class. The `drawElement` function will be
+  // called passing the element to be drawn as `this`.
+  setDrawFunction(classObj, drawElement, styleType = null) {
+    let routine = new rac.Drawer.Routine(classObj, drawElement, styleType);
+    // TODO: duplicates are possible
+    this.routines.push(routine);
+  }
+
+  drawElement(element, style = null) {
+    let routine = this.routines
+      .find(routine => element instanceof routine.classObj);
+    if (routine === undefined) {
+      console.trace(`Cannot draw element - constructorName:${element.constructor.name}`);
+      throw rac.Error.invalidObjectToDraw;
+    }
+
+    let styleType = rac.Drawer.StyleType;
+    let styleForClass = null;
+    switch (routine.styleType) {
+      case null: break;
+      case styleType.text: styleForClass = rac.Drawer.styles.text; break;
+    }
+
+    if (style === null && styleForClass === null) {
+      routine.drawElement.call(element);
+    } else {
+      push();
+      if (styleForClass !== null) {
+        styleForClass.apply();
+      }
+      if (style !== null) {
+        style.apply();
+      }
+      routine.drawElement.call(element);
+      pop();
+    }
+  }
+
+}
 
 rac.defaultDrawer = new rac.Drawer();
 
-rac.Drawer.Routine = function RacDrawerRoutine(classObj, drawElement, styleType = null) {
-  this.classObj = classObj;
-  this.drawElement = drawElement
-  this.styleType = styleType;
-};
-
+// TODO: styles and routines could be properties of drawer?
 // Set of styles types for which the drawer can keep a default style. When
 // a drawing function, a StyleType can be associated with a class. This
 // style will be applied every time that class is drawn.
@@ -32,54 +75,15 @@ rac.Drawer.StyleType = {
   text: "text"
 };
 
-// TODO: styles and routines could be properties of drawer?
+
 rac.Drawer.styles = {
   text: null
 };
 
-rac.Drawer.routines = [];
 
 rac.protoFunctions.draw = function(style = null){
   rac.defaultDrawer.drawElement(this, style);
   return this;
-};
-
-// Adds a routine for the given class. The `drawElement` function will be
-// called passing the element to be drawn as `this`.
-rac.Drawer.setupDrawFunction = function(classObj, drawElement, styleType = null) {
-  let routine = new rac.Drawer.Routine(classObj, drawElement, styleType);
-  rac.Drawer.routines.push(routine);
-  classObj.prototype.draw = rac.protoFunctions.draw;
-};
-
-rac.Drawer.prototype.drawElement = function(element, style = null) {
-  let routine = rac.Drawer.routines
-    .find(routine => element instanceof routine.classObj);
-  if (routine === undefined) {
-    console.trace(`Cannot draw element - constructorName:${element.constructor.name}`);
-    throw rac.Error.invalidObjectToDraw;
-  }
-
-  let styleType = rac.Drawer.StyleType;
-  let styleForClass = null;
-  switch (routine.styleType) {
-    case null: break;
-    case styleType.text: styleForClass = rac.Drawer.styles.text; break;
-  }
-
-  if (style === null && styleForClass === null) {
-    routine.drawElement.call(element);
-  } else {
-    push();
-    if (styleForClass !== null) {
-      styleForClass.apply();
-    }
-    if (style !== null) {
-      style.apply();
-    }
-    routine.drawElement.call(element);
-    pop();
-  }
 };
 
 
@@ -165,6 +169,7 @@ rac.protoFunctions.attachTo = function(someComposite) {
 };
 
 rac.setupProtoFunctions = function(classObj) {
+  classObj.prototype.draw                = rac.protoFunctions.draw;
   classObj.prototype.push                = rac.protoFunctions.push;
   classObj.prototype.pop                 = rac.protoFunctions.pop;
   classObj.prototype.peek                = rac.protoFunctions.peek;
@@ -493,7 +498,8 @@ rac.Point = class RacPoint{
 
 }
 
-rac.Drawer.setupDrawFunction(rac.Point, function() {
+
+rac.defaultDrawer.setDrawFunction(rac.Point, function() {
   point(this.x, this.y);
 });
 
@@ -658,7 +664,7 @@ rac.Text = class RacText {
 
 }
 
-rac.Drawer.setupDrawFunction(rac.Text, function() {
+rac.defaultDrawer.setDrawFunction(rac.Text, function() {
   // TODO: could these happen as part of drawer?
   push();
 
@@ -747,7 +753,7 @@ rac.Segment = class RacSegment {
 
 }
 
-rac.Drawer.setupDrawFunction(rac.Segment, function() {
+rac.defaultDrawer.setDrawFunction(rac.Segment, function() {
   line(this.start.x, this.start.y,
        this.end.x,   this.end.y);
 });
@@ -1080,7 +1086,7 @@ rac.Arc = class RacArc {
 }
 
 
-rac.Drawer.setupDrawFunction(rac.Arc, function() {
+rac.defaultDrawer.setDrawFunction(rac.Arc, function() {
   if (this.isCircle()) {
     let startRad = this.start.radians();
     arc(this.center.x, this.center.y,
@@ -1314,7 +1320,7 @@ rac.Bezier = function RacBezier(start, startAnchor, endAnchor, end) {
   this.end = end;
 };
 
-rac.Drawer.setupDrawFunction(rac.Bezier, function() {
+rac.defaultDrawer.setDrawFunction(rac.Bezier, function() {
   bezier(
     this.start.x, this.start.y,
     this.startAnchor.x, this.startAnchor.y,
@@ -1354,7 +1360,7 @@ rac.Composite = function RacComposite(sequence = []) {
   this.sequence = sequence;
 };
 
-rac.Drawer.setupDrawFunction(rac.Composite, function() {
+rac.defaultDrawer.setDrawFunction(rac.Composite, function() {
   this.sequence.forEach(item => item.draw());
 });
 
@@ -1388,7 +1394,7 @@ rac.Shape = function RacShape() {
   this.contour = new rac.Composite();
 }
 
-rac.Drawer.setupDrawFunction(rac.Shape, function () {
+rac.defaultDrawer.setDrawFunction(rac.Shape, function () {
   beginShape();
   this.outline.vertex();
 
@@ -1529,6 +1535,7 @@ rac.ControlSelection = class RacControlSelection{
   }
 }
 
+// TODO: all these could be rac.Control properties?
 
 // Collection of all controls that are drawn with `drawControls`
 // and evaluated for selection with the `pointer...` functions.
