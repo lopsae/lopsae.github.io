@@ -458,6 +458,10 @@ rac.Point = class RacPoint{
     return this;
   }
 
+  text(string, format) {
+    return new rac.Text(string, format, this);
+  }
+
 }
 
 rac.Drawer.setupDrawFunction(rac.Point, function() {
@@ -557,6 +561,86 @@ rac.Point.prototype.segmentPerpendicularToSegment = function(segment) {
 rac.Point.prototype.arc = function(radius, start = rac.Angle.zero, end = start, clockwise = true) {
   return new rac.Arc(this, radius, start, end, clockwise);
 };
+
+
+rac.TextFormat = class RacTextFormat {
+
+  static defaultSize = 15;
+
+  static horizontal = {
+    left: "left",
+    center: "horizontalCenter",
+    right: "right"
+  };
+
+  static vertical = {
+    top: "top",
+    bottom: "bottom",
+    center: "verticalCenter",
+    baseline: "baseline"
+  };
+
+  // TODO: use distance to produce a offset segment
+  constructor(horizontal, vertical, distance, size = rac.TextFormat.defaultSize) {
+    this.horizontal = horizontal;
+    this.vertical = vertical;
+    this.distance = distance;
+    this.size = size;
+  }
+
+  apply() {
+    let hAlign;
+    let hOptions = rac.TextFormat.horizontal;
+    switch (this.horizontal) {
+      case hOptions.left:   hAlign = LEFT;   break;
+      case hOptions.center: hAlign = CENTER; break;
+      case hOptions.right:  hAlign = RIGHT;  break;
+      default:
+        console.trace(`Invalid horizontal configuration - horizontal:${this.horizontal}`);
+        throw rac.Error.invalidObjectConfiguration;
+    }
+
+    let vAlign;
+    let vOptions = rac.TextFormat.vertical;
+    switch (this.vertical) {
+      case vOptions.top:      vAlign = TOP;      break;
+      case vOptions.bottom:   vAlign = BOTTOM;   break;
+      case vOptions.center:   vAlign = CENTER;   break;
+      case vOptions.baseline: vAlign = BASELINE; break;
+      default:
+        console.trace(`Invalid vertical configuration - vertical:${this.vertical}`);
+        throw rac.Error.invalidObjectConfiguration;
+    }
+
+    textAlign(hAlign, vAlign);
+    textSize(this.size);
+  }
+
+}
+
+
+rac.Text = class RacText {
+
+  constructor(string, format, point) {
+    this.string = string;
+    this.point = point;
+    this.format = format;
+  }
+
+}
+
+rac.Drawer.setupDrawFunction(rac.Text, function() {
+  // TODO: could these happen as part of drawer?
+  push();
+
+  // TODO: implement textStyle for text
+  this.format.apply();
+  text(this.string, this.point.x, this.point.y);
+
+  pop();
+});
+
+rac.setupProtoFunctions(rac.Text);
 
 
 rac.Segment = class RacSegment {

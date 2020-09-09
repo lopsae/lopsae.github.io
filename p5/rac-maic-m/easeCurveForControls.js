@@ -135,8 +135,9 @@ function draw() {
   let easeFactor = ((easeFactorControl.value -100) / 50) + 1;
 
   // TODO: figure out text api for drawing now damn
-  text(easeOffset, easeOffsetControl.anchor.end.x, easeOffsetControl.anchor.end.y);
-  text(easeFactor, easeFactorControl.anchor.end.x, easeFactorControl.anchor.end.y);
+  let textFormat = new rac.TextFormat(rac.TextFormat.horizontal.left, rac.TextFormat.vertical.center, 10);
+  easeOffsetControl.anchor.end.text(easeOffset, textFormat).draw();
+  easeFactorControl.anchor.end.text(easeFactor, textFormat).draw();
 
   for (let index = 0; index < linesCount; index++) {
     let linePos = linesOffset + linesSpacing * index;
@@ -159,8 +160,8 @@ function draw() {
     rangedEase.preBehavior = rac.EaseFunction.Behavior.pass;
     rangedEase.postBehavior = rac.EaseFunction.Behavior.pass;
 
-    rangedEase.preFactor = 1/2;
-    rangedEase.postFactor = 1/2;
+    rangedEase.preFactor = 1;
+    rangedEase.postFactor = 1;
 
     let newlength = rangedEase.easeRange(lineLength);
 
