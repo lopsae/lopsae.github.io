@@ -55,8 +55,9 @@ function draw() {
 
   let colorScheme = {
     background:  new rac.Color( .1,  .1,  .1), // blackish
-    stroke:      new rac.Color( .9,  .2,  .2,  .8), // red,
-    rosePink:    new rac.Color( .7,  .3,  .3,  .5),
+    main:        new rac.Color( .9,  .2,  .2,  .8), // red,
+    rosePink:    new rac.Color( .7,  .3,  .3),
+    brightRose:  new rac.Color( .9,  .4,  .4),
     fill:        new rac.Color( .8,  .8,  .8,  .9), // whiteish
     controlFill: new rac.Color( .1,  .1,  .1), // blackish
     pointer:     new rac.Color( .9,  .9,  .9,  .6), // whiteish
@@ -64,8 +65,10 @@ function draw() {
   };
   colorScheme.background.applyBackground();
 
-  let mainStroke = colorScheme.stroke.stroke(2);
-  mainStroke.apply();
+  // Default root styles
+  colorScheme.main.stroke(2).apply();
+  rac.Drawer.styles.text = colorScheme.brightRose.fill()
+    .styleWithStroke(rac.Stroke.none);
 
   let controlMarker = colorScheme.rosePink.withAlpha(.3).stroke(2);
   let noEaseMarker = colorScheme.rosePink.withAlpha(.5).stroke(2);
@@ -73,7 +76,7 @@ function draw() {
   // Testing highlight
   let highlight = colorScheme.highlight.stroke(5);
 
-  let controlStyle = colorScheme.stroke.stroke(3)
+  let controlStyle = colorScheme.main.stroke(3)
     .styleWithFill(colorScheme.controlFill.fill());
 
   rac.controls.forEach(item => item.style = controlStyle);

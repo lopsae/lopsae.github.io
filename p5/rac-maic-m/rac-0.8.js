@@ -19,9 +19,22 @@ rac.Drawer = function RacDrawer() {
 
 rac.defaultDrawer = new rac.Drawer();
 
-rac.Drawer.Routine = function RacDrawerRoutine(classObj, drawElement) {
+rac.Drawer.Routine = function RacDrawerRoutine(classObj, drawElement, styleType = null) {
   this.classObj = classObj;
   this.drawElement = drawElement
+  this.styleType = styleType;
+};
+
+// Set of styles types for which the drawer can keep a default style. When
+// a drawing function, a StyleType can be associated with a class. This
+// style will be applied every time that class is drawn.
+rac.Drawer.StyleType = {
+  text: "text"
+};
+
+// TODO: styles and routines could be properties of drawer?
+rac.Drawer.styles = {
+  text: null
 };
 
 rac.Drawer.routines = [];
@@ -33,8 +46,8 @@ rac.protoFunctions.draw = function(style = null){
 
 // Adds a routine for the given class. The `drawElement` function will be
 // called passing the element to be drawn as `this`.
-rac.Drawer.setupDrawFunction = function(classObj, drawElement) {
-  let routine = new rac.Drawer.Routine(classObj, drawElement);
+rac.Drawer.setupDrawFunction = function(classObj, drawElement, styleType = null) {
+  let routine = new rac.Drawer.Routine(classObj, drawElement, styleType);
   rac.Drawer.routines.push(routine);
   classObj.prototype.draw = rac.protoFunctions.draw;
 };
@@ -47,11 +60,23 @@ rac.Drawer.prototype.drawElement = function(element, style = null) {
     throw rac.Error.invalidObjectToDraw;
   }
 
-  if (style === null) {
+  let styleType = rac.Drawer.StyleType;
+  let styleForClass = null;
+  switch (routine.styleType) {
+    case null: break;
+    case styleType.text: styleForClass = rac.Drawer.styles.text; break;
+  }
+
+  if (style === null && styleForClass === null) {
     routine.drawElement.call(element);
   } else {
     push();
-    style.apply();
+    if (styleForClass !== null) {
+      styleForClass.apply();
+    }
+    if (style !== null) {
+      style.apply();
+    }
     routine.drawElement.call(element);
     pop();
   }
@@ -277,6 +302,10 @@ rac.Fill = class RacFill {
     }
 
     this.color.applyFill();
+  }
+
+  styleWithStroke(stroke) {
+    return new rac.Style(stroke, this);
   }
 
 }
@@ -638,7 +667,9 @@ rac.Drawer.setupDrawFunction(rac.Text, function() {
   text(this.string, this.point.x, this.point.y);
 
   pop();
-});
+}, rac.Drawer.StyleType.text);
+// TODO: the style association could be done just on the drawer instance
+// which will make it vesatile and part of the script configuration!
 
 rac.setupProtoFunctions(rac.Text);
 
