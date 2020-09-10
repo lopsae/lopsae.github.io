@@ -67,6 +67,8 @@ function draw() {
 
   // Default root styles
   colorScheme.main.stroke(2).apply();
+  // TODO: fill.styleWithNoStroke
+  // TODO: style.applyToClass()
   rac.defaultDrawer.setClassStyle(rac.Text, colorScheme.brightRose.fill()
     .styleWithStroke(rac.Stroke.none));
 

@@ -13,10 +13,13 @@ rac.protoFunctions = {};
 rac.Drawer = class RacDrawer {
 
   static Routine = class RacDrawerRoutine {
-    constructor (classObj, drawElement, style = null) {
+    constructor (classObj, drawElement) {
       this.classObj = classObj;
       this.drawElement = drawElement
-      this.style = style;
+      this.style = null;
+
+      // Options
+      this.requiresPushPop = false;
     }
   }
 
@@ -27,13 +30,13 @@ rac.Drawer = class RacDrawer {
 
   // Adds a routine for the given class. The `drawElement` function will be
   // called passing the element to be drawn as `this`.
-  setDrawFunction(classObj, drawElement, styleType = null) {
+  setDrawFunction(classObj, drawElement) {
     let index = this.routines
       .findIndex(routine => routine.classObj === classObj);
 
     let routine;
     if (index === -1) {
-      routine = new rac.Drawer.Routine(classObj, drawElement, styleType);
+      routine = new rac.Drawer.Routine(classObj, drawElement);
     } else {
       routine = this.routines[index];
       routine.drawElement = drawElement;
@@ -44,11 +47,24 @@ rac.Drawer = class RacDrawer {
     this.routines.push(routine);
   }
 
+  setDrawOptions(classObj, options) {
+    let routine = this.routines
+      .find(routine => routine.classObj === classObj);
+    if (routine === undefined) {
+      console.log(`Cannot find routine for class - className:${classObj.name}`);
+      throw rac.Error.invalidObjectConfiguration
+    }
+
+    if (options.requiresPushPop !== undefined) {
+      routine.requiresPushPop = options.requiresPushPop;
+    }
+  }
+
   setClassStyle(classObj, style) {
     let routine = this.routines
       .find(routine => routine.classObj === classObj);
     if (routine === undefined) {
-      console.log(`Cannot find route for class - className:${classObj.name}`);
+      console.log(`Cannot find routine for class - className:${classObj.name}`);
       throw rac.Error.invalidObjectConfiguration
     }
 
@@ -63,9 +79,10 @@ rac.Drawer = class RacDrawer {
       throw rac.Error.invalidObjectToDraw;
     }
 
-    if (style === null && routine.style === null) {
-      routine.drawElement.call(element);
-    } else {
+    if (routine.requiresPushPop === true
+      || style !== null
+      || routine.style !== null)
+    {
       push();
       if (routine.style !== null) {
         routine.style.apply();
@@ -75,6 +92,9 @@ rac.Drawer = class RacDrawer {
       }
       routine.drawElement.call(element);
       pop();
+    } else {
+      // No push-pull
+      routine.drawElement.call(element);
     }
   }
 
@@ -667,15 +687,10 @@ rac.Text = class RacText {
 }
 
 rac.defaultDrawer.setDrawFunction(rac.Text, function() {
-  // TODO: could these happen as part of drawer?
-  push();
-
-  // TODO: implement textStyle for text
   this.format.apply();
   text(this.string, this.point.x, this.point.y);
-
-  pop();
 });
+rac.defaultDrawer.setDrawOptions(rac.Text, {requiresPushPop: true});
 
 rac.setupProtoFunctions(rac.Text);
 
