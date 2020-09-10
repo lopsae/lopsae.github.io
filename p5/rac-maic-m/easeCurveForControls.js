@@ -56,7 +56,7 @@ function draw() {
   let colorScheme = {
     main:       rac.Color.fromRgba(249, 65, 68), // bright red
     util:       rac.Color.fromRgba(243, 114, 44), // orange
-    // 248, 150, 30 // bright orange
+    continuous: rac.Color.fromRgba(248, 150, 30), // bright orange
     // 249, 199, 79 // yellow
     // 144, 190, 109 // greenish
     control:    rac.Color.fromRgba(67, 170, 139), // cyanish
@@ -78,8 +78,9 @@ function draw() {
     .applyToClass(rac.Text);
 
   let rangesMarker = colorScheme.util.withAlpha(.5).stroke(2);
-  let noEaseMarker = colorScheme.util.withAlpha(.3).stroke(2);
+  let continuousMarker = colorScheme.continuous.withAlpha(.5).stroke(2);
   let controlMarker = colorScheme.control.withAlpha(.5).stroke(2);
+  let noEaseMarker = colorScheme.util.withAlpha(.3).stroke(2);
 
   // Testing highlight
   let highlight = colorScheme.highlight.stroke(5);
@@ -100,9 +101,10 @@ function draw() {
   let linesCount = 45;
 
   let controlMarkerOffset = 3;
-  let noEaseMarkerOffset = 6;
+  let continuousMarkerOffset = 6
+  let noEaseMarkerOffset = 9;
 
-  let lastMarkerOffset = 6;
+  let lastMarkerOffset = noEaseMarkerOffset;
 
   let lastLineDistance = linesOffset + linesSpacing * (linesCount - 1)
     + lastMarkerOffset;
@@ -170,8 +172,15 @@ function draw() {
     utilEase.postFactor = 1;
 
     // Utility line
-    let utillength = utilEase.easeRange(lineLength);
-    lineStart.segmentToAngle(rac.Angle.e, utillength).draw();
+    let utilLength = utilEase.easeRange(lineLength);
+    lineStart.segmentToAngle(rac.Angle.e, utilLength).draw();
+
+    // Continious line
+    utilEase.preBehavior = rac.EaseFunction.Behavior.continue;
+    utilEase.postBehavior = rac.EaseFunction.Behavior.continue;
+    let continuousLength = utilEase.easeRange(lineLength);
+    lineStart.pointToAngle(rac.Angle.s, continuousMarkerOffset)
+      .segmentToAngle(rac.Angle.e, continuousLength).draw(continuousMarker);
 
     // Control ease setup
     let controlEase = new rac.EaseFunction();
@@ -183,9 +192,9 @@ function draw() {
     controlEase.postBehavior = rac.EaseFunction.Behavior.continue;
 
     // Control line
-    let controllength = controlEase.easeRange(lineLength);
+    let controlLength = controlEase.easeRange(lineLength);
     lineStart.pointToAngle(rac.Angle.s, controlMarkerOffset)
-      .segmentToAngle(rac.Angle.e, controllength).draw(controlMarker);
+      .segmentToAngle(rac.Angle.e, controlLength).draw(controlMarker);
 
     // No ease line
     lineStart.pointToAngle(rac.Angle.s, noEaseMarkerOffset)
