@@ -620,62 +620,6 @@ rac.Point.prototype.arc = function(radius, start = rac.Angle.zero, end = start, 
 };
 
 
-// TODO: could be internal class to text
-rac.TextFormat = class RacTextFormat {
-
-  static defaultSize = 15;
-
-  static horizontal = {
-    left: "left",
-    center: "horizontalCenter",
-    right: "right"
-  };
-
-  static vertical = {
-    top: "top",
-    bottom: "bottom",
-    center: "verticalCenter",
-    baseline: "baseline"
-  };
-
-  constructor(horizontal, vertical, angle = rac.Angle.zero, distance = 0, size = rac.TextFormat.defaultSize) {
-    this.horizontal = horizontal;
-    this.vertical = vertical;
-    this.angle = angle;
-    this.distance = distance;
-    this.size = size;
-  }
-
-  apply() {
-    let hAlign;
-    let hOptions = rac.TextFormat.horizontal;
-    switch (this.horizontal) {
-      case hOptions.left:   hAlign = LEFT;   break;
-      case hOptions.center: hAlign = CENTER; break;
-      case hOptions.right:  hAlign = RIGHT;  break;
-      default:
-        console.trace(`Invalid horizontal configuration - horizontal:${this.horizontal}`);
-        throw rac.Error.invalidObjectConfiguration;
-    }
-
-    let vAlign;
-    let vOptions = rac.TextFormat.vertical;
-    switch (this.vertical) {
-      case vOptions.top:      vAlign = TOP;      break;
-      case vOptions.bottom:   vAlign = BOTTOM;   break;
-      case vOptions.center:   vAlign = CENTER;   break;
-      case vOptions.baseline: vAlign = BASELINE; break;
-      default:
-        console.trace(`Invalid vertical configuration - vertical:${this.vertical}`);
-        throw rac.Error.invalidObjectConfiguration;
-    }
-
-    textAlign(hAlign, vAlign);
-    textSize(this.size);
-  }
-
-}
-
 
 rac.Text = class RacText {
 
@@ -683,6 +627,61 @@ rac.Text = class RacText {
     this.string = string;
     this.point = point;
     this.format = format;
+  }
+
+  static Format = class RacTextFormat {
+
+    static defaultSize = 15;
+
+    static horizontal = {
+      left: "left",
+      center: "horizontalCenter",
+      right: "right"
+    };
+
+    static vertical = {
+      top: "top",
+      bottom: "bottom",
+      center: "verticalCenter",
+      baseline: "baseline"
+    };
+
+    constructor(horizontal, vertical, angle = rac.Angle.zero, distance = 0, size = rac.Text.Format.defaultSize) {
+      this.horizontal = horizontal;
+      this.vertical = vertical;
+      this.angle = angle;
+      this.distance = distance;
+      this.size = size;
+    }
+
+    apply() {
+      let hAlign;
+      let hOptions = rac.Text.Format.horizontal;
+      switch (this.horizontal) {
+        case hOptions.left:   hAlign = LEFT;   break;
+        case hOptions.center: hAlign = CENTER; break;
+        case hOptions.right:  hAlign = RIGHT;  break;
+        default:
+          console.trace(`Invalid horizontal configuration - horizontal:${this.horizontal}`);
+          throw rac.Error.invalidObjectConfiguration;
+      }
+
+      let vAlign;
+      let vOptions = rac.Text.Format.vertical;
+      switch (this.vertical) {
+        case vOptions.top:      vAlign = TOP;      break;
+        case vOptions.bottom:   vAlign = BOTTOM;   break;
+        case vOptions.center:   vAlign = CENTER;   break;
+        case vOptions.baseline: vAlign = BASELINE; break;
+        default:
+          console.trace(`Invalid vertical configuration - vertical:${this.vertical}`);
+          throw rac.Error.invalidObjectConfiguration;
+      }
+
+      textAlign(hAlign, vAlign);
+      textSize(this.size);
+    }
+
   }
 
 }
