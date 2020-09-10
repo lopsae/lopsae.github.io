@@ -1481,26 +1481,22 @@ rac.EaseFunction = class RacEaseFunction {
     this.postFactor = 1;
   }
 
-  // Returns the corresponding eased value for `ratio`. Both the given
-  // `ratio` and the returned value are in the [0,1] range. If `ratio` is
+  // Returns the corresponding eased value for `unit`. Both the given
+  // `unit` and the returned value are in the [0,1] range. If `unit` is
   // outside the [0,1] the returned value follows the curve of the easing
-  // function, with which some values of `a` becomes invalid.
-  easeRatio(ratio) {
+  // function, which may be invalid for some values of `a`.
+  easeUnit(unit) {
     // Source:
     // https://math.stackexchange.com/questions/121720/ease-in-out-function/121755#121755
     // f(t) = (t^a)/(t^a+(1-t)^a)
-    let ra = Math.pow(ratio, this.a);
-    let ira = Math.pow(1-ratio, this.a);
+    let ra = Math.pow(unit, this.a);
+    let ira = Math.pow(1-unit, this.a);
     return ra / (ra + ira);
   }
 
-  // TODO: better name?
-  // easeRatioParametrized
-  // easeRatioOffsetFactor
-  // other could be easeRatioUnit or just easeUnit!
-  easeRatioComplex(ratio) {
+  easeRatio(ratio) {
     let complexRatio = (ratio + this.easeOffset) * this.easeFactor
-    return this.easeRatio(complexRatio);
+    return this.easeUnit(complexRatio);
   }
 
   easeRange(range) {
@@ -1520,7 +1516,7 @@ rac.EaseFunction = class RacEaseFunction {
         return this.prefix;
       }
       if (this.preBehavior === behavior.continue) {
-        let easedRatio = this.easeRatioComplex(ratio);
+        let easedRatio = this.easeRatio(ratio);
         return this.prefix + easedRatio * this.outRange;
       }
 
@@ -1530,7 +1526,7 @@ rac.EaseFunction = class RacEaseFunction {
 
     // After prefix
     if (ratio <= 1 || this.postBehavior === behavior.continue) {
-      let easedRatio = this.easeRatioComplex(ratio);
+      let easedRatio = this.easeRatio(ratio);
       return this.prefix + easedRatio * this.outRange;
     }
     if (this.postBehavior === behavior.pass) {
