@@ -32,11 +32,11 @@ noEaseControl.value = 100;
 rac.Control.controls.push(noEaseControl);
 
 let distanceControl = new rac.Control();
-distanceControl.value = rac.Control.radius * 10;
+distanceControl.value = 250;
 rac.Control.controls.push(distanceControl);
 
 let appliedLengthControl = new rac.Control();
-appliedLengthControl.value = rac.Control.radius * 5;
+appliedLengthControl.value = 100;
 rac.Control.controls.push(appliedLengthControl);
 
 let easeOffsetControl = new rac.Control();
@@ -54,14 +54,18 @@ function draw() {
   clear();
 
   let colorScheme = {
-    background:  new rac.Color( .1,  .1,  .1), // blackish
-    main:        new rac.Color( .9,  .2,  .2,  .8), // red,
-    rosePink:    new rac.Color( .7,  .3,  .3),
-    brightRose:  new rac.Color( .9,  .4,  .4),
-    fill:        new rac.Color( .8,  .8,  .8,  .9), // whiteish
-    controlFill: new rac.Color( .1,  .1,  .1), // blackish
-    pointer:     new rac.Color( .9,  .9,  .9,  .6), // whiteish
-    highlight:   new rac.Color(  0, 1.0, 1.0,  .8)// cyan
+    main:       rac.Color.fromRgba(249, 65, 68), // bright red
+    util:       rac.Color.fromRgba(243, 114, 44), // orange
+    // 248, 150, 30 // bright orange
+    // 249, 199, 79 // yellow
+    // 144, 190, 109 // greenish
+    control:    rac.Color.fromRgba(67, 170, 139), // cyanish
+    background: rac.Color.fromRgba(22, 31, 39),
+    rosePink:   new rac.Color( .7,  .3,  .3),
+    brightRose: new rac.Color( .9,  .4,  .4),
+    fill:       new rac.Color( .8,  .8,  .8,  .9), // whiteish
+    pointer:    new rac.Color( .9,  .9,  .9,  .6), // whiteish
+    highlight:  new rac.Color(  0, 1.0, 1.0,  .8)// cyan
   };
 
   // Default root styles
@@ -73,14 +77,15 @@ function draw() {
     .styleWithFill(colorScheme.brightRose.fill())
     .applyToClass(rac.Text);
 
-  let controlMarker = colorScheme.rosePink.withAlpha(.3).stroke(2);
-  let noEaseMarker = colorScheme.rosePink.withAlpha(.5).stroke(2);
+  let rangesMarker = colorScheme.util.withAlpha(.5).stroke(2);
+  let noEaseMarker = colorScheme.util.withAlpha(.3).stroke(2);
+  let controlMarker = colorScheme.control.withAlpha(.5).stroke(2);
 
   // Testing highlight
   let highlight = colorScheme.highlight.stroke(5);
 
   let controlStyle = colorScheme.main.stroke(3)
-    .styleWithFill(colorScheme.controlFill.fill());
+    .styleWithFill(colorScheme.background.fill());
 
   rac.Control.controls.forEach(item => item.style = controlStyle);
 
@@ -90,14 +95,17 @@ function draw() {
   let start  = new rac.Point(100, 100);
 
   let linesOffset = rac.Control.radius * 2;
-  let linesSpacing = 10;
-  let linesStep = 10;
-  let linesCount = 50;
+  let linesSpacing = 12;
+  let linesStep = 12;
+  let linesCount = 45;
 
-  let noEaseMarkerOffset = 3;
+  let controlMarkerOffset = 3;
+  let noEaseMarkerOffset = 6;
+
+  let lastMarkerOffset = 6;
 
   let lastLineDistance = linesOffset + linesSpacing * (linesCount - 1)
-    + noEaseMarkerOffset;
+    + lastMarkerOffset;
   let lastLineGuide = start.pointToAngle(rac.Angle.s, lastLineDistance)
     .segmentToAngle(rac.Angle.e, 100);
 
@@ -105,7 +113,7 @@ function draw() {
   noEaseControl.anchor = start.segmentToAngle(rac.Angle.e, 200);
   noEaseControl.center()
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
-    .draw(controlMarker);
+    .draw(rangesMarker);
 
   // Distance control + marker
   distanceControl.anchor = start.pointToAngle(rac.Angle.s, rac.Control.radius * 3)
@@ -113,7 +121,7 @@ function draw() {
     .segmentToAngle(rac.Angle.e, 400);
   distanceControl.center()
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
-    .draw(controlMarker);
+    .draw(rangesMarker);
 
   // AppliedLength control + marker
   appliedLengthControl.anchor = start.pointToAngle(rac.Angle.s, rac.Control.radius * 6)
@@ -121,7 +129,7 @@ function draw() {
     .segmentToAngle(rac.Angle.e, 200);
   appliedLengthControl.center()
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
-    .draw(controlMarker);
+    .draw(rangesMarker);
 
   // Ease Offset control
   easeOffsetControl.anchor = lastLineGuide.start
@@ -146,34 +154,42 @@ function draw() {
 
     let lineLength = linesStep * index;
 
-    // No ease markers
+    // Utility ease setup
+    let utilEase = new rac.EaseFunction();
+    utilEase.prefix = noEaseDistance;
+    utilEase.inRange = easeDistance;
+    utilEase.outRange = appliedLength;
+
+    utilEase.easeOffset = easeOffset;
+    utilEase.easeFactor = easeFactor;
+
+    utilEase.preBehavior = rac.EaseFunction.Behavior.pass;
+    utilEase.postBehavior = rac.EaseFunction.Behavior.pass;
+
+    utilEase.preFactor = 1;
+    utilEase.postFactor = 1;
+
+    // Utility line
+    let utillength = utilEase.easeRange(lineLength);
+    lineStart.segmentToAngle(rac.Angle.e, utillength).draw();
+
+    // Control ease setup
+    let controlEase = new rac.EaseFunction();
+    controlEase.prefix = noEaseDistance;
+    controlEase.inRange = easeDistance;
+    controlEase.outRange = appliedLength;
+
+    controlEase.preBehavior = rac.EaseFunction.Behavior.continue;
+    controlEase.postBehavior = rac.EaseFunction.Behavior.continue;
+
+    // Control line
+    let controllength = controlEase.easeRange(lineLength);
+    lineStart.pointToAngle(rac.Angle.s, controlMarkerOffset)
+      .segmentToAngle(rac.Angle.e, controllength).draw(controlMarker);
+
+    // No ease line
     lineStart.pointToAngle(rac.Angle.s, noEaseMarkerOffset)
       .segmentToAngle(rac.Angle.e, lineLength).draw(noEaseMarker);
-
-    let rangedEase = new rac.EaseFunction();
-    rangedEase.prefix = noEaseDistance;
-    rangedEase.inRange = easeDistance;
-    rangedEase.outRange = appliedLength;
-
-    rangedEase.easeOffset = easeOffset;
-    rangedEase.easeFactor = easeFactor;
-
-    rangedEase.preBehavior = rac.EaseFunction.Behavior.pass;
-    rangedEase.postBehavior = rac.EaseFunction.Behavior.pass;
-
-    rangedEase.preFactor = 1;
-    rangedEase.postFactor = 1;
-
-    let newlength = rangedEase.easeRange(lineLength);
-
-    // TODO: draw an unmodified ease for baseline
-    // let lengthRatio = (lineLength - noEaseDistance) / easeDistance;
-
-    // let easing = new rac.EaseFunction();
-    // let easedRatio = easing.easeRatio(lengthRatio);
-    // let newlength = noEaseDistance + (easedRatio * appliedLength);
-
-    lineStart.segmentToAngle(rac.Angle.e, newlength).draw();
   }
 
 

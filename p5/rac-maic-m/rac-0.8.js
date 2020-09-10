@@ -228,6 +228,10 @@ rac.Color = class RacColor {
     this.alpha = alpha;
   }
 
+  static fromRgba(r, g, b, a = 255) {
+    return new rac.Color(r/255, g/255, b/255, a/255);
+  }
+
   copy() {
     return new rac.Color(this.r, this.g, this.b, this.alpha);
   }
