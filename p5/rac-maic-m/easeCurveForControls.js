@@ -63,14 +63,15 @@ function draw() {
     pointer:     new rac.Color( .9,  .9,  .9,  .6), // whiteish
     highlight:   new rac.Color(  0, 1.0, 1.0,  .8)// cyan
   };
-  colorScheme.background.applyBackground();
 
   // Default root styles
+  colorScheme.background.applyBackground();
   colorScheme.main.stroke(2).apply();
-  // TODO: fill.styleWithNoStroke
-  // TODO: style.applyToClass()
-  rac.defaultDrawer.setClassStyle(rac.Text, colorScheme.brightRose.fill()
-    .styleWithStroke(rac.Stroke.none));
+
+  // Text style
+  colorScheme.background.withAlpha(.6).stroke(3)
+    .styleWithFill(colorScheme.brightRose.fill())
+    .applyToClass(rac.Text);
 
   let controlMarker = colorScheme.rosePink.withAlpha(.3).stroke(2);
   let noEaseMarker = colorScheme.rosePink.withAlpha(.5).stroke(2);
@@ -139,14 +140,6 @@ function draw() {
   let easeOffset = (easeOffsetControl.value - 100) / 50;
   let easeFactor = ((easeFactorControl.value -100) / 50) + 1;
 
-  let textFormat = new rac.Text.Format(
-    rac.Text.Format.horizontal.left,
-    rac.Text.Format.vertical.baseline,
-    "Spot Mono",
-    rac.Angle.e, 4);
-  easeOffsetControl.anchor.end.text(easeOffset.toFixed(2), textFormat).draw();
-  easeFactorControl.anchor.end.text(easeFactor.toFixed(2), textFormat).draw();
-
   for (let index = 0; index < linesCount; index++) {
     let linePos = linesOffset + linesSpacing * index;
     let lineStart = start.pointToAngle(rac.Angle.s, linePos);
@@ -186,6 +179,15 @@ function draw() {
 
   // Controls draw on top
   rac.drawControls();
+
+  // Control labels get draw on top
+  let textFormat = new rac.Text.Format(
+    rac.Text.Format.horizontal.right,
+    rac.Text.Format.vertical.baseline,
+    "Spot Mono",
+    rac.Angle.n, 4);
+  easeOffsetControl.anchor.end.text(easeOffset.toFixed(2), textFormat).draw();
+  easeFactorControl.anchor.end.text(easeFactor.toFixed(2), textFormat).draw();
 
   console.log(`👑 ~finis coronat opus ${Date.now()}`);
 }

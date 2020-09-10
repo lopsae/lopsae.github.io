@@ -233,7 +233,7 @@ rac.Color = class RacColor {
   }
 
   fill() {
-  return new rac.Fill(this);
+    return new rac.Fill(this);
   }
 
   stroke(weight = 1) {
@@ -354,6 +354,10 @@ rac.Style = class RacStyle {
     if (this.fill !== null) {
       this.fill.apply();
     }
+  }
+
+  applyToClass(classObj) {
+    rac.defaultDrawer.setClassStyle(classObj, this);
   }
 
   withStroke(stroke) {
