@@ -139,10 +139,12 @@ function draw() {
   let easeOffset = (easeOffsetControl.value - 100) / 50;
   let easeFactor = ((easeFactorControl.value -100) / 50) + 1;
 
-  // TODO: figure out text api for drawing now damn
-  let textFormat = new rac.TextFormat(rac.TextFormat.horizontal.left, rac.TextFormat.vertical.center, 10);
-  easeOffsetControl.anchor.end.text(easeOffset, textFormat).draw();
-  easeFactorControl.anchor.end.text(easeFactor, textFormat).draw();
+  let textFormat = new rac.TextFormat(
+    rac.TextFormat.horizontal.left,
+    rac.TextFormat.vertical.baseline,
+    rac.Angle.e, 4);
+  easeOffsetControl.anchor.end.text(easeOffset.toFixed(2), textFormat).draw();
+  easeFactorControl.anchor.end.text(easeFactor.toFixed(2), textFormat).draw();
 
   for (let index = 0; index < linesCount; index++) {
     let linePos = linesOffset + linesSpacing * index;

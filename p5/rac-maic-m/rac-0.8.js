@@ -620,6 +620,7 @@ rac.Point.prototype.arc = function(radius, start = rac.Angle.zero, end = start, 
 };
 
 
+// TODO: could be internal class to text
 rac.TextFormat = class RacTextFormat {
 
   static defaultSize = 15;
@@ -638,9 +639,10 @@ rac.TextFormat = class RacTextFormat {
   };
 
   // TODO: use distance to produce a offset segment
-  constructor(horizontal, vertical, distance, size = rac.TextFormat.defaultSize) {
+  constructor(horizontal, vertical, angle = rac.Angle.zero, distance = 0, size = rac.TextFormat.defaultSize) {
     this.horizontal = horizontal;
     this.vertical = vertical;
+    this.angle = angle;
     this.distance = distance;
     this.size = size;
   }
@@ -687,8 +689,12 @@ rac.Text = class RacText {
 }
 
 rac.defaultDrawer.setDrawFunction(rac.Text, function() {
+  let point = this.point;
+  if (this.format.distance > 0) {
+    point = point.pointToAngle(this.format.angle, this.format.distance);
+  }
   this.format.apply();
-  text(this.string, this.point.x, this.point.y);
+  text(this.string, point.x, point.y);
 });
 rac.defaultDrawer.setDrawOptions(rac.Text, {requiresPushPop: true});
 
