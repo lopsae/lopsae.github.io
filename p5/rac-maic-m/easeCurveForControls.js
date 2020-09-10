@@ -142,6 +142,7 @@ function draw() {
   let textFormat = new rac.Text.Format(
     rac.Text.Format.horizontal.left,
     rac.Text.Format.vertical.baseline,
+    "Spot Mono",
     rac.Angle.e, 4);
   easeOffsetControl.anchor.end.text(easeOffset.toFixed(2), textFormat).draw();
   easeFactorControl.anchor.end.text(easeFactor.toFixed(2), textFormat).draw();

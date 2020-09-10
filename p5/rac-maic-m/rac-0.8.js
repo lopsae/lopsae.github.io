@@ -646,9 +646,10 @@ rac.Text = class RacText {
       baseline: "baseline"
     };
 
-    constructor(horizontal, vertical, angle = rac.Angle.zero, distance = 0, size = rac.Text.Format.defaultSize) {
+    constructor(horizontal, vertical, font = null, angle = rac.Angle.zero, distance = 0, size = rac.Text.Format.defaultSize) {
       this.horizontal = horizontal;
       this.vertical = vertical;
+      this.font = font;
       this.angle = angle;
       this.distance = distance;
       this.size = size;
@@ -680,6 +681,9 @@ rac.Text = class RacText {
 
       textAlign(hAlign, vAlign);
       textSize(this.size);
+      if (this.font !== null) {
+        textFont(this.font);
+      }
     }
 
   }
