@@ -638,7 +638,6 @@ rac.TextFormat = class RacTextFormat {
     baseline: "baseline"
   };
 
-  // TODO: use distance to produce a offset segment
   constructor(horizontal, vertical, angle = rac.Angle.zero, distance = 0, size = rac.TextFormat.defaultSize) {
     this.horizontal = horizontal;
     this.vertical = vertical;
@@ -953,7 +952,7 @@ rac.Segment.prototype.segmentToIntersectionWithSegment = function(other) {
   return new rac.Segment(this.start, end);
 };
 
-// TODO: odd name, maybe should be nextSegment?
+// TODO: odd name, maybe should be nextSegment? reevaluate "relative" vs shift
 rac.Segment.prototype.segmentToRelativeAngle = function(
   relativeAngle, distance, clockwise = true)
 {
@@ -1543,27 +1542,12 @@ rac.EaseFunction = class RacEaseFunction {
 }
 
 
-rac.ControlSelection = class RacControlSelection{
-  constructor(control) {
-    this.control = control;
-    // Copy of the control anchor, so that the control can move tied to
-    // the drawing, while the interaction range remains fixed.
-    this.anchorCopy = control.anchor.copy();
-    // Segment from the captured pointer position to the contro center,
-    // used to attach the control to the point where interaction started.
-    // Starts at pointer and ends at control center.
-    this.pointerOffset = rac.Point.mouse().segmentToPoint(control.center());
-  }
-}
-
 // TODO: all these could be rac.Control properties?
 
 // Collection of all controls that are drawn with `drawControls`
 // and evaluated for selection with the `pointer...` functions.
 rac.controls = [];
 
-// Current selected control, or null if there is no selection.
-rac.controlSelection = null;
 
 // Last Point of the pointer position when it was pressed, or last Control
 // interacted with. Set to `null` when there has been no interaction yet
@@ -1593,22 +1577,22 @@ rac.pointerPressed = function(pointerCenter) {
     return;
   }
 
-  rac.controlSelection = new rac.ControlSelection(selected);
+  rac.Control.selection = new rac.Control.Selection(selected, pointerCenter);
 }
 
 
 // Call to signal the pointer being dragged. As the pointer moves the value
 // of the selected control is updated.
 rac.pointerDragged = function(pointerCenter){
-  if (rac.controlSelection === null) {
+  if (rac.Control.selection === null) {
     return;
   }
 
-  let control = rac.controlSelection.control;
-  let anchorCopy = rac.controlSelection.anchorCopy;
+  let control = rac.Control.selection.control;
+  let anchorCopy = rac.Control.selection.anchorCopy;
 
   // Center of dragged control in the pointer current position
-  let currentPointerControlCenter = rac.controlSelection.pointerOffset
+  let currentPointerControlCenter = rac.Control.selection.pointerOffset
     .translateToStart(pointerCenter)
     .end;
 
@@ -1639,20 +1623,20 @@ rac.pointerDragged = function(pointerCenter){
   }
 
   // Update control with new value
-  rac.controlSelection.control.value = newValue;
+  control.value = newValue;
 };
 
 
 // Call to signal the pointer being released. Upon release the selected
 // control is cleared.
-rac.pointerReleased = function() {
-  if (rac.controlSelection === null) {
-    rac.lastPointer = rac.Point.mouse();
+rac.pointerReleased = function(pointerCenter) {
+  if (rac.Control.selection === null) {
+    rac.lastPointer = pointerCenter;
     return;
   }
 
-  rac.lastPointer = rac.controlSelection.control;
-  rac.controlSelection = null;
+  rac.lastPointer = rac.Control.selection.control;
+  rac.Control.selection = null;
 }
 
 
@@ -1670,7 +1654,7 @@ rac.drawControls = function() {
   // Pointer pressed
   let pointerCenter = rac.Point.mouse();
   if (mouseIsPressed) {
-    if (rac.controlSelection === null) {
+    if (rac.Control.selection === null) {
       pointerCenter.arc(10).draw(rac.pointerStyle);
     } else {
       pointerCenter.arc(5).draw(rac.pointerStyle);
@@ -1681,17 +1665,17 @@ rac.drawControls = function() {
   rac.controls.forEach(item => item.draw());
 
   // Rest is Control selection visuals
-  if (rac.controlSelection === null) {
+  if (rac.Control.selection === null) {
     return;
   }
 
   // Pointer to anchor elements
   // Copied anchor segment
-  let anchorCopy = rac.controlSelection.anchorCopy;
+  let anchorCopy = rac.Control.selection.anchorCopy;
   anchorCopy.draw(rac.pointerStyle);
 
-  let minLimit = rac.controlSelection.control.minLimit;
-  let maxLimit = rac.controlSelection.control.maxLimit;
+  let minLimit = rac.Control.selection.control.minLimit;
+  let maxLimit = rac.Control.selection.control.maxLimit;
 
   // Markers for segment limits
   if (anchorCopy instanceof rac.Segment) {
@@ -1728,7 +1712,7 @@ rac.drawControls = function() {
   }
 
   // Ray from pointer to control shadow center
-  let draggedShadowCenter = rac.controlSelection.pointerOffset
+  let draggedShadowCenter = rac.Control.selection.pointerOffset
     .translateToStart(pointerCenter)
     .end;
 
@@ -1805,15 +1789,39 @@ rac.drawControls = function() {
 // For an Arch achor the limits can be an integer or an Angle. `value`
 // can be set as a integer or Angle, but will be updated with an Angle
 // instance when the control is used.
-rac.Control = function RacControl() {
-  this.style = null;
-  this.value = 0;
-  this.minLimit = 0;
-  this.maxLimit = 0;
-  this.anchor = null;
-};
+rac.Control = class RacControl {
 
-rac.Control.radius = 22;
+  // Radius of the cicle drawn for controls.
+  static radius = 22;
+
+  constructor() {
+    this.style = null;
+    this.value = 0;
+    this.minLimit = 0;
+    this.maxLimit = 0;
+    this.anchor = null;
+  }
+
+
+  // Selection information for the currently selected control, or `null` if
+  // there is no selection.
+  static selection = null;
+
+  static Selection = class RacControlSelection{
+    constructor(control) {
+      // Selected control instance.
+      this.control = control;
+      // Copy of the control anchor, so that the control can move tied to
+      // the drawing, while the interaction range remains fixed.
+      this.anchorCopy = control.anchor.copy();
+      // Segment from the captured pointer position to the contro center,
+      // used to attach the control to the point where interaction started.
+      // Starts at pointer and ends at control center.
+      this.pointerOffset = rac.Point.mouse().segmentToPoint(control.center());
+    }
+  }
+
+}
 
 
 rac.Control.prototype.center = function() {
@@ -1836,10 +1844,10 @@ rac.Control.prototype.center = function() {
 };
 
 rac.Control.prototype.isSelected = function() {
-  if (rac.controlSelection === null) {
+  if (rac.Control.selection === null) {
     return false;
   }
-  return rac.controlSelection.control === this;
+  return rac.Control.selection.control === this;
 }
 
 rac.Control.prototype.draw = function() {

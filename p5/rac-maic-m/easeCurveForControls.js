@@ -22,7 +22,7 @@ function mouseDragged(event) {
 
 
 function mouseReleased(event) {
-  rac.pointerReleased();
+  rac.pointerReleased(rac.Point.mouse());
   redraw();
 }
 
