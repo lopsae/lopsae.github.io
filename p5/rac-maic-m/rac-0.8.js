@@ -1543,27 +1543,13 @@ rac.EaseFunction = class RacEaseFunction {
 
 // TODO: all these could be rac.Control properties?
 
-// Collection of all controls that are drawn with `drawControls`
-// and evaluated for selection with the `pointer...` functions.
-rac.controls = [];
-
-
-// Last Point of the pointer position when it was pressed, or last Control
-// interacted with. Set to `null` when there has been no interaction yet
-// and while there is a selected control.
-rac.lastPointer = null;
-
-// Style used for visual elements related to selection and pointer interaction.
-rac.pointerStyle = null;
-
-
 // Call to signal the pointer being pressed. If the ponter hits a control
 // it will be considered selected. When a control is selected a copy of its
 // anchor is stored as to allow interaction with a fixed anchor.
 rac.pointerPressed = function(pointerCenter) {
-  rac.lastPointer = null;
+  rac.Control.lastPointer = null;
 
-  let selected = rac.controls.find(item => {
+  let selected = rac.Control.controls.find(item => {
     let controlCenter = item.center();
     if (controlCenter === null) { return false; }
     if (controlCenter.distanceToPoint(pointerCenter) <= rac.Control.radius) {
@@ -1630,11 +1616,11 @@ rac.pointerDragged = function(pointerCenter){
 // control is cleared.
 rac.pointerReleased = function(pointerCenter) {
   if (rac.Control.selection === null) {
-    rac.lastPointer = pointerCenter;
+    rac.Control.lastPointer = pointerCenter;
     return;
   }
 
-  rac.lastPointer = rac.Control.selection.control;
+  rac.Control.lastPointer = rac.Control.selection.control;
   rac.Control.selection = null;
 }
 
@@ -1642,11 +1628,13 @@ rac.pointerReleased = function(pointerCenter) {
 // Draws controls and the visuals of pointer and control selection. Usually
 // called at the end of `draw` so that controls sits on top of the drawing.
 rac.drawControls = function() {
+  let pointerStyle = rac.Control.pointerStyle;
+
   // Last pointer or control
-  if (rac.lastPointer instanceof rac.Point) {
-    rac.lastPointer.arc(12).draw(rac.pointerStyle);
+  if (rac.Control.lastPointer instanceof rac.Point) {
+    rac.Control.lastPointer.arc(12).draw(pointerStyle);
   }
-  if (rac.lastPointer instanceof rac.Control) {
+  if (rac.Control.lastPointer instanceof rac.Control) {
     // TODO: last selected control state
   }
 
@@ -1654,14 +1642,14 @@ rac.drawControls = function() {
   let pointerCenter = rac.Point.mouse();
   if (mouseIsPressed) {
     if (rac.Control.selection === null) {
-      pointerCenter.arc(10).draw(rac.pointerStyle);
+      pointerCenter.arc(10).draw(pointerStyle);
     } else {
-      pointerCenter.arc(5).draw(rac.pointerStyle);
+      pointerCenter.arc(5).draw(pointerStyle);
     }
   }
 
   // All controls in display
-  rac.controls.forEach(item => item.draw());
+  rac.Control.controls.forEach(item => item.draw());
 
   // Rest is Control selection visuals
   if (rac.Control.selection === null) {
@@ -1671,7 +1659,7 @@ rac.drawControls = function() {
   // Pointer to anchor elements
   // Copied anchor segment
   let anchorCopy = rac.Control.selection.anchorCopy;
-  anchorCopy.draw(rac.pointerStyle);
+  anchorCopy.draw(pointerStyle);
 
   let minLimit = rac.Control.selection.control.minLimit;
   let maxLimit = rac.Control.selection.control.maxLimit;
@@ -1681,12 +1669,12 @@ rac.drawControls = function() {
     if (minLimit > 0) {
       let minPoint = anchorCopy.pointAtLength(minLimit);
       rac.Control.makeLimitMarkerSegment(minPoint, anchorCopy.angle())
-        .draw(rac.pointerStyle);
+        .draw(pointerStyle);
     }
     if (maxLimit > 0) {
       let maxPoint = anchorCopy.reverse().pointAtLength(maxLimit);
       rac.Control.makeLimitMarkerSegment(maxPoint, anchorCopy.angle().inverse())
-        .draw(rac.pointerStyle);
+        .draw(pointerStyle);
     }
   }
 
@@ -1699,14 +1687,14 @@ rac.drawControls = function() {
       let markerAngle = anchorCopy.center.angleToPoint(minPoint)
         .perpendicular(anchorCopy.clockwise)
       rac.Control.makeLimitMarkerSegment(minPoint, markerAngle)
-        .draw(rac.pointerStyle);
+        .draw(pointerStyle);
     }
     if (maxLimit.turn > 0) {
       let maxPoint = anchorCopy.reverse().pointAtArcLength(minLimit);
       let markerAngle = anchorCopy.center.angleToPoint(maxPoint)
         .perpendicular(!anchorCopy.clockwise)
       rac.Control.makeLimitMarkerSegment(maxPoint, markerAngle)
-        .draw(rac.pointerStyle);
+        .draw(pointerStyle);
     }
   }
 
@@ -1717,7 +1705,7 @@ rac.drawControls = function() {
 
   // Control shadow center, attached to pointer
   draggedShadowCenter.arc(2)
-    .draw(rac.pointerStyle);
+    .draw(pointerStyle);
 
   // Segment anchor
   if (anchorCopy instanceof rac.Segment) {
@@ -1733,7 +1721,7 @@ rac.drawControls = function() {
 
     // Control shadow at anchor
     constrainedAnchorCenter.arc(rac.Control.radius)
-      .draw(rac.pointerStyle);
+      .draw(pointerStyle);
 
     let constrainedShadowCenter = draggedShadowCenter
       .segmentPerpendicularToSegment(anchorCopy)
@@ -1741,17 +1729,17 @@ rac.drawControls = function() {
       .reverse()
       .translateToStart(constrainedAnchorCenter)
       // anchor to control shadow center
-      .draw(rac.pointerStyle)
+      .draw(pointerStyle)
       .end;
 
     // Control shadow, dragged and constrained to anchor
     constrainedShadowCenter.arc(rac.Control.radius / 2)
-      .draw(rac.pointerStyle);
+      .draw(pointerStyle);
 
     // Segment to dragged shadow center
     constrainedShadowCenter.segmentToPoint(draggedShadowCenter)
       .segmentWithRatioOfLength(2/3)
-      .draw(rac.pointerStyle);
+      .draw(pointerStyle);
 
     let hightlight = rac.Color.cyan.stroke(3);
     let noEaseDistance = rac.Control.radius * 2;
@@ -1802,9 +1790,22 @@ rac.Control = class RacControl {
   }
 
 
+  // Collection of all controls that are drawn with `drawControls`
+  // and evaluated for selection with the `pointer...` functions.
+  static controls = [];
+
+// Last Point of the pointer position when it was pressed, or last Control
+// interacted with. Set to `null` when there has been no interaction yet
+// and while there is a selected control.
+  static lastPointer = null;
+
+// Style used for visual elements related to selection and pointer interaction.
+  static pointerStyle = null;
+
   // Selection information for the currently selected control, or `null` if
   // there is no selection.
   static selection = null;
+
 
   static Selection = class RacControlSelection{
     constructor(control) {
@@ -1886,7 +1887,7 @@ rac.Control.drawSegmentControl = function(control) {
 
   // Selection
   if (control.isSelected()) {
-    center.arc(rac.Control.radius * 1.5).draw(rac.pointerStyle);
+    center.arc(rac.Control.radius * 1.5).draw(rac.Control.pointerStyle);
   }
 };
 
@@ -1925,7 +1926,7 @@ rac.Control.drawArcControl = function(control) {
 
   // Selection
   if (control.isSelected()) {
-    center.arc(rac.Control.radius * 1.5).draw(rac.pointerStyle);
+    center.arc(rac.Control.radius * 1.5).draw(rac.Control.pointerStyle);
   }
 };
 

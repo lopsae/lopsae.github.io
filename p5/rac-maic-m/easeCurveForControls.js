@@ -29,23 +29,23 @@ function mouseReleased(event) {
 
 let noEaseControl = new rac.Control();
 noEaseControl.value = 100;
-rac.controls.push(noEaseControl);
+rac.Control.controls.push(noEaseControl);
 
 let distanceControl = new rac.Control();
 distanceControl.value = rac.Control.radius * 10;
-rac.controls.push(distanceControl);
+rac.Control.controls.push(distanceControl);
 
 let appliedLengthControl = new rac.Control();
 appliedLengthControl.value = rac.Control.radius * 5;
-rac.controls.push(appliedLengthControl);
+rac.Control.controls.push(appliedLengthControl);
 
 let easeOffsetControl = new rac.Control();
 easeOffsetControl.value = 100;
-rac.controls.push(easeOffsetControl);
+rac.Control.controls.push(easeOffsetControl);
 
 let easeFactorControl = new rac.Control();
 easeFactorControl.value = 100;
-rac.controls.push(easeFactorControl);
+rac.Control.controls.push(easeFactorControl);
 
 
 
@@ -81,9 +81,9 @@ function draw() {
   let controlStyle = colorScheme.main.stroke(3)
     .styleWithFill(colorScheme.controlFill.fill());
 
-  rac.controls.forEach(item => item.style = controlStyle);
+  rac.Control.controls.forEach(item => item.style = controlStyle);
 
-  rac.pointerStyle = colorScheme.pointer.stroke(3);
+  rac.Control.pointerStyle = colorScheme.pointer.stroke(3);
 
 
   let start  = new rac.Point(100, 100);

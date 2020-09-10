@@ -31,17 +31,17 @@ let wideControl = new rac.Control();
 wideControl.value = 120;
 wideControl.minLimit = 10;
 wideControl.maxLimit = 10;
-rac.controls.push(wideControl);
+rac.Control.controls.push(wideControl);
 
 let thinControl = new rac.Control();
 thinControl.value = 10;
-rac.controls.push(thinControl);
+rac.Control.controls.push(thinControl);
 
 let angleControl = new rac.Control();
 angleControl.value = rac.Angle.from(1/8);
 angleControl.minLimit = 1/100;
 angleControl.maxLimit = 1/100;
-rac.controls.push(angleControl);
+rac.Control.controls.push(angleControl);
 
 
 
@@ -69,11 +69,9 @@ function draw() {
   let controlStyle = colorScheme.stroke.stroke(3)
     .styleWithFill(colorScheme.controlFill.fill());
 
-  wideControl.style = controlStyle;
-  thinControl.style = controlStyle;
-  angleControl.style = controlStyle;
+  rac.Control.controls.forEach(item => item.style = controlStyle);
 
-  rac.pointerStyle = colorScheme.pointer.stroke(3);
+  rac.Control.pointerStyle = colorScheme.pointer.stroke(3);
 
 
   // Start point of M
