@@ -1471,6 +1471,14 @@ rac.EaseFunction = class RacEaseFunction {
   constructor() {
     this.a = 2;
 
+    // easeout
+    // ratioOffset = 1
+    // ratioFactor = .5
+    // easeOffset = -.5
+    // easeFactor = 2
+    this.ratioOffset = 0
+    this.ratioFactor = 1;
+
     this.easeOffset = 0
     this.easeFactor = 1;
 
@@ -1499,8 +1507,8 @@ rac.EaseFunction = class RacEaseFunction {
   }
 
   easeRatio(ratio) {
-    let complexRatio = (ratio + this.easeOffset) * this.easeFactor
-    return this.easeUnit(complexRatio);
+    let complexRatio = (ratio + this.ratioOffset) * this.ratioFactor
+    return (this.easeUnit(complexRatio) + this.easeOffset) * this.easeFactor;
   }
 
   easeRange(range) {

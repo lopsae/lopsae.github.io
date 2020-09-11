@@ -26,7 +26,7 @@ function mouseReleased(event) {
   redraw();
 }
 
-
+// TODO: static control function to create and push
 let noEaseControl = new rac.Control();
 noEaseControl.value = 100;
 rac.Control.controls.push(noEaseControl);
@@ -38,6 +38,14 @@ rac.Control.controls.push(distanceControl);
 let appliedLengthControl = new rac.Control();
 appliedLengthControl.value = 100;
 rac.Control.controls.push(appliedLengthControl);
+
+let ratioOffsetControl = new rac.Control();
+ratioOffsetControl.value = 100;
+rac.Control.controls.push(ratioOffsetControl);
+
+let ratioFactorControl = new rac.Control();
+ratioFactorControl.value = 100;
+rac.Control.controls.push(ratioFactorControl);
 
 let easeOffsetControl = new rac.Control();
 easeOffsetControl.value = 100;
@@ -96,7 +104,6 @@ function draw() {
   let start  = new rac.Point(100, 100);
 
   let linesOffset = rac.Control.radius * 2;
-  let linesSpacing = 12;
   let linesStep = 12;
   let linesCount = 45;
 
@@ -106,13 +113,13 @@ function draw() {
 
   let lastMarkerOffset = noEaseMarkerOffset;
 
-  let lastLineDistance = linesOffset + linesSpacing * (linesCount - 1)
+  let lastLineDistance = linesOffset + linesStep * (linesCount - 1)
     + lastMarkerOffset;
   let lastLineGuide = start.pointToAngle(rac.Angle.s, lastLineDistance)
     .segmentToAngle(rac.Angle.e, 100);
 
   // NoEase control + marker
-  noEaseControl.anchor = start.segmentToAngle(rac.Angle.e, 200);
+  noEaseControl.anchor = start.segmentToAngle(rac.Angle.e, 300);
   noEaseControl.center()
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
     .draw(rangesMarker);
@@ -133,25 +140,42 @@ function draw() {
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
     .draw(rangesMarker);
 
+  // Ratio Offset control
+  ratioOffsetControl.anchor = noEaseControl.center()
+    .pointToAngle(rac.Angle.s, noEaseControl.value + linesOffset)
+    .segmentToAngle(rac.Angle.e, appliedLengthControl.anchor.length() + rac.Control.radius * 2)
+    .draw(rangesMarker)
+    .nextSegmentToAngle(rac.Angle.s, 200)
+    .reverse();
+
+  // Ratio Factor control
+  ratioFactorControl.anchor = ratioOffsetControl.anchor.end
+    .pointToAngle(rac.Angle.e, rac.Control.radius * 3)
+    .segmentToAngle(rac.Angle.s, 200);
+
   // Ease Offset control
-  easeOffsetControl.anchor = lastLineGuide.start
-    .pointToAngle(rac.Angle.s, rac.Control.radius * 2)
-    .segmentToAngle(rac.Angle.e, 200);
+  easeOffsetControl.anchor = ratioFactorControl.anchor.start
+    .pointToAngle(rac.Angle.e, rac.Control.radius * 3)
+    .segmentToAngle(rac.Angle.s, 200);
 
   // Ease Factor control
-  easeFactorControl.anchor = easeOffsetControl.anchor.end
-    .pointToAngle(rac.Angle.e, 50)
-    .segmentToAngle(rac.Angle.e, 200);
+  easeFactorControl.anchor = easeOffsetControl.anchor.start
+    .pointToAngle(rac.Angle.e, rac.Control.radius * 3)
+    .segmentToAngle(rac.Angle.s, 200);
+
+
 
   // Control value mapping
   let noEaseDistance = noEaseControl.value;
   let easeDistance = distanceControl.value;
   let appliedLength = appliedLengthControl.value;
+  let ratioOffset = (ratioOffsetControl.value - 100) / 50;
+  let ratioFactor = ((ratioFactorControl.value -100) / 30) + 1;
   let easeOffset = (easeOffsetControl.value - 100) / 50;
   let easeFactor = ((easeFactorControl.value -100) / 50) + 1;
 
   for (let index = 0; index < linesCount; index++) {
-    let linePos = linesOffset + linesSpacing * index;
+    let linePos = linesOffset + linesStep * index;
     let lineStart = start.pointToAngle(rac.Angle.s, linePos);
 
     let lineLength = linesStep * index;
@@ -161,6 +185,9 @@ function draw() {
     utilEase.prefix = noEaseDistance;
     utilEase.inRange = easeDistance;
     utilEase.outRange = appliedLength;
+
+    utilEase.ratioOffset = ratioOffset;
+    utilEase.ratioFactor = ratioFactor;
 
     utilEase.easeOffset = easeOffset;
     utilEase.easeFactor = easeFactor;
@@ -207,10 +234,12 @@ function draw() {
 
   // Control labels get draw on top
   let textFormat = new rac.Text.Format(
-    rac.Text.Format.horizontal.right,
-    rac.Text.Format.vertical.baseline,
+    rac.Text.Format.horizontal.left,
+    rac.Text.Format.vertical.center,
     "Spot Mono",
-    rac.Angle.n, 4);
+    rac.Angle.e, 4);
+  ratioOffsetControl.anchor.end.text(ratioOffset.toFixed(2), textFormat).draw();
+  ratioFactorControl.anchor.end.text(ratioFactor.toFixed(2), textFormat).draw();
   easeOffsetControl.anchor.end.text(easeOffset.toFixed(2), textFormat).draw();
   easeFactorControl.anchor.end.text(easeFactor.toFixed(2), textFormat).draw();
 
