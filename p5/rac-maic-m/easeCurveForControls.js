@@ -44,7 +44,7 @@ ratioOffsetControl.value = 100;
 rac.Control.controls.push(ratioOffsetControl);
 
 let ratioFactorControl = new rac.Control();
-ratioFactorControl.value = 100;
+ratioFactorControl.value = 125;
 rac.Control.controls.push(ratioFactorControl);
 
 let easeOffsetControl = new rac.Control();
@@ -52,7 +52,7 @@ easeOffsetControl.value = 100;
 rac.Control.controls.push(easeOffsetControl);
 
 let easeFactorControl = new rac.Control();
-easeFactorControl.value = 100;
+easeFactorControl.value = 125;
 rac.Control.controls.push(easeFactorControl);
 
 
@@ -173,9 +173,9 @@ function draw() {
   let easeDistance = distanceControl.value;
   let appliedLength = appliedLengthControl.value;
   let ratioOffset = (ratioOffsetControl.value - 100) / 50;
-  let ratioFactor = ((ratioFactorControl.value -100) / 30) + 1;
+  let ratioFactor = ((ratioFactorControl.value -100) / 25);
   let easeOffset = (easeOffsetControl.value - 100) / 50;
-  let easeFactor = ((easeFactorControl.value -100) / 50) + 1;
+  let easeFactor = ((easeFactorControl.value -100) / 25);
 
   for (let index = 0; index < linesCount; index++) {
     let linePos = linesOffset + linesStep * index;
