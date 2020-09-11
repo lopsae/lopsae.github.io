@@ -151,17 +151,20 @@ function draw() {
   // Ratio Factor control
   ratioFactorControl.anchor = ratioOffsetControl.anchor.end
     .pointToAngle(rac.Angle.e, rac.Control.radius * 3)
-    .segmentToAngle(rac.Angle.s, 200);
+    .segmentToAngle(rac.Angle.s, 200)
+    .reverse();
 
   // Ease Offset control
-  easeOffsetControl.anchor = ratioFactorControl.anchor.start
-    .pointToAngle(rac.Angle.e, rac.Control.radius * 3)
-    .segmentToAngle(rac.Angle.s, 200);
+  easeOffsetControl.anchor = noEaseControl.center()
+    .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
+    .end.pointToAngle(rac.Angle.s, rac.Control.radius * 2)
+    .pointToAngle(rac.Angle.w, 100)
+    .segmentToAngle(rac.Angle.e, 200);
 
   // Ease Factor control
-  easeFactorControl.anchor = easeOffsetControl.anchor.start
-    .pointToAngle(rac.Angle.e, rac.Control.radius * 3)
-    .segmentToAngle(rac.Angle.s, 200);
+  easeFactorControl.anchor = easeOffsetControl.anchor.end
+    .pointToAngle(rac.Angle.e, rac.Control.radius * 2)
+    .segmentToAngle(rac.Angle.e, 200);
 
 
 
@@ -233,15 +236,21 @@ function draw() {
   rac.drawControls();
 
   // Control labels get draw on top
-  let textFormat = new rac.Text.Format(
+  let ratioTextFormat = new rac.Text.Format(
     rac.Text.Format.horizontal.left,
     rac.Text.Format.vertical.center,
     "Spot Mono",
     rac.Angle.e, 4);
-  ratioOffsetControl.anchor.end.text(ratioOffset.toFixed(2), textFormat).draw();
-  ratioFactorControl.anchor.end.text(ratioFactor.toFixed(2), textFormat).draw();
-  easeOffsetControl.anchor.end.text(easeOffset.toFixed(2), textFormat).draw();
-  easeFactorControl.anchor.end.text(easeFactor.toFixed(2), textFormat).draw();
+  ratioOffsetControl.anchor.end.text(ratioOffset.toFixed(2), ratioTextFormat).draw();
+  ratioFactorControl.anchor.end.text(ratioFactor.toFixed(2), ratioTextFormat).draw();
+
+  let easeTextFormat = new rac.Text.Format(
+    rac.Text.Format.horizontal.right,
+    rac.Text.Format.vertical.baseline,
+    "Spot Mono",
+    rac.Angle.n, 4);
+  easeOffsetControl.anchor.end.text(easeOffset.toFixed(2), easeTextFormat).draw();
+  easeFactorControl.anchor.end.text(easeFactor.toFixed(2), easeTextFormat).draw();
 
   console.log(`👑 ~finis coronat opus ${Date.now()}`);
 }
