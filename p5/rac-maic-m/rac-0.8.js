@@ -1752,31 +1752,30 @@ rac.drawControls = function() {
     constrainedShadowCenter.arc(rac.Control.radius / 2)
       .draw(pointerStyle);
 
-    // Segment to dragged shadow center
-    constrainedShadowCenter.segmentToPoint(draggedShadowCenter)
-      .segmentWithRatioOfLength(2/3)
-      .draw(pointerStyle);
+    // TODO: create a single use one?
+    // TODO: can this confuguration be a code default?
+    // TODO: how to explain that inRange has to be double outRange?
+    // Ease for segment to dragged shadow center
+    let ease = new rac.EaseFunction();
+    ease.prefix = rac.Control.radius * 0;
+    ease.inRange = rac.Control.radius * 8;
+    ease.outRange = ease.inRange / 2;
 
-    let hightlight = rac.Color.cyan.stroke(3);
-    let noEaseDistance = rac.Control.radius * 2;
-    let easeDistance = rac.Control.radius * 6;
-    let easedLength = rac.Control.radius * 3;
+    // Easeout configuration
+    ease.ratioOffset = 1;
+    ease.ratioFactor = .5;
+    ease.easeOffset = -.5;
+    ease.easeFactor = 2;
+
+    ease.preBehavior = rac.EaseFunction.Behavior.pass;
+    ease.postBehavior = rac.EaseFunction.Behavior.continue;
+
+    // Segment to dragged shadow center
     let segmentToDraggedCenter = constrainedShadowCenter
       .segmentToPoint(draggedShadowCenter);
-    if (segmentToDraggedCenter.length() < noEaseDistance) {
-      segmentToDraggedCenter.draw(hightlight);
-    } else {
-    	// TODO: dummy code!
-      let lengthRatio = (segmentToDraggedCenter.length() - noEaseDistance) / easeDistance;
-      // https://math.stackexchange.com/questions/121720/ease-in-out-function/121755#121755
-      // f(x) = (t^a)/(t^a+(1-t)^a)
-      let a = 2;
-      let t = 1 - lengthRatio;
-      let easeRatio = Math.pow(t,a) / (Math.pow(t,a) + Math.pow(1-t,a));
-      easeRatio = 1 - easeRatio;
-      let newlength = noEaseDistance + (easeRatio * easedLength);
-      segmentToDraggedCenter.withLength(newlength).draw(hightlight);
-    }
+
+    let easedLength = ease.easeRange(segmentToDraggedCenter.length());
+    segmentToDraggedCenter.withLength(easedLength).draw(pointerStyle);
   }
 
   // Arc anchor
