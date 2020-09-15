@@ -522,8 +522,8 @@ rac.Point = class RacPoint{
     return this;
   }
 
-  text(string, format) {
-    return new rac.Text(string, format, this);
+  text(string, format, rotation = rac.Angle.zero) {
+    return new rac.Text(string, format, this, rotation);
   }
 
 }
@@ -631,10 +631,11 @@ rac.Point.prototype.arc = function(radius, start = rac.Angle.zero, end = start, 
 
 rac.Text = class RacText {
 
-  constructor(string, format, point) {
+  constructor(string, format, point, rotation = rac.Angle.zero) {
     this.string = string;
-    this.point = point;
     this.format = format;
+    this.point = point;
+    this.rotation = rotation;
   }
 
   static Format = class RacTextFormat {
@@ -654,6 +655,7 @@ rac.Text = class RacText {
       baseline: "baseline"
     };
 
+    // TODO: angle/distance make more sense as text properties?
     constructor(horizontal, vertical, font = null, angle = rac.Angle.zero, distance = 0, size = rac.Text.Format.defaultSize) {
       this.horizontal = horizontal;
       this.vertical = vertical;
@@ -700,11 +702,15 @@ rac.Text = class RacText {
 
 rac.defaultDrawer.setDrawFunction(rac.Text, function() {
   let point = this.point;
-  if (this.format.distance > 0) {
+  if (this.format.distance != 0) {
     point = point.pointToAngle(this.format.angle, this.format.distance);
   }
   this.format.apply();
-  text(this.string, point.x, point.y);
+  translate(point.x, point.y);
+  if (this.rotation.turn != 0) {
+    rotate(this.rotation.radians());
+  }
+  text(this.string, 0, 0);
 });
 rac.defaultDrawer.setDrawOptions(rac.Text, {requiresPushPop: true});
 

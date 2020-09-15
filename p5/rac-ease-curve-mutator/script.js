@@ -238,17 +238,21 @@ function draw() {
   // Control labels get draw on top
   let ratioTextFormat = new rac.Text.Format(
     rac.Text.Format.horizontal.left,
-    rac.Text.Format.vertical.center,
+    rac.Text.Format.vertical.baseline,
     "Spot Mono",
-    rac.Angle.e, 4);
-  ratioOffsetControl.anchor.end.text(ratioOffset.toFixed(2), ratioTextFormat).draw();
-  ratioFactorControl.anchor.end.text(ratioFactor.toFixed(2), ratioTextFormat).draw();
+    rac.Angle.e, 5);
+  ratioOffsetControl.anchor.end
+    .text(ratioOffset.toFixed(2), ratioTextFormat, rac.Angle.s)
+    .draw();
+  ratioFactorControl.anchor.end
+    .text(ratioFactor.toFixed(2), ratioTextFormat, rac.Angle.s)
+    .draw();
 
   let easeTextFormat = new rac.Text.Format(
     rac.Text.Format.horizontal.right,
     rac.Text.Format.vertical.baseline,
     "Spot Mono",
-    rac.Angle.n, 4);
+    rac.Angle.n, 5);
   easeOffsetControl.anchor.end.text(easeOffset.toFixed(2), easeTextFormat).draw();
   easeFactorControl.anchor.end.text(easeFactor.toFixed(2), easeTextFormat).draw();
 
