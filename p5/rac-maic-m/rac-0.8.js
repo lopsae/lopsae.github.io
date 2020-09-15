@@ -1754,12 +1754,14 @@ rac.drawControls = function() {
 
     // TODO: create a single use one?
     // TODO: can this confuguration be a code default?
-    // TODO: how to explain that inRange has to be double outRange?
     // Ease for segment to dragged shadow center
     let ease = new rac.EaseFunction();
     ease.prefix = rac.Control.radius * 0;
-    ease.inRange = rac.Control.radius * 8;
-    ease.outRange = ease.inRange / 2;
+
+    let maxDraggedTailLength = rac.Control.radius * 6;
+    // Taill will stops stretching at 2x the max tail length
+    ease.inRange = maxDraggedTailLength * 2;
+    ease.outRange = maxDraggedTailLength;
 
     // Easeout configuration
     ease.ratioOffset = 1;
@@ -1768,7 +1770,7 @@ rac.drawControls = function() {
     ease.easeFactor = 2;
 
     ease.preBehavior = rac.EaseFunction.Behavior.pass;
-    ease.postBehavior = rac.EaseFunction.Behavior.continue;
+    ease.postBehavior = rac.EaseFunction.Behavior.clamp;
 
     // Segment to dragged shadow center
     let segmentToDraggedCenter = constrainedShadowCenter
