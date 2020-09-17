@@ -26,29 +26,31 @@ function mouseReleased(event) {
   redraw();
 }
 
-// TODO: static control function to create and push
+
 // let prefixControl = new rac.Control.make(100);
 let prefixControl = new rac.Control(.5);
 rac.Control.controls.push(prefixControl);
 
-let inRangeControl = new rac.Control(.7);
+let inRangeControl = new rac.Control(.5);
 rac.Control.controls.push(inRangeControl);
 
 let outRangeControl = new rac.Control(.5);
 rac.Control.controls.push(outRangeControl);
 
-let ratioOffsetControl = new rac.Control(.5);
+let ratioOffsetControl = new rac.Control(0, 2, -2);
 rac.Control.controls.push(ratioOffsetControl);
 
 let ratioFactorControl = new rac.Control(1, 4, -4);
 rac.Control.controls.push(ratioFactorControl);
 
+// TODO: use values
 let easeOffsetControl = new rac.Control(.5);
 rac.Control.controls.push(easeOffsetControl);
 
 let easeFactorControl = new rac.Control(1, -4, 4);
 rac.Control.controls.push(easeFactorControl);
 
+// TODO: use values
 let prePostFactorControl = new rac.Control(.5);
 rac.Control.controls.push(prePostFactorControl);
 
@@ -142,11 +144,10 @@ function draw() {
     .pointToAngle(rac.Angle.s, prefixControl.distance() + linesOffset)
     .segmentToAngle(rac.Angle.e, outRangeControl.anchor.length() + rac.Control.radius * 2)
     .draw(rangesMarker)
-    .nextSegmentToAngle(rac.Angle.s, 200)
-    .reverse();
+    .nextSegmentToAngle(rac.Angle.s, 200);
 
   // Ratio factor control
-  ratioFactorControl.anchor = ratioOffsetControl.anchor.end
+  ratioFactorControl.anchor = ratioOffsetControl.anchor.start
     .pointToAngle(rac.Angle.e, rac.Control.radius * 3)
     .segmentToAngle(rac.Angle.s, 200);
 
@@ -171,7 +172,6 @@ function draw() {
 
   // TODO: use control value!
   // Control value mapping
-  let ratioOffset = (ratioOffsetControl.distance() - 100) / 50;
   let easeOffset = (easeOffsetControl.distance() - 100) / 50;
   let prePostFactor = prePostFactorControl.distance().turn / (1/8);
 
@@ -187,7 +187,7 @@ function draw() {
     utilEase.inRange = inRangeControl.distance();
     utilEase.outRange = outRangeControl.distance();
 
-    utilEase.ratioOffset = ratioOffset;
+    utilEase.ratioOffset = ratioOffsetControl.value;
     utilEase.ratioFactor = ratioFactorControl.value;
 
     utilEase.easeOffset = easeOffset;
@@ -237,7 +237,7 @@ function draw() {
     rac.Text.Format.vertical.top,
     "Spot Mono",
     rac.Angle.s);
-  ratioOffsetControl.anchor.end
+  ratioOffsetControl.anchor.start
     .pointToAngle(rac.Angle.w, textPadding)
     .text("ratioOffset", ratioTextLabels)
     .draw();
@@ -286,9 +286,9 @@ function draw() {
     rac.Text.Format.vertical.baseline,
     "Spot Mono",
     rac.Angle.s);
-  ratioOffsetControl.anchor.end
+  ratioOffsetControl.anchor.start
     .pointToAngle(rac.Angle.e, textPadding)
-    .text(ratioOffset.toFixed(2), ratioTextValues)
+    .text(ratioOffsetControl.value.toFixed(2), ratioTextValues)
     .draw();
   ratioFactorControl.anchor.start
     .pointToAngle(rac.Angle.e, textPadding)
