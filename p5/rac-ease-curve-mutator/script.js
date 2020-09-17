@@ -35,9 +35,9 @@ let inRangeControl = new rac.Control();
 inRangeControl.value = 250;
 rac.Control.controls.push(inRangeControl);
 
-let appliedLengthControl = new rac.Control();
-appliedLengthControl.value = 100;
-rac.Control.controls.push(appliedLengthControl);
+let outRangeControl = new rac.Control();
+outRangeControl.value = 100;
+rac.Control.controls.push(outRangeControl);
 
 let ratioOffsetControl = new rac.Control();
 ratioOffsetControl.value = 100;
@@ -118,13 +118,13 @@ function draw() {
   let lastLineGuide = start.pointToAngle(rac.Angle.s, lastLineDistance)
     .segmentToAngle(rac.Angle.e, 100);
 
-  // NoEase control + marker
+  // Prefix control + marker
   prefixControl.anchor = start.segmentToAngle(rac.Angle.e, 300);
   prefixControl.center()
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
     .draw(rangesMarker);
 
-  // Distance control + marker
+  // In Range control + marker
   inRangeControl.anchor = start.pointToAngle(rac.Angle.s, rac.Control.radius * 3)
     .pointToAngle(rac.Angle.e, prefixControl.value)
     .segmentToAngle(rac.Angle.e, 400);
@@ -132,18 +132,18 @@ function draw() {
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
     .draw(rangesMarker);
 
-  // AppliedLength control + marker
-  appliedLengthControl.anchor = start.pointToAngle(rac.Angle.s, rac.Control.radius * 6)
+  // Out Range control + marker
+  outRangeControl.anchor = start.pointToAngle(rac.Angle.s, rac.Control.radius * 6)
     .pointToAngle(rac.Angle.e, prefixControl.value)
     .segmentToAngle(rac.Angle.e, 200);
-  appliedLengthControl.center()
+  outRangeControl.center()
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
     .draw(rangesMarker);
 
   // Ratio Offset control
   ratioOffsetControl.anchor = prefixControl.center()
     .pointToAngle(rac.Angle.s, prefixControl.value + linesOffset)
-    .segmentToAngle(rac.Angle.e, appliedLengthControl.anchor.length() + rac.Control.radius * 2)
+    .segmentToAngle(rac.Angle.e, outRangeControl.anchor.length() + rac.Control.radius * 2)
     .draw(rangesMarker)
     .nextSegmentToAngle(rac.Angle.s, 200)
     .reverse();
@@ -169,7 +169,6 @@ function draw() {
 
 
   // Control value mapping
-  let appliedLength = appliedLengthControl.value;
   let ratioOffset = (ratioOffsetControl.value - 100) / 50;
   let ratioFactor = ((ratioFactorControl.value -100) / 25);
   let easeOffset = (easeOffsetControl.value - 100) / 50;
@@ -185,7 +184,7 @@ function draw() {
     let utilEase = new rac.EaseFunction();
     utilEase.prefix = prefixControl.value;
     utilEase.inRange = inRangeControl.value;
-    utilEase.outRange = appliedLength;
+    utilEase.outRange = outRangeControl.value;
 
     utilEase.ratioOffset = ratioOffset;
     utilEase.ratioFactor = ratioFactor;
@@ -214,7 +213,7 @@ function draw() {
     let controlEase = new rac.EaseFunction();
     controlEase.prefix = prefixControl.value;
     controlEase.inRange = inRangeControl.value;
-    controlEase.outRange = appliedLength;
+    controlEase.outRange = outRangeControl.value;
 
     controlEase.preBehavior = rac.EaseFunction.Behavior.continue;
     controlEase.postBehavior = rac.EaseFunction.Behavior.continue;
@@ -257,6 +256,9 @@ function draw() {
   inRangeControl.anchor.end
     .pointToAngle(rac.Angle.s, textPadding)
     .text("inRange", horizontalLabels).draw();
+  outRangeControl.anchor.end
+    .pointToAngle(rac.Angle.s, textPadding)
+    .text("outRange", horizontalLabels).draw();
   easeOffsetControl.anchor.end
     .pointToAngle(rac.Angle.s, textPadding)
     .text("easeOffset", horizontalLabels).draw();
