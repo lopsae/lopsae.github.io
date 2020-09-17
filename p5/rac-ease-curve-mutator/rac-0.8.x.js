@@ -1794,10 +1794,11 @@ rac.drawControls = function() {
 };
 
 
+// TODO: update use of value/distance
 // Control for manipulating a value with the pointer.
 // A control may have a Segment or Arc as the `anchor` shape.
 // For a Segment anchor the `value` and limits can be integers.
-// For an Arch achor the limits can be an integer or an Angle. `value`
+// For an Arc achor the limits can be an integer or an Angle. `value`
 // can be set as a integer or Angle, but will be updated with an Angle
 // instance when the control is used.
 rac.Control = class RacControl {
@@ -1821,15 +1822,16 @@ rac.Control = class RacControl {
   // there is no selection.
   static selection = null;
 
-  // TODO: start/end could be 0 and 1 as defautls
   // Creates a new Control instance with `value` and `limits` of zero.
-  constructor(value, startValue = null, endValue = null) {
+  constructor(value, startValue = 0, endValue = 1) {
+    // Value is a number between startValue and endValue.
     this.value = value;
     this.startValue = startValue;
     this.endValue = endValue;
 
     // Limits to which the control can be dragged. Interpreted as the
     // distance from the anchor `start` or `end`.
+    // TODO: limits should be relative to values?
     this.minLimit = 0;
     this.maxLimit = 0;
 
@@ -1837,24 +1839,22 @@ rac.Control = class RacControl {
     this.anchor = null;
   }
 
-  // Returns the distance from `anchor.start`.
+  // Returns the distance from `anchor.start`. Returns a number when using
+  // a Segment anchor, and returns an Angle when using an Arc anchor.
   distance() {
     if (this.anchor === null) {
       return null;
     }
 
-    if (this.anchor instanceof rac.Segment) {
-      if (this.startValue === null && this.endValue === null) {
-        return this.value;
-      }
+    let valueRange = this.endValue - this.startValue;
+    let valueRatio = (this.value - this.startValue) / valueRange;
 
-      let valueRange = this.endValue - this.startValue;
-      let valueRatio = (this.value - this.startValue) / valueRange;
+    if (this.anchor instanceof rac.Segment) {
       return this.anchor.length() * valueRatio;
     }
+
     if (this.anchor instanceof rac.Arc) {
-      // TODO: start/endValue not supported yet
-      return rac.Angle.from(this.value);
+      return this.anchor.arcLength().mult(valueRatio);
     }
 
     console.trace(`Cannot produce control distance - anchor.constructorName:${this.anchor.constructor.name}`);
@@ -1864,20 +1864,27 @@ rac.Control = class RacControl {
   // Used by `pointerDragged` to update the state of the control along with
   // user interaction through the pointer.
   updateDistance(newDistance) {
-    if (this.startValue === null && this.endValue === null) {
-      this.value = newDistance;
-      return;
-    }
-
     // Needs anchor for further calculations
     if (this.anchor === null) {
       return;
     }
 
-    // TODO: does not support arc segments
-    let lengthRatio = newDistance / this.anchor.length();
-    let valueRange = this.endValue - this.startValue;
-    this.value = this.startValue + lengthRatio * valueRange;
+    if (this.anchor instanceof rac.Segment) {
+      let lengthRatio = newDistance / this.anchor.length();
+      let valueRange = this.endValue - this.startValue;
+      this.value = this.startValue + lengthRatio * valueRange;
+      return;
+    }
+
+    if (this.anchor instanceof rac.Arc) {
+      let lengthRatio = newDistance.turn / this.anchor.arcLength().turn;
+      let valueRange = this.endValue - this.startValue;
+      this.value = this.startValue + lengthRatio * valueRange;
+      return;
+    }
+
+    console.trace(`Cannot update control distance - anchor.constructorName:${this.anchor.constructor.name}`);
+    throw rac.Error.invalidObjectToConvert;
   }
 
 
@@ -1945,13 +1952,13 @@ rac.Control.drawSegmentControl = function(control) {
     .popShapeToComposite();
 
   // Negative arrow
-  if (control.value >= control.minLimit + rac.equalityThreshold) {
+  if (control.distance() >= control.minLimit + rac.equalityThreshold) {
     rac.Control.makeArrowShape(center, anchor.angle().inverse())
       .attachToComposite();
   }
 
   // Positive arrow
-  if (control.value <= anchor.length() - control.maxLimit - rac.equalityThreshold) {
+  if (control.distance() <= anchor.length() - control.maxLimit - rac.equalityThreshold) {
     rac.Control.makeArrowShape(center, anchor.angle())
       .attachToComposite();
   }
@@ -1974,7 +1981,7 @@ rac.Control.drawArcControl = function(control) {
     .attachToShape()
     .popShapeToComposite();
 
-  let angleValue = rac.Angle.from(control.value);
+  let angleValue = rac.Angle.from(control.distance());
   // Angle of the current value relative to the arc anchor
   let relativeAngleValue = anchor.shiftAngle(angleValue);
 
