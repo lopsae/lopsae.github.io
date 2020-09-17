@@ -50,8 +50,8 @@ rac.Control.controls.push(easeOffsetControl);
 let easeFactorControl = new rac.Control(.6);
 rac.Control.controls.push(easeFactorControl);
 
-let angleControl = new rac.Control(.5);
-rac.Control.controls.push(angleControl);
+let prePostFactorControl = new rac.Control(.5);
+rac.Control.controls.push(prePostFactorControl);
 
 
 
@@ -122,7 +122,7 @@ function draw() {
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
     .draw(rangesMarker);
 
-  // In Range control + marker
+  // In range control + marker
   inRangeControl.anchor = start.pointToAngle(rac.Angle.s, rac.Control.radius * 3)
     .pointToAngle(rac.Angle.e, prefixControl.distance())
     .segmentToAngle(rac.Angle.e, 400);
@@ -130,7 +130,7 @@ function draw() {
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
     .draw(rangesMarker);
 
-  // Out Range control + marker
+  // Out range control + marker
   outRangeControl.anchor = start.pointToAngle(rac.Angle.s, rac.Control.radius * 6)
     .pointToAngle(rac.Angle.e, prefixControl.distance())
     .segmentToAngle(rac.Angle.e, 200);
@@ -138,7 +138,7 @@ function draw() {
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
     .draw(rangesMarker);
 
-  // Ratio Offset control
+  // Ratio offset control
   ratioOffsetControl.anchor = prefixControl.center()
     .pointToAngle(rac.Angle.s, prefixControl.distance() + linesOffset)
     .segmentToAngle(rac.Angle.e, outRangeControl.anchor.length() + rac.Control.radius * 2)
@@ -146,36 +146,38 @@ function draw() {
     .nextSegmentToAngle(rac.Angle.s, 200)
     .reverse();
 
-  // Ratio Factor control
+  // Ratio factor control
   ratioFactorControl.anchor = ratioOffsetControl.anchor.end
     .pointToAngle(rac.Angle.e, rac.Control.radius * 3)
     .segmentToAngle(rac.Angle.s, 200)
     .reverse();
 
-  // Ease Offset control
+  // Ease offset control
   easeOffsetControl.anchor = prefixControl.center()
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
     .end.pointToAngle(rac.Angle.s, rac.Control.radius * 2)
     .pointToAngle(rac.Angle.w, 100)
     .segmentToAngle(rac.Angle.e, 200);
 
-  // Ease Factor control
+  // Ease factor control
   easeFactorControl.anchor = easeOffsetControl.anchor.end
     .pointToAngle(rac.Angle.e, rac.Control.radius * 2)
     .segmentToAngle(rac.Angle.e, 200);
 
-  // Angle control
-  angleControl.anchor = lastLineGuide.end
+  // Pre/Post factor control
+  prePostFactorControl.anchor = lastLineGuide.end
     .segmentToAngle(rac.Angle.s, 100).draw()
     .arcWithArcLength(1/4, false);
 
 
 
+  // TODO: use control value!
   // Control value mapping
   let ratioOffset = (ratioOffsetControl.distance() - 100) / 50;
   let ratioFactor = ((ratioFactorControl.distance() -100) / 25);
   let easeOffset = (easeOffsetControl.distance() - 100) / 50;
   let easeFactor = ((easeFactorControl.distance() -100) / 25);
+  let prePostFactor = prePostFactorControl.distance().turn / (1/8);
 
   for (let index = 0; index < linesCount; index++) {
     let linePos = linesOffset + linesStep * index;
@@ -198,8 +200,8 @@ function draw() {
     utilEase.preBehavior = rac.EaseFunction.Behavior.pass;
     utilEase.postBehavior = rac.EaseFunction.Behavior.pass;
 
-    utilEase.preFactor = angleControl.distance().turn / (1/8);
-    utilEase.postFactor = angleControl.distance().turn / (1/8);
+    utilEase.preFactor = prePostFactor;
+    utilEase.postFactor = prePostFactor;
 
     // Utility line
     let utilLength = utilEase.easeRange(lineLength);
@@ -269,6 +271,14 @@ function draw() {
     .pointToAngle(rac.Angle.s, textPadding)
     .text("easeFactor", horizontalLabels).draw();
 
+  let prePostLabel = new rac.Text.Format(
+    rac.Text.Format.horizontal.left,
+    rac.Text.Format.vertical.top,
+    "Spot Mono");
+  prePostFactorControl.anchor.startPoint()
+    .pointToAngle(rac.Angle.s, textPadding)
+    .text("pre/postFactor", prePostLabel).draw();
+
 
   // Controls draw on top
   rac.drawControls();
@@ -287,6 +297,10 @@ function draw() {
   ratioFactorControl.anchor.end
     .pointToAngle(rac.Angle.e, textPadding)
     .text(ratioFactor.toFixed(2), ratioTextValues)
+    .draw();
+  prePostFactorControl.anchor.endPoint()
+    .pointToAngle(rac.Angle.e, textPadding)
+    .text(prePostFactor.toFixed(2), ratioTextValues)
     .draw();
 
   let easeTextValues = new rac.Text.Format(
