@@ -1631,7 +1631,7 @@ rac.pointerDragged = function(pointerCenter){
   }
 
   // Update control with new distance
-  control.setDistance(newDistance);
+  control.updateDistance(newDistance);
 };
 
 
@@ -1847,10 +1847,9 @@ rac.Control = class RacControl {
     return this.storedValue;
   }
 
-// TODO: rename to updateDistance(distance)
   // Used by `pointerDragged` to update the state of the control along with
   // user interaction through the pointer.
-  setDistance(newDistance) {
+  updateDistance(newDistance) {
     if (this.startValue === null && this.endValue === null) {
       this.storedValue = newDistance;
       return;
