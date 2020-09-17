@@ -50,6 +50,9 @@ rac.Control.controls.push(easeOffsetControl);
 let easeFactorControl = new rac.Control(125);
 rac.Control.controls.push(easeFactorControl);
 
+let angleControl = new rac.Control(rac.Angle.from(1/8));
+rac.Control.controls.push(angleControl);
+
 
 
 
@@ -111,7 +114,7 @@ function draw() {
   let lastLineDistance = linesOffset + linesStep * (linesCount - 1)
     + lastMarkerOffset;
   let lastLineGuide = start.pointToAngle(rac.Angle.s, lastLineDistance)
-    .segmentToAngle(rac.Angle.e, 100);
+    .segmentToAngle(rac.Angle.e, linesStep * (linesCount-1));
 
   // Prefix control + marker
   prefixControl.anchor = start.segmentToAngle(rac.Angle.e, 300);
@@ -161,6 +164,11 @@ function draw() {
     .pointToAngle(rac.Angle.e, rac.Control.radius * 2)
     .segmentToAngle(rac.Angle.e, 200);
 
+  // Angle control
+  angleControl.anchor = lastLineGuide.end
+    .segmentToAngle(rac.Angle.s, 100).draw()
+    .arcWithArcLength(1/4, false);
+
 
 
   // Control value mapping
@@ -190,8 +198,8 @@ function draw() {
     utilEase.preBehavior = rac.EaseFunction.Behavior.pass;
     utilEase.postBehavior = rac.EaseFunction.Behavior.pass;
 
-    utilEase.preFactor = 1;
-    utilEase.postFactor = 1;
+    utilEase.preFactor = angleControl.value().turn / (1/8);
+    utilEase.postFactor = angleControl.distance().turn / (1/8);
 
     // Utility line
     let utilLength = utilEase.easeRange(lineLength);
