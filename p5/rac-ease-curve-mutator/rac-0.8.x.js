@@ -1589,8 +1589,8 @@ rac.pointerPressed = function(pointerCenter) {
 }
 
 
-// Call to signal the pointer being dragged. As the pointer moves the value
-// of the selected control is updated.
+// Call to signal the pointer being dragged. As the pointer moves the
+// `distance` of the selected control is updated.
 rac.pointerDragged = function(pointerCenter){
   if (rac.Control.selection === null) {
     return;
@@ -1604,16 +1604,16 @@ rac.pointerDragged = function(pointerCenter){
     .translateToStart(pointerCenter)
     .end;
 
-  let newValue = control.value();
+  let newDistance = control.distance;
 
   // Segment anchor
   if (anchorCopy instanceof rac.Segment) {
     // New value from the current pointer position, relative to anchorCopy
-    newValue = anchorCopy
+    newDistance = anchorCopy
       .lengthToProjectedPoint(currentPointerControlCenter);
 
     // Clamping value (javascript has no Math.clamp)
-    newValue = anchorCopy.clampToLength(newValue,
+    newDistance = anchorCopy.clampToLength(newDistance,
       control.minLimit, control.maxLimit);
   }
 
@@ -1627,12 +1627,11 @@ rac.pointerDragged = function(pointerCenter){
 
     selectionAngle = anchorCopy.clampToArcLength(selectionAngle,
       minLimitAngle, maxLimitAngle);
-    newValue = anchorCopy.distanceFromStart(selectionAngle);
+    newDistance = anchorCopy.distanceFromStart(selectionAngle);
   }
 
-  // Update control with new value
-  // TODO: this will set distance instead of value?
-  control.setValue(newValue);
+  // Update control with new distance
+  control.setDistance(newDistance);
 };
 
 
@@ -1825,6 +1824,7 @@ rac.Control = class RacControl {
   // Creates a new Control instance with `value` and `limits` of zero.
   constructor(value, startValue = null, endValue = null) {
     this.distance = 0;
+    this.backupValue = value;
     this.startValue = startValue;
     this.endValue = endValue;
     this.setValue(value);
@@ -1838,14 +1838,44 @@ rac.Control = class RacControl {
     this.anchor = null;
   }
 
+  setDistance(newDistance) {
+    this.distance = newDistance;
+
+    if (this.startValue === null && this.endValue === null) {
+      this.backupValue = newDistance;
+      return;
+    }
+
+    // Needs anchor for further calculations
+    if (this.anchor === null) {
+      return;
+    }
+
+    // TODO: does not support arc segments
+    let lengthRatio = this.distance / this.anchor.length();
+    let valueRange = this.endValue - this.startValue;
+    this.backupValue = this.startValue + lengthRatio * valueRange;
+  }
+
   // Sets the value for the control. The actual position of `center` is
   // determined by `newValue`, `startValue`, and `endValue`.
   setValue(newValue) {
+    this.backupValue = newValue;
+
     if (this.startValue === null && this.endValue === null) {
       this.distance = newValue;
+      return;
     }
 
-    // TODO: implement
+    // Needs anchor for further calculations, backup is stored otherwise
+    if (this.anchor === null) {
+      return;
+    }
+
+    let valueRange = this.endValue - this.startValue;
+    let valueRatio = (newValue - this.startValue) / valueRange;
+    // TODO: does not support arc segments
+    this.distance = this.anchor.length() * valueRatio;
   }
 
   // Returns the current value for the control. The value is the distance
@@ -1856,6 +1886,13 @@ rac.Control = class RacControl {
     if (this.startValue === null && this.endValue === null) {
       return this.distance;
     }
+
+    // Needs anchor for further calculations, backup is used otherwise
+    if (this.anchor === null) {
+      return this.backupValue;
+    }
+
+
 
     // TODO: implement
   }
@@ -1884,10 +1921,10 @@ rac.Control.prototype.center = function() {
   }
 
   if (this.anchor instanceof rac.Segment) {
-    return this.anchor.withLength(this.value()).end;
+    return this.anchor.withLength(this.distance).end;
   }
   if (this.anchor instanceof rac.Arc) {
-    let angleValue = rac.Angle.from(this.value());
+    let angleValue = rac.Angle.from(this.distance);
     return this.anchor.startSegment()
       .arcWithArcLength(angleValue, this.anchor.clockwise)
       .endPoint();
