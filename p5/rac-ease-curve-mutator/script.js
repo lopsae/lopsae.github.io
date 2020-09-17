@@ -49,8 +49,7 @@ rac.Control.controls.push(easeOffsetControl);
 let easeFactorControl = new rac.Control(1, -4, 4);
 rac.Control.controls.push(easeFactorControl);
 
-// TODO: use values
-let prePostFactorControl = new rac.Control(.5);
+let prePostFactorControl = new rac.Control(1, 2, 0);
 rac.Control.controls.push(prePostFactorControl);
 
 
@@ -164,15 +163,11 @@ function draw() {
 
   // Pre/Post factor control
   prePostFactorControl.anchor = lastLineGuide.end
-    .segmentToAngle(rac.Angle.s, 100).draw()
-    .arcWithArcLength(1/4, false);
+    .segmentToAngle(rac.Angle.e, 100).draw()
+    .arcWithArcLength(1/4);
 
 
-
-  // TODO: use control value!
-  // Control value mapping
-  let prePostFactor = prePostFactorControl.distance().turn / (1/8);
-
+  // All the lines!
   for (let index = 0; index < linesCount; index++) {
     let linePos = linesOffset + linesStep * index;
     let lineStart = start.pointToAngle(rac.Angle.s, linePos);
@@ -194,8 +189,8 @@ function draw() {
     utilEase.preBehavior = rac.EaseFunction.Behavior.pass;
     utilEase.postBehavior = rac.EaseFunction.Behavior.pass;
 
-    utilEase.preFactor = prePostFactor;
-    utilEase.postFactor = prePostFactor;
+    utilEase.preFactor = prePostFactorControl.value;
+    utilEase.postFactor = prePostFactorControl.value;
 
     // Utility line
     let utilLength = utilEase.easeRange(lineLength);
@@ -269,7 +264,7 @@ function draw() {
     rac.Text.Format.horizontal.left,
     rac.Text.Format.vertical.top,
     "Spot Mono");
-  prePostFactorControl.anchor.startPoint()
+  prePostFactorControl.anchor.endPoint()
     .pointToAngle(rac.Angle.s, textPadding)
     .text("pre/postFactor", prePostLabel).draw();
 
@@ -292,9 +287,9 @@ function draw() {
     .pointToAngle(rac.Angle.e, textPadding)
     .text(ratioFactorControl.value.toFixed(2), ratioTextValues)
     .draw();
-  prePostFactorControl.anchor.endPoint()
+  prePostFactorControl.anchor.startPoint()
     .pointToAngle(rac.Angle.e, textPadding)
-    .text(prePostFactor.toFixed(2), ratioTextValues)
+    .text(prePostFactorControl.value.toFixed(2), ratioTextValues)
     .draw();
 
   let easeTextValues = new rac.Text.Format(
