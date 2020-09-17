@@ -1604,7 +1604,7 @@ rac.pointerDragged = function(pointerCenter){
     .translateToStart(pointerCenter)
     .end;
 
-  let newValue = control.value;
+  let newValue = control.value();
 
   // Segment anchor
   if (anchorCopy instanceof rac.Segment) {
@@ -1631,7 +1631,8 @@ rac.pointerDragged = function(pointerCenter){
   }
 
   // Update control with new value
-  control.value = newValue;
+  // TODO: this will set distance instead of value?
+  control.setValue(newValue);
 };
 
 
@@ -1805,21 +1806,6 @@ rac.Control = class RacControl {
   // Radius of the cicle drawn for controls.
   static radius = 22;
 
-  // Creates a new Control instance with `value` and `limits` of zero.
-  constructor(value) {
-    // Value corresponds to the distance from the anchor `start`.
-    this.value = value;
-
-    // Limits to which the control can be dragged. Interpreted as the
-    // distance from the anchor `start` or `end`.
-    this.minLimit = 0;
-    this.maxLimit = 0;
-
-    this.style = null;
-    this.anchor = null;
-  }
-
-
   // Collection of all controls that are drawn with `drawControls`
   // and evaluated for selection with the `pointer...` functions.
   static controls = [];
@@ -1835,6 +1821,44 @@ rac.Control = class RacControl {
   // Selection information for the currently selected control, or `null` if
   // there is no selection.
   static selection = null;
+
+  // Creates a new Control instance with `value` and `limits` of zero.
+  constructor(value, startValue = null, endValue = null) {
+    this.distance = 0;
+    this.startValue = startValue;
+    this.endValue = endValue;
+    this.setValue(value);
+
+    // Limits to which the control can be dragged. Interpreted as the
+    // distance from the anchor `start` or `end`.
+    this.minLimit = 0;
+    this.maxLimit = 0;
+
+    this.style = null;
+    this.anchor = null;
+  }
+
+  // Sets the value for the control. The actual position of `center` is
+  // determined by `newValue`, `startValue`, and `endValue`.
+  setValue(newValue) {
+    if (this.startValue === null && this.endValue === null) {
+      this.distance = newValue;
+    }
+
+    // TODO: implement
+  }
+
+  // Returns the current value for the control. The value is the distance
+  // of `center` from the anchor `start` if no `startValue` or `endValue`
+  // are used; when used the value is between `startValue` and `endValue`
+  // proportional to the distance to the anchor `start`.
+  value() {
+    if (this.startValue === null && this.endValue === null) {
+      return this.distance;
+    }
+
+    // TODO: implement
+  }
 
 
   static Selection = class RacControlSelection{
@@ -1860,10 +1884,10 @@ rac.Control.prototype.center = function() {
   }
 
   if (this.anchor instanceof rac.Segment) {
-    return this.anchor.withLength(this.value).end;
+    return this.anchor.withLength(this.value()).end;
   }
   if (this.anchor instanceof rac.Arc) {
-    let angleValue = rac.Angle.from(this.value);
+    let angleValue = rac.Angle.from(this.value());
     return this.anchor.startSegment()
       .arcWithArcLength(angleValue, this.anchor.clockwise)
       .endPoint();
@@ -1902,13 +1926,13 @@ rac.Control.drawSegmentControl = function(control) {
     .popShapeToComposite();
 
   // Negative arrow
-  if (control.value >= control.minLimit + rac.equalityThreshold) {
+  if (control.value() >= control.minLimit + rac.equalityThreshold) {
     rac.Control.makeArrowShape(center, anchor.angle().inverse())
       .attachToComposite();
   }
 
   // Positive arrow
-  if (control.value <= anchor.length() - control.maxLimit - rac.equalityThreshold) {
+  if (control.value() <= anchor.length() - control.maxLimit - rac.equalityThreshold) {
     rac.Control.makeArrowShape(center, anchor.angle())
       .attachToComposite();
   }
@@ -1931,7 +1955,7 @@ rac.Control.drawArcControl = function(control) {
     .attachToShape()
     .popShapeToComposite();
 
-  let angleValue = rac.Angle.from(control.value);
+  let angleValue = rac.Angle.from(control.value());
   // Angle of the current value relative to the arc anchor
   let relativeAngleValue = anchor.shiftAngle(angleValue);
 
