@@ -82,7 +82,7 @@ function draw() {
 
   // Text style
   colorScheme.background.withAlpha(.6).stroke(3)
-    .styleWithFill(colorScheme.brightRose.fill())
+    .styleWithFill(colorScheme.main.fill())
     .applyToClass(rac.Text);
 
   let rangesMarker = colorScheme.util.withAlpha(.5).stroke(2);
@@ -94,7 +94,7 @@ function draw() {
   let highlight = colorScheme.highlight.stroke(5);
 
   let controlStyle = colorScheme.main.stroke(3)
-    .styleWithFill(colorScheme.background.fill());
+    .styleWithFill(colorScheme.background.withAlpha(.7).fill());
 
   rac.Control.controls.forEach(item => item.style = controlStyle);
 
@@ -232,34 +232,64 @@ function draw() {
   }
 
 
+  // Control labels
+  let textPadding = 5;
+  let ratioTextLabels = new rac.Text.Format(
+    rac.Text.Format.horizontal.left,
+    rac.Text.Format.vertical.top,
+    "Spot Mono",
+    rac.Angle.s);
+  ratioOffsetControl.anchor.end
+    .pointToAngle(rac.Angle.w, textPadding)
+    .text("ratioOffset", ratioTextLabels)
+    .draw();
+  ratioFactorControl.anchor.end
+    .pointToAngle(rac.Angle.w, textPadding)
+    .text("ratioFactor", ratioTextLabels)
+    .draw();
+
+
+  let easeTextLabels = new rac.Text.Format(
+    rac.Text.Format.horizontal.right,
+    rac.Text.Format.vertical.top,
+    "Spot Mono");
+  easeOffsetControl.anchor.end
+    .pointToAngle(rac.Angle.s, textPadding)
+    .text("easeOffset", easeTextLabels).draw();
+  easeFactorControl.anchor.end
+    .pointToAngle(rac.Angle.s, textPadding)
+    .text("easeFactor", easeTextLabels).draw();
+
+
   // Controls draw on top
   rac.drawControls();
 
-  // Control labels get draw on top
-  let ratioTextFormat = new rac.Text.Format(
+
+  // Control values get draw on top
+  let ratioTextValues = new rac.Text.Format(
     rac.Text.Format.horizontal.left,
     rac.Text.Format.vertical.baseline,
     "Spot Mono",
     rac.Angle.s);
   ratioOffsetControl.anchor.end
-    .pointToAngle(rac.Angle.e, 5)
-    .text(ratioOffset.toFixed(2), ratioTextFormat)
+    .pointToAngle(rac.Angle.e, textPadding)
+    .text(ratioOffset.toFixed(2), ratioTextValues)
     .draw();
   ratioFactorControl.anchor.end
-    .pointToAngle(rac.Angle.e, 5)
-    .text(ratioFactor.toFixed(2), ratioTextFormat)
+    .pointToAngle(rac.Angle.e, textPadding)
+    .text(ratioFactor.toFixed(2), ratioTextValues)
     .draw();
 
-  let easeTextFormat = new rac.Text.Format(
+  let easeTextValues = new rac.Text.Format(
     rac.Text.Format.horizontal.right,
     rac.Text.Format.vertical.baseline,
     "Spot Mono");
   easeOffsetControl.anchor.end
-    .pointToAngle(rac.Angle.n, 5)
-    .text(easeOffset.toFixed(2), easeTextFormat).draw();
+    .pointToAngle(rac.Angle.n, textPadding)
+    .text(easeOffset.toFixed(2), easeTextValues).draw();
   easeFactorControl.anchor.end
-    .pointToAngle(rac.Angle.n, 5)
-    .text(easeFactor.toFixed(2), easeTextFormat).draw();
+    .pointToAngle(rac.Angle.n, textPadding)
+    .text(easeFactor.toFixed(2), easeTextValues).draw();
 
   console.log(`👑 ~finis coronat opus ${Date.now()}`);
 }
