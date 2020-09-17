@@ -1821,6 +1821,7 @@ rac.Control = class RacControl {
   // there is no selection.
   static selection = null;
 
+  // TODO: start/end could be 0 and 1 as defautls
   // Creates a new Control instance with `value` and `limits` of zero.
   constructor(value, startValue = null, endValue = null) {
     this.storedValue = value;
@@ -1836,24 +1837,17 @@ rac.Control = class RacControl {
     this.anchor = null;
   }
 
-
+// TODO: storedValue may not be necessary anymore, go back to value
+// TODO: create function for distanceFromStart
   // Returns the current value for the control. The value is the distance
   // of `center` from the anchor `start` if no `startValue` or `endValue`
   // are used; when used the value is between `startValue` and `endValue`
   // proportional to the distance to the anchor `start`.
   value() {
-    if (this.startValue === null && this.endValue === null) {
-      return this.storedValue;
-    }
-
-    // Needs anchor for further calculations, stored is used otherwise
-    if (this.anchor === null) {
-      return this.storedValue;
-    }
-
-    // TODO: implement
+    return this.storedValue;
   }
 
+// TODO: rename to updateDistance(distance)
   // Used by `pointerDragged` to update the state of the control along with
   // user interaction through the pointer.
   setDistance(newDistance) {
