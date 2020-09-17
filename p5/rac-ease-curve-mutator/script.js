@@ -27,32 +27,26 @@ function mouseReleased(event) {
 }
 
 // TODO: static control function to create and push
-let prefixControl = new rac.Control();
-prefixControl.value = 100;
+let prefixControl = new rac.Control(100);
 rac.Control.controls.push(prefixControl);
 
-let inRangeControl = new rac.Control();
-inRangeControl.value = 250;
+let inRangeControl = new rac.Control(250);
 rac.Control.controls.push(inRangeControl);
 
-let outRangeControl = new rac.Control();
-outRangeControl.value = 100;
+let outRangeControl = new rac.Control(100);
 rac.Control.controls.push(outRangeControl);
 
-let ratioOffsetControl = new rac.Control();
-ratioOffsetControl.value = 100;
+let ratioOffsetControl = new rac.Control(100);
 rac.Control.controls.push(ratioOffsetControl);
 
-let ratioFactorControl = new rac.Control();
-ratioFactorControl.value = 125;
+// TODO: control can be defined with min and max processed values: 4 to -4
+let ratioFactorControl = new rac.Control(125);
 rac.Control.controls.push(ratioFactorControl);
 
-let easeOffsetControl = new rac.Control();
-easeOffsetControl.value = 100;
+let easeOffsetControl = new rac.Control(100);
 rac.Control.controls.push(easeOffsetControl);
 
-let easeFactorControl = new rac.Control();
-easeFactorControl.value = 125;
+let easeFactorControl = new rac.Control(125);
 rac.Control.controls.push(easeFactorControl);
 
 

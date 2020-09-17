@@ -1794,7 +1794,7 @@ rac.drawControls = function() {
 };
 
 
-// Creates a new Control instance with `value` and limits` of zero.
+// Control for manipulating a value with the pointer.
 // A control may have a Segment or Arc as the `anchor` shape.
 // For a Segment anchor the `value` and limits can be integers.
 // For an Arch achor the limits can be an integer or an Angle. `value`
@@ -1805,11 +1805,17 @@ rac.Control = class RacControl {
   // Radius of the cicle drawn for controls.
   static radius = 22;
 
-  constructor() {
-    this.style = null;
-    this.value = 0;
+  // Creates a new Control instance with `value` and `limits` of zero.
+  constructor(value) {
+    // Value corresponds to the distance from the anchor `start`.
+    this.value = value;
+
+    // Limits to which the control can be dragged. Interpreted as the
+    // distance from the anchor `start` or `end`.
     this.minLimit = 0;
     this.maxLimit = 0;
+
+    this.style = null;
     this.anchor = null;
   }
 
