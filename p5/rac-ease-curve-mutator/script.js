@@ -27,9 +27,9 @@ function mouseReleased(event) {
 }
 
 // TODO: static control function to create and push
-let noEaseControl = new rac.Control();
-noEaseControl.value = 100;
-rac.Control.controls.push(noEaseControl);
+let prefixControl = new rac.Control();
+prefixControl.value = 100;
+rac.Control.controls.push(prefixControl);
 
 let distanceControl = new rac.Control();
 distanceControl.value = 250;
@@ -119,14 +119,14 @@ function draw() {
     .segmentToAngle(rac.Angle.e, 100);
 
   // NoEase control + marker
-  noEaseControl.anchor = start.segmentToAngle(rac.Angle.e, 300);
-  noEaseControl.center()
+  prefixControl.anchor = start.segmentToAngle(rac.Angle.e, 300);
+  prefixControl.center()
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
     .draw(rangesMarker);
 
   // Distance control + marker
   distanceControl.anchor = start.pointToAngle(rac.Angle.s, rac.Control.radius * 3)
-    .pointToAngle(rac.Angle.e, noEaseControl.value)
+    .pointToAngle(rac.Angle.e, prefixControl.value)
     .segmentToAngle(rac.Angle.e, 400);
   distanceControl.center()
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
@@ -134,15 +134,15 @@ function draw() {
 
   // AppliedLength control + marker
   appliedLengthControl.anchor = start.pointToAngle(rac.Angle.s, rac.Control.radius * 6)
-    .pointToAngle(rac.Angle.e, noEaseControl.value)
+    .pointToAngle(rac.Angle.e, prefixControl.value)
     .segmentToAngle(rac.Angle.e, 200);
   appliedLengthControl.center()
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
     .draw(rangesMarker);
 
   // Ratio Offset control
-  ratioOffsetControl.anchor = noEaseControl.center()
-    .pointToAngle(rac.Angle.s, noEaseControl.value + linesOffset)
+  ratioOffsetControl.anchor = prefixControl.center()
+    .pointToAngle(rac.Angle.s, prefixControl.value + linesOffset)
     .segmentToAngle(rac.Angle.e, appliedLengthControl.anchor.length() + rac.Control.radius * 2)
     .draw(rangesMarker)
     .nextSegmentToAngle(rac.Angle.s, 200)
@@ -155,7 +155,7 @@ function draw() {
     .reverse();
 
   // Ease Offset control
-  easeOffsetControl.anchor = noEaseControl.center()
+  easeOffsetControl.anchor = prefixControl.center()
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
     .end.pointToAngle(rac.Angle.s, rac.Control.radius * 2)
     .pointToAngle(rac.Angle.w, 100)
@@ -169,7 +169,6 @@ function draw() {
 
 
   // Control value mapping
-  let noEaseDistance = noEaseControl.value;
   let easeDistance = distanceControl.value;
   let appliedLength = appliedLengthControl.value;
   let ratioOffset = (ratioOffsetControl.value - 100) / 50;
@@ -185,7 +184,7 @@ function draw() {
 
     // Utility ease setup
     let utilEase = new rac.EaseFunction();
-    utilEase.prefix = noEaseDistance;
+    utilEase.prefix = prefixControl.value;
     utilEase.inRange = easeDistance;
     utilEase.outRange = appliedLength;
 
@@ -214,7 +213,7 @@ function draw() {
 
     // Control ease setup
     let controlEase = new rac.EaseFunction();
-    controlEase.prefix = noEaseDistance;
+    controlEase.prefix = prefixControl.value;
     controlEase.inRange = easeDistance;
     controlEase.outRange = appliedLength;
 
@@ -249,16 +248,19 @@ function draw() {
     .draw();
 
 
-  let easeTextLabels = new rac.Text.Format(
+  let horizontalLabels = new rac.Text.Format(
     rac.Text.Format.horizontal.right,
     rac.Text.Format.vertical.top,
     "Spot Mono");
+  prefixControl.anchor.end
+    .pointToAngle(rac.Angle.s, textPadding)
+    .text("prefix", horizontalLabels).draw();
   easeOffsetControl.anchor.end
     .pointToAngle(rac.Angle.s, textPadding)
-    .text("easeOffset", easeTextLabels).draw();
+    .text("easeOffset", horizontalLabels).draw();
   easeFactorControl.anchor.end
     .pointToAngle(rac.Angle.s, textPadding)
-    .text("easeFactor", easeTextLabels).draw();
+    .text("easeFactor", horizontalLabels).draw();
 
 
   // Controls draw on top
