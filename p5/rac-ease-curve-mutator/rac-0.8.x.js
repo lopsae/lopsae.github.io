@@ -1823,11 +1823,9 @@ rac.Control = class RacControl {
 
   // Creates a new Control instance with `value` and `limits` of zero.
   constructor(value, startValue = null, endValue = null) {
-    this.distance = 0;
-    this.backupValue = value;
+    this.storedValue = value;
     this.startValue = startValue;
     this.endValue = endValue;
-    this.setValue(value);
 
     // Limits to which the control can be dragged. Interpreted as the
     // distance from the anchor `start` or `end`.
@@ -1838,11 +1836,29 @@ rac.Control = class RacControl {
     this.anchor = null;
   }
 
-  setDistance(newDistance) {
-    this.distance = newDistance;
 
+  // Returns the current value for the control. The value is the distance
+  // of `center` from the anchor `start` if no `startValue` or `endValue`
+  // are used; when used the value is between `startValue` and `endValue`
+  // proportional to the distance to the anchor `start`.
+  value() {
     if (this.startValue === null && this.endValue === null) {
-      this.backupValue = newDistance;
+      return this.storedValue;
+    }
+
+    // Needs anchor for further calculations, stored is used otherwise
+    if (this.anchor === null) {
+      return this.storedValue;
+    }
+
+    // TODO: implement
+  }
+
+  // Used by `pointerDragged` to update the state of the control along with
+  // user interaction through the pointer.
+  setDistance(newDistance) {
+    if (this.startValue === null && this.endValue === null) {
+      this.storedValue = newDistance;
       return;
     }
 
@@ -1852,49 +1868,9 @@ rac.Control = class RacControl {
     }
 
     // TODO: does not support arc segments
-    let lengthRatio = this.distance / this.anchor.length();
+    let lengthRatio = newDistance / this.anchor.length();
     let valueRange = this.endValue - this.startValue;
-    this.backupValue = this.startValue + lengthRatio * valueRange;
-  }
-
-  // Sets the value for the control. The actual position of `center` is
-  // determined by `newValue`, `startValue`, and `endValue`.
-  setValue(newValue) {
-    this.backupValue = newValue;
-
-    if (this.startValue === null && this.endValue === null) {
-      this.distance = newValue;
-      return;
-    }
-
-    // Needs anchor for further calculations, backup is stored otherwise
-    if (this.anchor === null) {
-      return;
-    }
-
-    let valueRange = this.endValue - this.startValue;
-    let valueRatio = (newValue - this.startValue) / valueRange;
-    // TODO: does not support arc segments
-    this.distance = this.anchor.length() * valueRatio;
-  }
-
-  // Returns the current value for the control. The value is the distance
-  // of `center` from the anchor `start` if no `startValue` or `endValue`
-  // are used; when used the value is between `startValue` and `endValue`
-  // proportional to the distance to the anchor `start`.
-  value() {
-    if (this.startValue === null && this.endValue === null) {
-      return this.distance;
-    }
-
-    // Needs anchor for further calculations, backup is used otherwise
-    if (this.anchor === null) {
-      return this.backupValue;
-    }
-
-
-
-    // TODO: implement
+    this.storedValue = this.startValue + lengthRatio * valueRange;
   }
 
 
@@ -1921,10 +1897,18 @@ rac.Control.prototype.center = function() {
   }
 
   if (this.anchor instanceof rac.Segment) {
-    return this.anchor.withLength(this.distance).end;
+    if (this.startValue === null && this.endValue === null) {
+      return this.anchor.withLength(this.storedValue).end;
+    }
+
+    let valueRange = this.endValue - this.startValue;
+    let valueRatio = (this.storedValue - this.startValue) / valueRange;
+    let distance = this.anchor.length() * valueRatio;
+
+    return this.anchor.withLength(distance).end;
   }
   if (this.anchor instanceof rac.Arc) {
-    let angleValue = rac.Angle.from(this.distance);
+    let angleValue = rac.Angle.from(this.storedValue);
     return this.anchor.startSegment()
       .arcWithArcLength(angleValue, this.anchor.clockwise)
       .endPoint();
