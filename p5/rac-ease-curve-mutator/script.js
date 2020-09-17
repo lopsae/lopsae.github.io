@@ -40,14 +40,13 @@ rac.Control.controls.push(outRangeControl);
 let ratioOffsetControl = new rac.Control(.5);
 rac.Control.controls.push(ratioOffsetControl);
 
-// TODO: control can be defined with min and max processed values: 4 to -4
-let ratioFactorControl = new rac.Control(.6);
+let ratioFactorControl = new rac.Control(1, 4, -4);
 rac.Control.controls.push(ratioFactorControl);
 
 let easeOffsetControl = new rac.Control(.5);
 rac.Control.controls.push(easeOffsetControl);
 
-let easeFactorControl = new rac.Control(.6);
+let easeFactorControl = new rac.Control(1, -4, 4);
 rac.Control.controls.push(easeFactorControl);
 
 let prePostFactorControl = new rac.Control(.5);
@@ -149,8 +148,7 @@ function draw() {
   // Ratio factor control
   ratioFactorControl.anchor = ratioOffsetControl.anchor.end
     .pointToAngle(rac.Angle.e, rac.Control.radius * 3)
-    .segmentToAngle(rac.Angle.s, 200)
-    .reverse();
+    .segmentToAngle(rac.Angle.s, 200);
 
   // Ease offset control
   easeOffsetControl.anchor = prefixControl.center()
@@ -174,9 +172,7 @@ function draw() {
   // TODO: use control value!
   // Control value mapping
   let ratioOffset = (ratioOffsetControl.distance() - 100) / 50;
-  let ratioFactor = ((ratioFactorControl.distance() -100) / 25);
   let easeOffset = (easeOffsetControl.distance() - 100) / 50;
-  let easeFactor = ((easeFactorControl.distance() -100) / 25);
   let prePostFactor = prePostFactorControl.distance().turn / (1/8);
 
   for (let index = 0; index < linesCount; index++) {
@@ -192,10 +188,10 @@ function draw() {
     utilEase.outRange = outRangeControl.distance();
 
     utilEase.ratioOffset = ratioOffset;
-    utilEase.ratioFactor = ratioFactor;
+    utilEase.ratioFactor = ratioFactorControl.value;
 
     utilEase.easeOffset = easeOffset;
-    utilEase.easeFactor = easeFactor;
+    utilEase.easeFactor = easeFactorControl.value;
 
     utilEase.preBehavior = rac.EaseFunction.Behavior.pass;
     utilEase.postBehavior = rac.EaseFunction.Behavior.pass;
@@ -245,7 +241,7 @@ function draw() {
     .pointToAngle(rac.Angle.w, textPadding)
     .text("ratioOffset", ratioTextLabels)
     .draw();
-  ratioFactorControl.anchor.end
+  ratioFactorControl.anchor.start
     .pointToAngle(rac.Angle.w, textPadding)
     .text("ratioFactor", ratioTextLabels)
     .draw();
@@ -294,9 +290,9 @@ function draw() {
     .pointToAngle(rac.Angle.e, textPadding)
     .text(ratioOffset.toFixed(2), ratioTextValues)
     .draw();
-  ratioFactorControl.anchor.end
+  ratioFactorControl.anchor.start
     .pointToAngle(rac.Angle.e, textPadding)
-    .text(ratioFactor.toFixed(2), ratioTextValues)
+    .text(ratioFactorControl.value.toFixed(2), ratioTextValues)
     .draw();
   prePostFactorControl.anchor.endPoint()
     .pointToAngle(rac.Angle.e, textPadding)
@@ -312,7 +308,7 @@ function draw() {
     .text(easeOffset.toFixed(2), easeTextValues).draw();
   easeFactorControl.anchor.end
     .pointToAngle(rac.Angle.n, textPadding)
-    .text(easeFactor.toFixed(2), easeTextValues).draw();
+    .text(easeFactorControl.value.toFixed(2), easeTextValues).draw();
 
   console.log(`👑 ~finis coronat opus ${Date.now()}`);
 }
