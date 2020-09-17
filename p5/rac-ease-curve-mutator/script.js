@@ -240,21 +240,26 @@ function draw() {
     rac.Text.Format.horizontal.left,
     rac.Text.Format.vertical.baseline,
     "Spot Mono",
-    rac.Angle.e, 5);
+    rac.Angle.s);
   ratioOffsetControl.anchor.end
-    .text(ratioOffset.toFixed(2), ratioTextFormat, rac.Angle.s)
+    .pointToAngle(rac.Angle.e, 5)
+    .text(ratioOffset.toFixed(2), ratioTextFormat)
     .draw();
   ratioFactorControl.anchor.end
-    .text(ratioFactor.toFixed(2), ratioTextFormat, rac.Angle.s)
+    .pointToAngle(rac.Angle.e, 5)
+    .text(ratioFactor.toFixed(2), ratioTextFormat)
     .draw();
 
   let easeTextFormat = new rac.Text.Format(
     rac.Text.Format.horizontal.right,
     rac.Text.Format.vertical.baseline,
-    "Spot Mono",
-    rac.Angle.n, 5);
-  easeOffsetControl.anchor.end.text(easeOffset.toFixed(2), easeTextFormat).draw();
-  easeFactorControl.anchor.end.text(easeFactor.toFixed(2), easeTextFormat).draw();
+    "Spot Mono");
+  easeOffsetControl.anchor.end
+    .pointToAngle(rac.Angle.n, 5)
+    .text(easeOffset.toFixed(2), easeTextFormat).draw();
+  easeFactorControl.anchor.end
+    .pointToAngle(rac.Angle.n, 5)
+    .text(easeFactor.toFixed(2), easeTextFormat).draw();
 
   console.log(`👑 ~finis coronat opus ${Date.now()}`);
 }
