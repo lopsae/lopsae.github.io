@@ -124,7 +124,7 @@ function draw() {
 
   // In Range control + marker
   inRangeControl.anchor = start.pointToAngle(rac.Angle.s, rac.Control.radius * 3)
-    .pointToAngle(rac.Angle.e, prefixControl.value())
+    .pointToAngle(rac.Angle.e, prefixControl.value)
     .segmentToAngle(rac.Angle.e, 400);
   inRangeControl.center()
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
@@ -132,7 +132,7 @@ function draw() {
 
   // Out Range control + marker
   outRangeControl.anchor = start.pointToAngle(rac.Angle.s, rac.Control.radius * 6)
-    .pointToAngle(rac.Angle.e, prefixControl.value())
+    .pointToAngle(rac.Angle.e, prefixControl.value)
     .segmentToAngle(rac.Angle.e, 200);
   outRangeControl.center()
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
@@ -140,7 +140,7 @@ function draw() {
 
   // Ratio Offset control
   ratioOffsetControl.anchor = prefixControl.center()
-    .pointToAngle(rac.Angle.s, prefixControl.value() + linesOffset)
+    .pointToAngle(rac.Angle.s, prefixControl.value + linesOffset)
     .segmentToAngle(rac.Angle.e, outRangeControl.anchor.length() + rac.Control.radius * 2)
     .draw(rangesMarker)
     .nextSegmentToAngle(rac.Angle.s, 200)
@@ -172,10 +172,10 @@ function draw() {
 
 
   // Control value mapping
-  let ratioOffset = (ratioOffsetControl.value() - 100) / 50;
-  let ratioFactor = ((ratioFactorControl.value() -100) / 25);
-  let easeOffset = (easeOffsetControl.value() - 100) / 50;
-  let easeFactor = ((easeFactorControl.value() -100) / 25);
+  let ratioOffset = (ratioOffsetControl.value - 100) / 50;
+  let ratioFactor = ((ratioFactorControl.value -100) / 25);
+  let easeOffset = (easeOffsetControl.value - 100) / 50;
+  let easeFactor = ((easeFactorControl.value -100) / 25);
 
   for (let index = 0; index < linesCount; index++) {
     let linePos = linesOffset + linesStep * index;
@@ -185,9 +185,9 @@ function draw() {
 
     // Utility ease setup
     let utilEase = new rac.EaseFunction();
-    utilEase.prefix = prefixControl.value();
-    utilEase.inRange = inRangeControl.value();
-    utilEase.outRange = outRangeControl.value();
+    utilEase.prefix = prefixControl.value;
+    utilEase.inRange = inRangeControl.value;
+    utilEase.outRange = outRangeControl.value;
 
     utilEase.ratioOffset = ratioOffset;
     utilEase.ratioFactor = ratioFactor;
@@ -198,7 +198,7 @@ function draw() {
     utilEase.preBehavior = rac.EaseFunction.Behavior.pass;
     utilEase.postBehavior = rac.EaseFunction.Behavior.pass;
 
-    utilEase.preFactor = angleControl.value().turn / (1/8);
+    utilEase.preFactor = angleControl.value.turn / (1/8);
     utilEase.postFactor = angleControl.distance().turn / (1/8);
 
     // Utility line
@@ -214,9 +214,9 @@ function draw() {
 
     // Control ease setup
     let controlEase = new rac.EaseFunction();
-    controlEase.prefix = prefixControl.value();
-    controlEase.inRange = inRangeControl.value();
-    controlEase.outRange = outRangeControl.value();
+    controlEase.prefix = prefixControl.value;
+    controlEase.inRange = inRangeControl.value;
+    controlEase.outRange = outRangeControl.value;
 
     controlEase.preBehavior = rac.EaseFunction.Behavior.continue;
     controlEase.postBehavior = rac.EaseFunction.Behavior.continue;
