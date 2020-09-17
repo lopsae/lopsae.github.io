@@ -31,9 +31,9 @@ let prefixControl = new rac.Control();
 prefixControl.value = 100;
 rac.Control.controls.push(prefixControl);
 
-let distanceControl = new rac.Control();
-distanceControl.value = 250;
-rac.Control.controls.push(distanceControl);
+let inRangeControl = new rac.Control();
+inRangeControl.value = 250;
+rac.Control.controls.push(inRangeControl);
 
 let appliedLengthControl = new rac.Control();
 appliedLengthControl.value = 100;
@@ -125,10 +125,10 @@ function draw() {
     .draw(rangesMarker);
 
   // Distance control + marker
-  distanceControl.anchor = start.pointToAngle(rac.Angle.s, rac.Control.radius * 3)
+  inRangeControl.anchor = start.pointToAngle(rac.Angle.s, rac.Control.radius * 3)
     .pointToAngle(rac.Angle.e, prefixControl.value)
     .segmentToAngle(rac.Angle.e, 400);
-  distanceControl.center()
+  inRangeControl.center()
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, lastLineGuide)
     .draw(rangesMarker);
 
@@ -169,7 +169,6 @@ function draw() {
 
 
   // Control value mapping
-  let easeDistance = distanceControl.value;
   let appliedLength = appliedLengthControl.value;
   let ratioOffset = (ratioOffsetControl.value - 100) / 50;
   let ratioFactor = ((ratioFactorControl.value -100) / 25);
@@ -185,7 +184,7 @@ function draw() {
     // Utility ease setup
     let utilEase = new rac.EaseFunction();
     utilEase.prefix = prefixControl.value;
-    utilEase.inRange = easeDistance;
+    utilEase.inRange = inRangeControl.value;
     utilEase.outRange = appliedLength;
 
     utilEase.ratioOffset = ratioOffset;
@@ -214,7 +213,7 @@ function draw() {
     // Control ease setup
     let controlEase = new rac.EaseFunction();
     controlEase.prefix = prefixControl.value;
-    controlEase.inRange = easeDistance;
+    controlEase.inRange = inRangeControl.value;
     controlEase.outRange = appliedLength;
 
     controlEase.preBehavior = rac.EaseFunction.Behavior.continue;
@@ -255,6 +254,9 @@ function draw() {
   prefixControl.anchor.end
     .pointToAngle(rac.Angle.s, textPadding)
     .text("prefix", horizontalLabels).draw();
+  inRangeControl.anchor.end
+    .pointToAngle(rac.Angle.s, textPadding)
+    .text("inRange", horizontalLabels).draw();
   easeOffsetControl.anchor.end
     .pointToAngle(rac.Angle.s, textPadding)
     .text("easeOffset", horizontalLabels).draw();
