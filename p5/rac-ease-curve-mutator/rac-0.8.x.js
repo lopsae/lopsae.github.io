@@ -1847,6 +1847,30 @@ rac.Control = class RacControl {
     return this.storedValue;
   }
 
+  // Returns the distance from `anchor.start`.
+  distance() {
+    if (this.anchor === null) {
+      return null;
+    }
+
+    if (this.anchor instanceof rac.Segment) {
+      if (this.startValue === null && this.endValue === null) {
+        return this.storedValue;
+      }
+
+      let valueRange = this.endValue - this.startValue;
+      let valueRatio = (this.storedValue - this.startValue) / valueRange;
+      return this.anchor.length() * valueRatio;
+    }
+    if (this.anchor instanceof rac.Arc) {
+      // TODO: start/endValue not supported yet
+      return rac.Angle.from(this.storedValue);
+    }
+
+    console.trace(`Cannot produce control distance - anchor.constructorName:${this.anchor.constructor.name}`);
+    throw rac.Error.invalidObjectToConvert;
+  }
+
   // Used by `pointerDragged` to update the state of the control along with
   // user interaction through the pointer.
   updateDistance(newDistance) {
@@ -1890,24 +1914,15 @@ rac.Control.prototype.center = function() {
   }
 
   if (this.anchor instanceof rac.Segment) {
-    if (this.startValue === null && this.endValue === null) {
-      return this.anchor.withLength(this.storedValue).end;
-    }
-
-    let valueRange = this.endValue - this.startValue;
-    let valueRatio = (this.storedValue - this.startValue) / valueRange;
-    let distance = this.anchor.length() * valueRatio;
-
-    return this.anchor.withLength(distance).end;
+    return this.anchor.withLength(this.distance()).end;
   }
   if (this.anchor instanceof rac.Arc) {
-    let angleValue = rac.Angle.from(this.storedValue);
     return this.anchor.startSegment()
-      .arcWithArcLength(angleValue, this.anchor.clockwise)
+      .arcWithArcLength(this.distance(), this.anchor.clockwise)
       .endPoint();
   }
 
-  console.trace(`Cannot produce control center - constructorName:${this.anchor.constructor.name}`);
+  console.trace(`Cannot produce control center - anchor.constructorName:${this.anchor.constructor.name}`);
   throw rac.Error.invalidObjectToConvert;
 };
 
