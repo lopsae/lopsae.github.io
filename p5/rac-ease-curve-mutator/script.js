@@ -43,8 +43,7 @@ rac.Control.controls.push(ratioOffsetControl);
 let ratioFactorControl = new rac.Control(1, 4, -4);
 rac.Control.controls.push(ratioFactorControl);
 
-// TODO: use values
-let easeOffsetControl = new rac.Control(.5);
+let easeOffsetControl = new rac.Control(0, -2, 2);
 rac.Control.controls.push(easeOffsetControl);
 
 let easeFactorControl = new rac.Control(1, -4, 4);
@@ -172,7 +171,6 @@ function draw() {
 
   // TODO: use control value!
   // Control value mapping
-  let easeOffset = (easeOffsetControl.distance() - 100) / 50;
   let prePostFactor = prePostFactorControl.distance().turn / (1/8);
 
   for (let index = 0; index < linesCount; index++) {
@@ -190,7 +188,7 @@ function draw() {
     utilEase.ratioOffset = ratioOffsetControl.value;
     utilEase.ratioFactor = ratioFactorControl.value;
 
-    utilEase.easeOffset = easeOffset;
+    utilEase.easeOffset = easeOffsetControl.value;
     utilEase.easeFactor = easeFactorControl.value;
 
     utilEase.preBehavior = rac.EaseFunction.Behavior.pass;
@@ -305,7 +303,7 @@ function draw() {
     "Spot Mono");
   easeOffsetControl.anchor.end
     .pointToAngle(rac.Angle.n, textPadding)
-    .text(easeOffset.toFixed(2), easeTextValues).draw();
+    .text(easeOffsetControl.value.toFixed(2), easeTextValues).draw();
   easeFactorControl.anchor.end
     .pointToAngle(rac.Angle.n, textPadding)
     .text(easeFactorControl.value.toFixed(2), easeTextValues).draw();
