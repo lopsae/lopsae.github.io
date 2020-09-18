@@ -1835,19 +1835,17 @@ rac.Control.drawSegmentControl = function(control) {
 
   let center = control.center();
   let angle = anchor.angle();
+  let length = anchor.length();
 
   // Markers
-  if (control.markers.length > 0) {
-    let length = anchor.length();
-    control.markers.forEach(item => {
-      let markerRatio = control.ratioOf(item);
-      if (markerRatio >= 0 && markerRatio <= 1) {
-        let point = anchor.start.pointToAngle(angle, length * markerRatio);
-        rac.Control.makeMarkerSegment(point, angle)
-          .attachToComposite();
-      }
-    });
-  }
+  control.markers.forEach(item => {
+    let markerRatio = control.ratioOf(item);
+    if (markerRatio >= 0 && markerRatio <= 1) {
+      let point = anchor.start.pointToAngle(angle, length * markerRatio);
+      rac.Control.makeMarkerSegment(point, angle)
+        .attachToComposite();
+    }
+  });
 
   // Control button
   center.arc(rac.Control.radius)
@@ -2086,25 +2084,39 @@ rac.Control.drawControls = function() {
   let anchorCopy = rac.Control.selection.anchorCopy;
   anchorCopy.draw(pointerStyle);
 
-  let ratioMinLimit = rac.Control.selection.control.ratioMinLimit();
-  let ratioMaxLimit = rac.Control.selection.control.ratioMaxLimit();
+  let control = rac.Control.selection.control;
+  let ratioMinLimit = control.ratioMinLimit();
+  let ratioMaxLimit = control.ratioMaxLimit();
 
   // Markers for segment limits
   if (anchorCopy instanceof rac.Segment) {
+    let angle = anchorCopy.angle();
+    let length = anchorCopy.length();
+
+    control.markers.forEach(item => {
+      let markerRatio = control.ratioOf(item);
+      if (markerRatio >= 0 && markerRatio <= 1) {
+        let markerPoint = anchorCopy.start.pointToAngle(angle, length * markerRatio);
+        rac.Control.makeMarkerSegment(markerPoint, angle)
+          .draw(pointerStyle);
+      }
+    });
+
     if (ratioMinLimit > 0) {
-      let minPoint = anchorCopy.pointAtLengthRatio(ratioMinLimit);
-      rac.Control.makeLimitMarkerSegment(minPoint, anchorCopy.angle())
+      let minPoint = anchorCopy.start.pointToAngle(angle, length * ratioMinLimit);
+      rac.Control.makeLimitMarkerSegment(minPoint, angle)
         .draw(pointerStyle);
     }
     if (ratioMaxLimit < 1) {
-      let maxPoint = anchorCopy.pointAtLengthRatio(ratioMaxLimit);
-      rac.Control.makeLimitMarkerSegment(maxPoint, anchorCopy.angle().inverse())
+      let maxPoint = anchorCopy.start.pointToAngle(angle, length * ratioMaxLimit);
+      rac.Control.makeLimitMarkerSegment(maxPoint, angle.inverse())
         .draw(pointerStyle);
     }
   }
 
   // Markers for arc limits
   if (anchorCopy instanceof rac.Arc) {
+    // TODO: markers
     if (ratioMinLimit > 0) {
       let minPoint = anchorCopy.pointAtArcLengthRatio(ratioMinLimit);
       let markerAngle = anchorCopy.center.angleToPoint(minPoint)
