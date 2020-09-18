@@ -1307,6 +1307,15 @@ rac.Arc.prototype.pointAtArcLength = function(someAngle) {
   return this.pointAtAngle(shiftedAngle);
 };
 
+// Returns the point in the arc at the current arc length multiplied by
+// `arcLengthRatio` and then shifted by `this.start` in the arc
+// orientation. The arc is considered a complete circle.
+rac.Arc.prototype.pointAtArcLengthRatio = function(arcLengthRatio) {
+  let newArcLength = this.arcLength().mult(arcLengthRatio);
+  let shiftedAngle = this.shiftAngle(newArcLength);
+  return this.pointAtAngle(shiftedAngle);
+};
+
 // Returns the point in the arc at the given angle. The arc is considered
 // a complete circle.
 rac.Arc.prototype.pointAtAngle = function(someAngle) {
@@ -1765,30 +1774,23 @@ rac.drawControls = function() {
     }
   }
 
-  // let minLimit = rac.Control.selection.control.minLimit;
-  // let maxLimit = rac.Control.selection.control.maxLimit;
-
-  // TODO: reenable markers
-
   // Markers for arc limits
-  // if (anchorCopy instanceof rac.Arc) {
-  //   minLimit = rac.Angle.from(minLimit);
-  //   maxLimit = rac.Angle.from(maxLimit);
-  //   if (minLimit.turn > 0) {
-  //     let minPoint = anchorCopy.pointAtArcLength(minLimit);
-  //     let markerAngle = anchorCopy.center.angleToPoint(minPoint)
-  //       .perpendicular(anchorCopy.clockwise)
-  //     rac.Control.makeLimitMarkerSegment(minPoint, markerAngle)
-  //       .draw(pointerStyle);
-  //   }
-  //   if (maxLimit.turn > 0) {
-  //     let maxPoint = anchorCopy.reverse().pointAtArcLength(minLimit);
-  //     let markerAngle = anchorCopy.center.angleToPoint(maxPoint)
-  //       .perpendicular(!anchorCopy.clockwise)
-  //     rac.Control.makeLimitMarkerSegment(maxPoint, markerAngle)
-  //       .draw(pointerStyle);
-  //   }
-  // }
+  if (anchorCopy instanceof rac.Arc) {
+    if (ratioMinLimit > 0) {
+      let minPoint = anchorCopy.pointAtArcLengthRatio(ratioMinLimit);
+      let markerAngle = anchorCopy.center.angleToPoint(minPoint)
+        .perpendicular(anchorCopy.clockwise)
+      rac.Control.makeLimitMarkerSegment(minPoint, markerAngle)
+        .draw(pointerStyle);
+    }
+    if (ratioMaxLimit < 1) {
+      let maxPoint = anchorCopy.pointAtArcLengthRatio(ratioMaxLimit);
+      let markerAngle = anchorCopy.center.angleToPoint(maxPoint)
+        .perpendicular(!anchorCopy.clockwise)
+      rac.Control.makeLimitMarkerSegment(maxPoint, markerAngle)
+        .draw(pointerStyle);
+    }
+  }
 
   // Ray from pointer to control shadow center
   let draggedShadowCenter = rac.Control.selection.pointerOffset
