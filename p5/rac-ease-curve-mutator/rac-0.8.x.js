@@ -899,11 +899,17 @@ rac.Segment.prototype.pointAtLength = function(length) {
   return this.start.pointToAngle(this.angle(), length);
 };
 
+rac.Segment.prototype.pointAtLengthRatio = function(lengthRatio) {
+  let newLength = this.length() * lengthRatio;
+  return this.start.pointToAngle(this.angle(), newLength);
+};
+
 // Returns a new segment from `start` to `pointAtBisector`.
 rac.Segment.prototype.segmentToBisector = function() {
   return new rac.Segment(this.start, this.pointAtBisector());
 };
 
+// TODO: rename to withLengthRatio
 // Returns a new segment from `start` to a length determined by
 // `ratio*length`.
 rac.Segment.prototype.segmentWithRatioOfLength = function(ratio) {
@@ -1745,23 +1751,24 @@ rac.drawControls = function() {
   let ratioMinLimit = rac.Control.selection.control.ratioMinLimit();
   let ratioMaxLimit = rac.Control.selection.control.ratioMaxLimit();
 
+  // Markers for segment limits
+  if (anchorCopy instanceof rac.Segment) {
+    if (ratioMinLimit > 0) {
+      let minPoint = anchorCopy.pointAtLengthRatio(ratioMinLimit);
+      rac.Control.makeLimitMarkerSegment(minPoint, anchorCopy.angle())
+        .draw(pointerStyle);
+    }
+    if (ratioMaxLimit < 1) {
+      let maxPoint = anchorCopy.pointAtLengthRatio(ratioMaxLimit);
+      rac.Control.makeLimitMarkerSegment(maxPoint, anchorCopy.angle().inverse())
+        .draw(pointerStyle);
+    }
+  }
+
   // let minLimit = rac.Control.selection.control.minLimit;
   // let maxLimit = rac.Control.selection.control.maxLimit;
 
   // TODO: reenable markers
-  // Markers for segment limits
-  // if (anchorCopy instanceof rac.Segment) {
-  //   if (minLimit > 0) {
-  //     let minPoint = anchorCopy.pointAtLength(minLimit);
-  //     rac.Control.makeLimitMarkerSegment(minPoint, anchorCopy.angle())
-  //       .draw(pointerStyle);
-  //   }
-  //   if (maxLimit > 0) {
-  //     let maxPoint = anchorCopy.reverse().pointAtLength(maxLimit);
-  //     rac.Control.makeLimitMarkerSegment(maxPoint, anchorCopy.angle().inverse())
-  //       .draw(pointerStyle);
-  //   }
-  // }
 
   // Markers for arc limits
   // if (anchorCopy instanceof rac.Arc) {
