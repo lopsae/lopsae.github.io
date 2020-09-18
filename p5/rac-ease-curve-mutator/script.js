@@ -10,19 +10,19 @@ function setup() {
 
 
 function mousePressed(event) {
-  rac.pointerPressed(rac.Point.mouse());
+  rac.Control.pointerPressed(rac.Point.mouse());
   redraw();
 }
 
 
 function mouseDragged(event) {
-  rac.pointerDragged(rac.Point.mouse());
+  rac.Control.pointerDragged(rac.Point.mouse());
   redraw();
 }
 
 
 function mouseReleased(event) {
-  rac.pointerReleased(rac.Point.mouse());
+  rac.Control.pointerReleased(rac.Point.mouse());
   redraw();
 }
 
@@ -276,7 +276,7 @@ function draw() {
 
 
   // Controls draw on top
-  rac.drawControls();
+  rac.Control.drawControls();
 
 
   // Control values get draw on top
