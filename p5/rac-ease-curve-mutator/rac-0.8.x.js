@@ -1024,10 +1024,10 @@ rac.Arc = class RacArc {
     this.radius = radius;
     // Start angle of the arc. Arc will draw from this angle towards `end`
     // in the `clockwise` orientaton.
-    this.start = start;
+    this.start = rac.Angle.from(start);
     // End angle of the arc. Arc will draw from `start` to this angle in
     // the `clockwise` orientaton.
-    this.end = end;
+    this.end = rac.Angle.from(end);
     // Orientation of the arc
     this.clockwise = clockwise;
   }
@@ -2066,13 +2066,8 @@ rac.Control.drawSegmentControl = function(control) {
   let anchor = control.anchor;
   anchor.draw(control.style);
 
-  let angle = anchor.angle();
-
-  // Control button
   let center = control.center();
-  center.arc(rac.Control.radius)
-    .attachToShape()
-    .popShapeToComposite();
+  let angle = anchor.angle();
 
   // Markers
   if (control.markers.length > 0) {
@@ -2086,6 +2081,10 @@ rac.Control.drawSegmentControl = function(control) {
       }
     });
   }
+
+  // Control button
+  center.arc(rac.Control.radius)
+    .attachToComposite();
 
 // TODO: arrows not working for controls with negative direction
   // Negative arrow
@@ -2112,27 +2111,39 @@ rac.Control.drawArcControl = function(control) {
   let anchor = control.anchor;
   anchor.draw(control.style.withFill(rac.Fill.none));
 
-  // Control button
   let center = control.center();
+  let angle = anchor.center.angleToPoint(center);
+
+  // Markers
+  if (control.markers.length > 0) {
+    let arcLength = anchor.arcLength();
+    control.markers.forEach(item => {
+      let markerRatio = control.ratioOf(item);
+      if (markerRatio >= 0 && markerRatio <= 1) {
+        let markerArcLength = arcLength.mult(markerRatio);
+        let markerAngle = anchor.shiftAngle(markerArcLength);
+        let point = anchor.pointAtAngle(markerAngle);
+        rac.Control.makeMarkerSegment(point, markerAngle.perpendicular(anchor.clockwise).inverse())
+          .attachToComposite();
+      }
+    });
+  }
+
+  // Control button
   center.arc(rac.Control.radius)
-    .attachToShape()
-    .popShapeToComposite();
+    .attachToComposite();
 
-  let angleValue = rac.Angle.from(control.distance());
-  // Angle of the current value relative to the arc anchor
-  let relativeAngleValue = anchor.shiftAngle(angleValue);
-
+// TODO: arrows not showing for controls with negative distance
   // Negative arrow
   if (control.value >= control.minLimit + rac.equalityThreshold) {
-    let negAngle = relativeAngleValue.perpendicular(anchor.clockwise).inverse();
+    let negAngle = angle.perpendicular(anchor.clockwise).inverse();
     rac.Control.makeArrowShape(center, negAngle)
       .attachToComposite();
   }
 
   // Positive arrow
-  // TODO: what happens here with a limit that goes around the turn value?
   if (control.value <= control.maxValue - rac.equalityThreshold) {
-    let posAngle = relativeAngleValue.perpendicular(anchor.clockwise);
+    let posAngle = angle.perpendicular(anchor.clockwise);
     rac.Control.makeArrowShape(center, posAngle)
       .attachToComposite();
   }

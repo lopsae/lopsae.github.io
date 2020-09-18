@@ -55,7 +55,7 @@ rac.Control.controls.push(easeFactorControl);
 
 let prePostFactorControl = new rac.Control(1, 2, 0);
 prePostFactorControl.setRatioClamp(0.1, 0.1);
-// TODO: add marker for arc control
+prePostFactorControl.markers = [1];
 rac.Control.controls.push(prePostFactorControl);
 
 
