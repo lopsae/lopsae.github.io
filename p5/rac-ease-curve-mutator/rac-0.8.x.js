@@ -909,7 +909,7 @@ rac.Segment.prototype.segmentToBisector = function() {
   return new rac.Segment(this.start, this.pointAtBisector());
 };
 
-// TODO: rename to withLengthRatio
+// TODO: rename to withLengthRatio, when there is a chance to test
 // Returns a new segment from `start` to a length determined by
 // `ratio*length`.
 rac.Segment.prototype.segmentWithRatioOfLength = function(ratio) {
@@ -976,7 +976,7 @@ rac.Segment.prototype.segmentToIntersectionWithSegment = function(other) {
   return new rac.Segment(this.start, end);
 };
 
-// TODO: odd name, maybe should be nextSegment? reevaluate "relative" vs shift
+// TODO: maybe rename to nextSegment? reevaluate "relative" vs shift
 rac.Segment.prototype.segmentToRelativeAngle = function(
   relativeAngle, distance, clockwise = true)
 {
@@ -1514,7 +1514,7 @@ rac.EaseFunction = class RacEaseFunction {
   // `prefix` and after `inRange`.
   static Behavior = {
     // `value` is returned without any easing transformation. `preFactor`
-    // and `postFactor` are applied.
+    // and `postFactor` are applied. This is the default configuration.
     pass: "pass",
     // Clamps the returned value to `prefix` or `prefix+inRange`;
     clamp: "clamp",
@@ -1525,12 +1525,6 @@ rac.EaseFunction = class RacEaseFunction {
 
   constructor() {
     this.a = 2;
-
-    // easeout
-    // ratioOffset = 1
-    // ratioFactor = .5
-    // easeOffset = -.5
-    // easeFactor = 2
 
     // Applied to ratio before easing.
     this.ratioOffset = 0
@@ -1629,6 +1623,22 @@ rac.EaseFunction = class RacEaseFunction {
 
     console.trace(`Invalid postBehavior configuration - postBehavior:${this.postBehavior}`);
     throw rac.Error.invalidObjectConfiguration;
+  }
+
+
+  // Preconfigured functions
+
+  // Makes an easeFunction preconfigured to an ease out motion.
+  //
+  // The `outRange` value should be `inRange*2` in order for the ease
+  // motion to connect with the external motion at the correct velocity.
+  static makeEaseOut() {
+    let easeOut = new rac.EaseFunction()
+    easeOut.ratioOffset = 1;
+    easeOut.ratioFactor = .5;
+    easeOut.easeOffset = -.5;
+    easeOut.easeFactor = 2;
+    return easeOut;
   }
 
 }
@@ -2054,7 +2064,7 @@ rac.Control.drawControls = function() {
     rac.Control.lastPointer.arc(12).draw(pointerStyle);
   }
   if (rac.Control.lastPointer instanceof rac.Control) {
-    // TODO: last selected control state
+    // TODO: implement last selected control state
   }
 
   // Pointer pressed
@@ -2180,37 +2190,26 @@ rac.Control.drawControls = function() {
     constrainedShadowCenter.arc(rac.Control.radius / 2)
       .draw(pointerStyle);
 
-    // TODO: create a single use one?
-    // TODO: can this confuguration be a code default?
     // Ease for segment to dragged shadow center
-    let ease = new rac.EaseFunction();
-    ease.prefix = rac.Control.radius * 0;
+    let easeOut = rac.EaseFunction.makeEaseOut();
+    easeOut.postBehavior = rac.EaseFunction.Behavior.clamp;
 
-    let maxDraggedTailLength = rac.Control.radius * 6;
-    // Taill will stops stretching at 2x the max tail length
-    ease.inRange = maxDraggedTailLength * 2;
-    ease.outRange = maxDraggedTailLength;
-
-    // Easeout configuration
-    ease.ratioOffset = 1;
-    ease.ratioFactor = .5;
-    ease.easeOffset = -.5;
-    ease.easeFactor = 2;
-
-    ease.preBehavior = rac.EaseFunction.Behavior.pass;
-    ease.postBehavior = rac.EaseFunction.Behavior.clamp;
+    // Tail will stop stretching at 2x the max tail length
+    let maxDraggedTailLength = rac.Control.radius * 5;
+    easeOut.inRange = maxDraggedTailLength * 2;
+    easeOut.outRange = maxDraggedTailLength;
 
     // Segment to dragged shadow center
     let segmentToDraggedCenter = constrainedShadowCenter
       .segmentToPoint(draggedShadowCenter);
 
-    let easedLength = ease.easeValue(segmentToDraggedCenter.length());
+    let easedLength = easeOut.easeValue(segmentToDraggedCenter.length());
     segmentToDraggedCenter.withLength(easedLength).draw(pointerStyle);
   }
 
   // Arc anchor
   if (anchorCopy instanceof rac.Arc) {
-    // TODO: implement!
+    // TODO: implement arc control dragging visuals!
   }
 };
 
