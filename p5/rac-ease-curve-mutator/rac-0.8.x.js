@@ -1906,6 +1906,7 @@ rac.Control = class RacControl {
     this.anchor = null;
   }
 
+// TODO: rename unit to ratio
   // Returns the `value` of the control in a [0,1] range.
   unitValue() {
     return this.unitOf(this.value);
@@ -1923,8 +1924,17 @@ rac.Control = class RacControl {
 
   // Returns the equivalent of the given `value` in a [0,1] range.
   unitOf(value) {
-    let valueRange = this.endValue - this.startValue;
-    return (value - this.startValue) / valueRange;
+    return (value - this.startValue) / this.valueRange();
+  }
+
+  // Returns the equivalent of the given ratio in the range [0,1] to a value
+  // in the value range.
+  valueOf(ratio) {
+    return (ratio * this.valueRange()) + this.startValue;
+  }
+
+  valueRange() {
+    return this.endValue - this.startValue;
   }
 
   // Returns the distance from `anchor.start` to the control center.
@@ -1966,8 +1976,27 @@ rac.Control = class RacControl {
       throw rac.Error.invalidObjectToConvert;
     }
 
-    let valueRange = this.endValue - this.startValue;
-    this.value = this.startValue + lengthRatio * valueRange;
+    this.value = this.valueOf(lengthRatio);
+  }
+
+  // Sets `minLimit` and `maxLimit` through two clamping values that are
+  // relative to the value range.
+  // `minClamp` is added to `startValue` while `maxClamp` is substracted
+  // from `endValue`, in the direction of the value range.
+  setValueClamp(minClamp, maxClamp) {
+    let rangeDirection = this.valueRange() >= 0 ? 1 : -1;
+
+    this.minLimit = this.startValue + (minClamp * rangeDirection);
+    this.maxLimit = this.endValue - (maxClamp * rangeDirection);
+  }
+
+  // Sets `minLimit` and `maxLimit` through two clamping ratios that are
+  // relative to the [0,1] range.
+  // `minClamp` is added to `startValue` while `maxClamp` is substracted
+  // from `endValue`, in the direction of the value range.
+  setRatioClamp(minClamp, maxClamp) {
+    this.minLimit = this.valueOf(minClamp);
+    this.maxLimit = this.valueOf(1 - maxClamp);
   }
 
 
