@@ -1660,7 +1660,7 @@ rac.pointerPressed = function(pointerCenter) {
 
 
 // Call to signal the pointer being dragged. As the pointer moves the
-// `distance` of the selected control is updated.
+// selected control is updated with a new `distance`.
 rac.pointerDragged = function(pointerCenter){
   if (rac.Control.selection === null) {
     return;
@@ -2010,6 +2010,40 @@ rac.Control = class RacControl {
     this.maxLimit = this.valueOf(1 - maxClamp);
   }
 
+  center() {
+    if (this.anchor === null) {
+      return null;
+    }
+
+    if (this.anchor instanceof rac.Segment) {
+      return this.anchor.withLength(this.distance()).end;
+    }
+    if (this.anchor instanceof rac.Arc) {
+      return this.anchor.withArcLength(this.distance()).endPoint();
+    }
+
+    console.trace(`Cannot produce control center - anchor.constructorName:${this.anchor.constructor.name}`);
+    throw rac.Error.invalidObjectToConvert;
+  }
+
+  isSelected() {
+    if (rac.Control.selection === null) {
+      return false;
+    }
+    return rac.Control.selection.control === this;
+  }
+
+  draw() {
+    if (this.anchor instanceof rac.Segment) {
+      rac.Control.drawSegmentControl(this);
+      return;
+    }
+    if (this.anchor instanceof rac.Arc) {
+      rac.Control.drawArcControl(this);
+      return;
+    }
+  }
+
 
   static Selection = class RacControlSelection{
     constructor(control) {
@@ -2027,40 +2061,6 @@ rac.Control = class RacControl {
 
 }
 
-
-rac.Control.prototype.center = function() {
-  if (this.anchor === null) {
-    return null;
-  }
-
-  if (this.anchor instanceof rac.Segment) {
-    return this.anchor.withLength(this.distance()).end;
-  }
-  if (this.anchor instanceof rac.Arc) {
-    return this.anchor.withArcLength(this.distance()).endPoint();
-  }
-
-  console.trace(`Cannot produce control center - anchor.constructorName:${this.anchor.constructor.name}`);
-  throw rac.Error.invalidObjectToConvert;
-};
-
-rac.Control.prototype.isSelected = function() {
-  if (rac.Control.selection === null) {
-    return false;
-  }
-  return rac.Control.selection.control === this;
-}
-
-rac.Control.prototype.draw = function() {
-  if (this.anchor instanceof rac.Segment) {
-    rac.Control.drawSegmentControl(this);
-    return;
-  }
-  if (this.anchor instanceof rac.Arc) {
-    rac.Control.drawArcControl(this);
-    return;
-  }
-};
 
 rac.Control.drawSegmentControl = function(control) {
   let anchor = control.anchor;
