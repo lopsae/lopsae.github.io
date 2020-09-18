@@ -1659,29 +1659,32 @@ rac.pointerDragged = function(pointerCenter){
     .translateToStart(pointerCenter)
     .end;
 
-  let newDistance = control.distance;
+  let newDistance;
 
   // Segment anchor
   if (anchorCopy instanceof rac.Segment) {
+    let length = anchorCopy.length();
+    let minClamp = length * control.unitMinLimit();
+    let maxClamp = length * (1 - control.unitMaxLimit());
+
     // New value from the current pointer position, relative to anchorCopy
     newDistance = anchorCopy
       .lengthToProjectedPoint(currentPointerControlCenter);
-
     // Clamping value (javascript has no Math.clamp)
     newDistance = anchorCopy.clampToLength(newDistance,
-      control.minLimit, control.maxLimit);
+      minClamp, maxClamp);
   }
 
   // Arc anchor
   if (anchorCopy instanceof rac.Arc) {
-    let minLimitAngle = rac.Angle.from(control.minLimit);
-    let maxLimitAngle = rac.Angle.from(control.maxLimit);
+    let arcLength = anchorCopy.arcLength();
+    let minClamp = arcLength.mult(control.unitMinLimit());
+    let maxClamp = arcLength.mult(1 - control.unitMaxLimit());
+
     let selectionAngle = anchorCopy.center
       .angleToPoint(currentPointerControlCenter);
-
-
     selectionAngle = anchorCopy.clampToArcLength(selectionAngle,
-      minLimitAngle, maxLimitAngle);
+      minClamp, maxClamp);
     newDistance = anchorCopy.distanceFromStart(selectionAngle);
   }
 
@@ -1739,42 +1742,46 @@ rac.drawControls = function() {
   let anchorCopy = rac.Control.selection.anchorCopy;
   anchorCopy.draw(pointerStyle);
 
-  let minLimit = rac.Control.selection.control.minLimit;
-  let maxLimit = rac.Control.selection.control.maxLimit;
+  let unitMinLimit = rac.Control.selection.control.unitMinLimit();
+  let unitMaxLimit = rac.Control.selection.control.unitMaxLimit();
 
+  // let minLimit = rac.Control.selection.control.minLimit;
+  // let maxLimit = rac.Control.selection.control.maxLimit;
+
+  // TODO: reenable markers
   // Markers for segment limits
-  if (anchorCopy instanceof rac.Segment) {
-    if (minLimit > 0) {
-      let minPoint = anchorCopy.pointAtLength(minLimit);
-      rac.Control.makeLimitMarkerSegment(minPoint, anchorCopy.angle())
-        .draw(pointerStyle);
-    }
-    if (maxLimit > 0) {
-      let maxPoint = anchorCopy.reverse().pointAtLength(maxLimit);
-      rac.Control.makeLimitMarkerSegment(maxPoint, anchorCopy.angle().inverse())
-        .draw(pointerStyle);
-    }
-  }
+  // if (anchorCopy instanceof rac.Segment) {
+  //   if (minLimit > 0) {
+  //     let minPoint = anchorCopy.pointAtLength(minLimit);
+  //     rac.Control.makeLimitMarkerSegment(minPoint, anchorCopy.angle())
+  //       .draw(pointerStyle);
+  //   }
+  //   if (maxLimit > 0) {
+  //     let maxPoint = anchorCopy.reverse().pointAtLength(maxLimit);
+  //     rac.Control.makeLimitMarkerSegment(maxPoint, anchorCopy.angle().inverse())
+  //       .draw(pointerStyle);
+  //   }
+  // }
 
   // Markers for arc limits
-  if (anchorCopy instanceof rac.Arc) {
-    minLimit = rac.Angle.from(minLimit);
-    maxLimit = rac.Angle.from(maxLimit);
-    if (minLimit.turn > 0) {
-      let minPoint = anchorCopy.pointAtArcLength(minLimit);
-      let markerAngle = anchorCopy.center.angleToPoint(minPoint)
-        .perpendicular(anchorCopy.clockwise)
-      rac.Control.makeLimitMarkerSegment(minPoint, markerAngle)
-        .draw(pointerStyle);
-    }
-    if (maxLimit.turn > 0) {
-      let maxPoint = anchorCopy.reverse().pointAtArcLength(minLimit);
-      let markerAngle = anchorCopy.center.angleToPoint(maxPoint)
-        .perpendicular(!anchorCopy.clockwise)
-      rac.Control.makeLimitMarkerSegment(maxPoint, markerAngle)
-        .draw(pointerStyle);
-    }
-  }
+  // if (anchorCopy instanceof rac.Arc) {
+  //   minLimit = rac.Angle.from(minLimit);
+  //   maxLimit = rac.Angle.from(maxLimit);
+  //   if (minLimit.turn > 0) {
+  //     let minPoint = anchorCopy.pointAtArcLength(minLimit);
+  //     let markerAngle = anchorCopy.center.angleToPoint(minPoint)
+  //       .perpendicular(anchorCopy.clockwise)
+  //     rac.Control.makeLimitMarkerSegment(minPoint, markerAngle)
+  //       .draw(pointerStyle);
+  //   }
+  //   if (maxLimit.turn > 0) {
+  //     let maxPoint = anchorCopy.reverse().pointAtArcLength(minLimit);
+  //     let markerAngle = anchorCopy.center.angleToPoint(maxPoint)
+  //       .perpendicular(!anchorCopy.clockwise)
+  //     rac.Control.makeLimitMarkerSegment(maxPoint, markerAngle)
+  //       .draw(pointerStyle);
+  //   }
+  // }
 
   // Ray from pointer to control shadow center
   let draggedShadowCenter = rac.Control.selection.pointerOffset
@@ -1787,11 +1794,15 @@ rac.drawControls = function() {
 
   // Segment anchor
   if (anchorCopy instanceof rac.Segment) {
+    let length = anchorCopy.length();
+    let minClamp = length * unitMinLimit;
+    let maxClamp = length * (1 - unitMaxLimit);
+
+    // Clamp to limits
     let constrainedLength = anchorCopy
       .lengthToProjectedPoint(draggedShadowCenter);
-    // Clamp to limits
     constrainedLength = anchorCopy.clampToLength(constrainedLength,
-      minLimit, maxLimit);
+      minClamp, maxClamp);
 
     let constrainedAnchorCenter = anchorCopy
       .withLength(constrainedLength)
@@ -1886,14 +1897,34 @@ rac.Control = class RacControl {
     this.startValue = startValue;
     this.endValue = endValue;
 
-    // Limits to which the control can be dragged. Interpreted as the
-    // distance from the anchor `start` or `end`.
-    // TODO: limits should be relative to values? YES IMPLEMENT
-    this.minLimit = 0;
-    this.maxLimit = 0;
+    // Limits to which the control can be dragged. Interpreted as values
+    // from `startValue` to `endValue`.
+    this.minLimit = startValue;
+    this.maxLimit = endValue;
 
     this.style = null;
     this.anchor = null;
+  }
+
+  // Returns the `value` of the control in a [0,1] range.
+  unitValue() {
+    return this.unitOf(this.value);
+  }
+
+  // Returns the `minLimit` of the control in a [0,1] range.
+  unitMinLimit() {
+    return this.unitOf(this.minLimit);
+  }
+
+  // Returns the `maxLimit` of the control in a [0,1] range.
+  unitMaxLimit() {
+    return this.unitOf(this.maxLimit);
+  }
+
+  // Returns the equivalent of the given `value` in a [0,1] range.
+  unitOf(value) {
+    let valueRange = this.endValue - this.startValue;
+    return (value - this.startValue) / valueRange;
   }
 
   // Returns the distance from `anchor.start` to the control center.
@@ -1904,15 +1935,12 @@ rac.Control = class RacControl {
       return null;
     }
 
-    let valueRange = this.endValue - this.startValue;
-    let valueRatio = (this.value - this.startValue) / valueRange;
-
     if (this.anchor instanceof rac.Segment) {
-      return this.anchor.length() * valueRatio;
+      return this.anchor.length() * this.unitValue();
     }
 
     if (this.anchor instanceof rac.Arc) {
-      return this.anchor.arcLength().mult(valueRatio);
+      return this.anchor.arcLength().mult(this.unitValue());
     }
 
     console.trace(`Cannot produce control distance - anchor.constructorName:${this.anchor.constructor.name}`);
@@ -2005,13 +2033,13 @@ rac.Control.drawSegmentControl = function(control) {
     .popShapeToComposite();
 
   // Negative arrow
-  if (control.distance() >= control.minLimit + rac.equalityThreshold) {
+  if (control.value >= control.minLimit + rac.equalityThreshold) {
     rac.Control.makeArrowShape(center, anchor.angle().inverse())
       .attachToComposite();
   }
 
   // Positive arrow
-  if (control.distance() <= anchor.length() - control.maxLimit - rac.equalityThreshold) {
+  if (control.value <= control.maxLimit - rac.equalityThreshold) {
     rac.Control.makeArrowShape(center, anchor.angle())
       .attachToComposite();
   }
@@ -2039,17 +2067,15 @@ rac.Control.drawArcControl = function(control) {
   let relativeAngleValue = anchor.shiftAngle(angleValue);
 
   // Negative arrow
-  let minLimitAngle = rac.Angle.from(control.minLimit);
-  if (angleValue.turn >= minLimitAngle.turn + rac.equalityThreshold) {
+  if (control.value >= control.minLimit + rac.equalityThreshold) {
     let negAngle = relativeAngleValue.perpendicular(anchor.clockwise).inverse();
     rac.Control.makeArrowShape(center, negAngle)
       .attachToComposite();
   }
 
   // Positive arrow
-  let maxLimitAngle = rac.Angle.from(control.maxLimit);
   // TODO: what happens here with a limit that goes around the turn value?
-  if (angleValue.turn <= anchor.arcLength().turn - maxLimitAngle.turn - rac.equalityThreshold) {
+  if (control.value <= control.maxValue - rac.equalityThreshold) {
     let posAngle = relativeAngleValue.perpendicular(anchor.clockwise);
     rac.Control.makeArrowShape(center, posAngle)
       .attachToComposite();

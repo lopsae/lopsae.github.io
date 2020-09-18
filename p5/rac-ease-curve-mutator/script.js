@@ -29,6 +29,9 @@ function mouseReleased(event) {
 
 // let prefixControl = new rac.Control.make(100);
 let prefixControl = new rac.Control(.5);
+prefixControl.minLimit = 10/300;
+// TODO: do maxLimit makes more sense from the end?
+prefixControl.maxLimit = 1 - 10/300;
 rac.Control.controls.push(prefixControl);
 
 let inRangeControl = new rac.Control(.5);
@@ -50,6 +53,8 @@ let easeFactorControl = new rac.Control(1, -4, 4);
 rac.Control.controls.push(easeFactorControl);
 
 let prePostFactorControl = new rac.Control(1, 2, 0);
+prePostFactorControl.minLimit = 1.9;
+prePostFactorControl.maxLimit = 0.1;
 rac.Control.controls.push(prePostFactorControl);
 
 
