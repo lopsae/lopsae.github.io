@@ -1664,8 +1664,8 @@ rac.pointerDragged = function(pointerCenter){
   // Segment anchor
   if (anchorCopy instanceof rac.Segment) {
     let length = anchorCopy.length();
-    let minClamp = length * control.unitMinLimit();
-    let maxClamp = length * (1 - control.unitMaxLimit());
+    let minClamp = length * control.ratioMinLimit();
+    let maxClamp = length * (1 - control.ratioMaxLimit());
 
     // New value from the current pointer position, relative to anchorCopy
     newDistance = anchorCopy
@@ -1678,8 +1678,8 @@ rac.pointerDragged = function(pointerCenter){
   // Arc anchor
   if (anchorCopy instanceof rac.Arc) {
     let arcLength = anchorCopy.arcLength();
-    let minClamp = arcLength.mult(control.unitMinLimit());
-    let maxClamp = arcLength.mult(1 - control.unitMaxLimit());
+    let minClamp = arcLength.mult(control.ratioMinLimit());
+    let maxClamp = arcLength.mult(1 - control.ratioMaxLimit());
 
     let selectionAngle = anchorCopy.center
       .angleToPoint(currentPointerControlCenter);
@@ -1742,8 +1742,8 @@ rac.drawControls = function() {
   let anchorCopy = rac.Control.selection.anchorCopy;
   anchorCopy.draw(pointerStyle);
 
-  let unitMinLimit = rac.Control.selection.control.unitMinLimit();
-  let unitMaxLimit = rac.Control.selection.control.unitMaxLimit();
+  let ratioMinLimit = rac.Control.selection.control.ratioMinLimit();
+  let ratioMaxLimit = rac.Control.selection.control.ratioMaxLimit();
 
   // let minLimit = rac.Control.selection.control.minLimit;
   // let maxLimit = rac.Control.selection.control.maxLimit;
@@ -1795,8 +1795,8 @@ rac.drawControls = function() {
   // Segment anchor
   if (anchorCopy instanceof rac.Segment) {
     let length = anchorCopy.length();
-    let minClamp = length * unitMinLimit;
-    let maxClamp = length * (1 - unitMaxLimit);
+    let minClamp = length * ratioMinLimit;
+    let maxClamp = length * (1 - ratioMaxLimit);
 
     // Clamp to limits
     let constrainedLength = anchorCopy
@@ -1906,24 +1906,23 @@ rac.Control = class RacControl {
     this.anchor = null;
   }
 
-// TODO: rename unit to ratio
   // Returns the `value` of the control in a [0,1] range.
-  unitValue() {
-    return this.unitOf(this.value);
+  ratioValue() {
+    return this.ratioOf(this.value);
   }
 
   // Returns the `minLimit` of the control in a [0,1] range.
-  unitMinLimit() {
-    return this.unitOf(this.minLimit);
+  ratioMinLimit() {
+    return this.ratioOf(this.minLimit);
   }
 
   // Returns the `maxLimit` of the control in a [0,1] range.
-  unitMaxLimit() {
-    return this.unitOf(this.maxLimit);
+  ratioMaxLimit() {
+    return this.ratioOf(this.maxLimit);
   }
 
   // Returns the equivalent of the given `value` in a [0,1] range.
-  unitOf(value) {
+  ratioOf(value) {
     return (value - this.startValue) / this.valueRange();
   }
 
@@ -1946,11 +1945,11 @@ rac.Control = class RacControl {
     }
 
     if (this.anchor instanceof rac.Segment) {
-      return this.anchor.length() * this.unitValue();
+      return this.anchor.length() * this.ratioValue();
     }
 
     if (this.anchor instanceof rac.Arc) {
-      return this.anchor.arcLength().mult(this.unitValue());
+      return this.anchor.arcLength().mult(this.ratioValue());
     }
 
     console.trace(`Cannot produce control distance - anchor.constructorName:${this.anchor.constructor.name}`);
