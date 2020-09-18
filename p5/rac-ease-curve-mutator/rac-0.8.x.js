@@ -1911,6 +1911,9 @@ rac.Control = class RacControl {
     this.minLimit = startValue;
     this.maxLimit = endValue;
 
+    // Collection of values at which markers are drawn.
+    this.markers = [];
+
     this.style = null;
     this.anchor = null;
   }
@@ -2063,21 +2066,37 @@ rac.Control.drawSegmentControl = function(control) {
   let anchor = control.anchor;
   anchor.draw(control.style);
 
+  let angle = anchor.angle();
+
   // Control button
   let center = control.center();
   center.arc(rac.Control.radius)
     .attachToShape()
     .popShapeToComposite();
 
+  // Markers
+  if (control.markers.length > 0) {
+    let length = anchor.length();
+    control.markers.forEach(item => {
+      let markerRatio = control.ratioOf(item);
+      if (markerRatio >= 0 && markerRatio <= 1) {
+        let point = anchor.start.pointToAngle(angle, length * markerRatio);
+        rac.Control.makeMarkerSegment(point, angle)
+          .attachToComposite();
+      }
+    });
+  }
+
+// TODO: arrows not working for controls with negative direction
   // Negative arrow
   if (control.value >= control.minLimit + rac.equalityThreshold) {
-    rac.Control.makeArrowShape(center, anchor.angle().inverse())
+    rac.Control.makeArrowShape(center, angle.inverse())
       .attachToComposite();
   }
 
   // Positive arrow
   if (control.value <= control.maxLimit - rac.equalityThreshold) {
-    rac.Control.makeArrowShape(center, anchor.angle())
+    rac.Control.makeArrowShape(center, angle)
       .attachToComposite();
   }
 
@@ -2154,6 +2173,12 @@ rac.Control.makeArrowShape = function(center, angle) {
 rac.Control.makeLimitMarkerSegment = function(point, someAngle) {
   let angle = rac.Angle.from(someAngle);
   return point.segmentToAngle(angle.perpendicular(false), 7)
+    .withStartExtended(3);
+};
+
+rac.Control.makeMarkerSegment = function(point, someAngle) {
+  let angle = rac.Angle.from(someAngle);
+  return point.segmentToAngle(angle.perpendicular(), 3)
     .withStartExtended(3);
 };
 
