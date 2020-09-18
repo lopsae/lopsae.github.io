@@ -1840,11 +1840,10 @@ rac.Control.drawSegmentControl = function(control) {
   // Markers
   control.markers.forEach(item => {
     let markerRatio = control.ratioOf(item);
-    if (markerRatio >= 0 && markerRatio <= 1) {
-      let point = anchor.start.pointToAngle(angle, length * markerRatio);
-      rac.Control.makeMarkerSegment(point, angle)
-        .attachToComposite();
-    }
+    if (markerRatio < 0 || markerRatio > 1) { return }
+    let point = anchor.start.pointToAngle(angle, length * markerRatio);
+    rac.Control.makeMarkerSegment(point, angle)
+      .attachToComposite();
   });
 
   // Control button
@@ -1879,21 +1878,18 @@ rac.Control.drawArcControl = function(control) {
 
   let center = control.center();
   let angle = anchor.center.angleToPoint(center);
+  let arcLength = anchor.arcLength();
 
   // Markers
-  if (control.markers.length > 0) {
-    let arcLength = anchor.arcLength();
-    control.markers.forEach(item => {
-      let markerRatio = control.ratioOf(item);
-      if (markerRatio >= 0 && markerRatio <= 1) {
-        let markerArcLength = arcLength.mult(markerRatio);
-        let markerAngle = anchor.shiftAngle(markerArcLength);
-        let point = anchor.pointAtAngle(markerAngle);
-        rac.Control.makeMarkerSegment(point, markerAngle.perpendicular(anchor.clockwise).inverse())
-          .attachToComposite();
-      }
-    });
-  }
+  control.markers.forEach(item => {
+    let markerRatio = control.ratioOf(item);
+    if (markerRatio < 0 || markerRatio > 1) { return }
+    let markerArcLength = arcLength.mult(markerRatio);
+    let markerAngle = anchor.shiftAngle(markerArcLength);
+    let point = anchor.pointAtAngle(markerAngle);
+    rac.Control.makeMarkerSegment(point, markerAngle.perpendicular(!anchor.clockwise))
+      .attachToComposite();
+  });
 
   // Control button
   center.arc(rac.Control.radius)
@@ -2095,11 +2091,10 @@ rac.Control.drawControls = function() {
 
     control.markers.forEach(item => {
       let markerRatio = control.ratioOf(item);
-      if (markerRatio >= 0 && markerRatio <= 1) {
-        let markerPoint = anchorCopy.start.pointToAngle(angle, length * markerRatio);
-        rac.Control.makeMarkerSegment(markerPoint, angle)
-          .draw(pointerStyle);
-      }
+      if (markerRatio < 0 || markerRatio > 1) { return }
+      let markerPoint = anchorCopy.start.pointToAngle(angle, length * markerRatio);
+      rac.Control.makeMarkerSegment(markerPoint, angle)
+        .draw(pointerStyle);
     });
 
     if (ratioMinLimit > 0) {
@@ -2116,18 +2111,28 @@ rac.Control.drawControls = function() {
 
   // Markers for arc limits
   if (anchorCopy instanceof rac.Arc) {
-    // TODO: markers
+    let arcLength = anchorCopy.arcLength();
+
+    control.markers.forEach(item => {
+      let markerRatio = control.ratioOf(item);
+      if (markerRatio < 0 || markerRatio > 1) { return }
+      let markerAngle = anchorCopy.shiftAngle(arcLength.mult(markerRatio));
+      let markerPoint = anchorCopy.pointAtAngle(markerAngle);
+      rac.Control.makeMarkerSegment(markerPoint, markerAngle.perpendicular(!anchorCopy.clockwise))
+        .draw(pointerStyle)
+    });
+
     if (ratioMinLimit > 0) {
-      let minPoint = anchorCopy.pointAtArcLengthRatio(ratioMinLimit);
-      let markerAngle = anchorCopy.center.angleToPoint(minPoint)
-        .perpendicular(anchorCopy.clockwise)
+      let minAngle = anchorCopy.shiftAngle(arcLength.mult(ratioMinLimit));
+      let minPoint = anchorCopy.pointAtAngle(minAngle);
+      let markerAngle = minAngle.perpendicular(anchorCopy.clockwise);
       rac.Control.makeLimitMarkerSegment(minPoint, markerAngle)
         .draw(pointerStyle);
     }
     if (ratioMaxLimit < 1) {
-      let maxPoint = anchorCopy.pointAtArcLengthRatio(ratioMaxLimit);
-      let markerAngle = anchorCopy.center.angleToPoint(maxPoint)
-        .perpendicular(!anchorCopy.clockwise)
+      let maxAngle = anchorCopy.shiftAngle(arcLength.mult(ratioMaxLimit));
+      let maxPoint = anchorCopy.pointAtAngle(maxAngle);
+      let markerAngle = maxAngle.perpendicular(!anchorCopy.clockwise);
       rac.Control.makeLimitMarkerSegment(maxPoint, markerAngle)
         .draw(pointerStyle);
     }
