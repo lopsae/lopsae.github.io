@@ -1067,6 +1067,14 @@ rac.Arc = class RacArc {
       this.clockwise);
   }
 
+  withArcLength(newArcLength) {
+    let newEnd = this.angleAtArcLength(newArcLength);
+    return new rac.Arc(
+      this.center, this.radius,
+      this.start, newEnd,
+      this.clockwise);
+  }
+
   withEndTowardsPoint(point) {
     let newEnd = this.center.angleToPoint(point);
     return new rac.Arc(
@@ -1280,11 +1288,16 @@ rac.Arc.prototype.distanceFromStart = function(someAngle) {
   return this.start.distance(angle, this.clockwise);
 }
 
+// Returns the Angle at the given arc length from `start`. Equivalent to
+// `shiftAngle()`.
+rac.Arc.prototype.angleAtArcLength = function(someAngle) {
+  return this.shiftAngle(someAngle);
+}
+
 // Returns the point in the arc at the given angle shifted by `this.start`
 // in the arc orientation. The arc is considered a complete circle.
 rac.Arc.prototype.pointAtArcLength = function(someAngle) {
-  let angle = rac.Angle.from(someAngle);
-  let shiftedAngle = this.shiftAngle(angle);
+  let shiftedAngle = this.shiftAngle(someAngle);
   return this.pointAtAngle(shiftedAngle);
 };
 
@@ -1836,35 +1849,37 @@ rac.drawControls = function() {
 };
 
 
-// TODO: update use of value/distance
 // Control for manipulating a value with the pointer.
-// A control may have a Segment or Arc as the `anchor` shape.
-// For a Segment anchor the `value` and limits can be integers.
-// For an Arc achor the limits can be an integer or an Angle. `value`
-// can be set as a integer or Angle, but will be updated with an Angle
-// instance when the control is used.
+// A control may have a Segment or Arc as the `anchor` shape. By default
+// the control returns a `value` in the range [0,1] coresponding to the
+// location of the control center in the anchor shape. The range of value
+// can be modified with `startValue` and `endValue`.
+// An alternative value of the control is with the `distance()` function
+// which returns the distance from the start of the `anchor` shape.
 rac.Control = class RacControl {
 
-  // Radius of the cicle drawn for controls.
+  // Radius of the cicle drawn for the control center.
   static radius = 22;
 
-  // Collection of all controls that are drawn with `drawControls`
-  // and evaluated for selection with the `pointer...` functions.
+  // Collection of all controls that are drawn with `drawControls()`
+  // and evaluated for selection with the `pointer...()` functions.
   static controls = [];
 
-// Last Point of the pointer position when it was pressed, or last Control
-// interacted with. Set to `null` when there has been no interaction yet
-// and while there is a selected control.
+  // Last Point of the pointer position when it was pressed, or last
+  // Control interacted with. Set to `null` when there has been no
+  // interaction yet and while there is a selected control.
   static lastPointer = null;
 
-// Style used for visual elements related to selection and pointer interaction.
+  // Style used for visual elements related to selection and pointer
+  // interaction.
   static pointerStyle = null;
 
   // Selection information for the currently selected control, or `null` if
   // there is no selection.
   static selection = null;
 
-  // Creates a new Control instance with `value` and `limits` of zero.
+  // Creates a new Control instance with `value` and `limits` equal to
+  // `startValue` and `endValue`.
   constructor(value, startValue = 0, endValue = 1) {
     // Value is a number between startValue and endValue.
     this.value = value;
@@ -1873,7 +1888,7 @@ rac.Control = class RacControl {
 
     // Limits to which the control can be dragged. Interpreted as the
     // distance from the anchor `start` or `end`.
-    // TODO: limits should be relative to values?
+    // TODO: limits should be relative to values? YES IMPLEMENT
     this.minLimit = 0;
     this.maxLimit = 0;
 
@@ -1881,8 +1896,9 @@ rac.Control = class RacControl {
     this.anchor = null;
   }
 
-  // Returns the distance from `anchor.start`. Returns a number when using
-  // a Segment anchor, and returns an Angle when using an Arc anchor.
+  // Returns the distance from `anchor.start` to the control center.
+  // Returns a number when using a Segment anchor, or an Angle when using
+  // an Arc anchor.
   distance() {
     if (this.anchor === null) {
       return null;
@@ -1903,30 +1919,27 @@ rac.Control = class RacControl {
     throw rac.Error.invalidObjectToConvert;
   }
 
-  // Used by `pointerDragged` to update the state of the control along with
-  // user interaction through the pointer.
+  // Used by `pointerDragged` to update the state of the control along the
+  // user interaction with the pointer. Value can be updated regardless
+  // of `start/endValue` or `min/maxLimit`.
   updateDistance(newDistance) {
     // Needs anchor for further calculations
     if (this.anchor === null) {
       return;
     }
 
+    let lengthRatio;
     if (this.anchor instanceof rac.Segment) {
-      let lengthRatio = newDistance / this.anchor.length();
-      let valueRange = this.endValue - this.startValue;
-      this.value = this.startValue + lengthRatio * valueRange;
-      return;
+      lengthRatio = newDistance / this.anchor.length();
+    } else if (this.anchor instanceof rac.Arc) {
+      lengthRatio = newDistance.turn / this.anchor.arcLength().turn;
+    } else {
+      console.trace(`Cannot update control distance - anchor.constructorName:${this.anchor.constructor.name}`);
+      throw rac.Error.invalidObjectToConvert;
     }
 
-    if (this.anchor instanceof rac.Arc) {
-      let lengthRatio = newDistance.turn / this.anchor.arcLength().turn;
-      let valueRange = this.endValue - this.startValue;
-      this.value = this.startValue + lengthRatio * valueRange;
-      return;
-    }
-
-    console.trace(`Cannot update control distance - anchor.constructorName:${this.anchor.constructor.name}`);
-    throw rac.Error.invalidObjectToConvert;
+    let valueRange = this.endValue - this.startValue;
+    this.value = this.startValue + lengthRatio * valueRange;
   }
 
 
@@ -1939,7 +1952,7 @@ rac.Control = class RacControl {
       this.anchorCopy = control.anchor.copy();
       // Segment from the captured pointer position to the contro center,
       // used to attach the control to the point where interaction started.
-      // Starts at pointer and ends at control center.
+      // Pointer is at `segment.start` and control center is at `segment.end`.
       this.pointerOffset = rac.Point.mouse().segmentToPoint(control.center());
     }
   }
@@ -1956,9 +1969,7 @@ rac.Control.prototype.center = function() {
     return this.anchor.withLength(this.distance()).end;
   }
   if (this.anchor instanceof rac.Arc) {
-    return this.anchor.startSegment()
-      .arcWithArcLength(this.distance(), this.anchor.clockwise)
-      .endPoint();
+    return this.anchor.withArcLength(this.distance()).endPoint();
   }
 
   console.trace(`Cannot produce control center - anchor.constructorName:${this.anchor.constructor.name}`);
