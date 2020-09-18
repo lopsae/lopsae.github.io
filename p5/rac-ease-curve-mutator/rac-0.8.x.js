@@ -1460,18 +1460,38 @@ rac.Shape.prototype.addContour = function(element) {
 };
 
 
+// Implementation of an ease function with several options to tailor its
+// behaviour. The calculation takes the following steps:
+// Value is received, prefix is removed
+//   Value -> easeValue(value)
+//     value = value - prefix
+// Ratio is calculated
+//   ratio = value / inRange
+// Ratio is adjusted
+//   ratio -> easeRatio(ratio)
+//     adjustedRatio = (ratio + ratioOfset) * ratioFactor
+// Ease is calculated
+//   easedRatio = easeUnit(adjustedRatio)
+// EasedRatio is adjusted and returned
+//   easedRatio = (easedRatio + easeOfset) * easeFactor
+//   easeRatio(ratio) -> easedRatio
+// Value is projected
+//   easedValue = value * easedRatio
+// Value is adjusted and returned
+//   easedValue = prefix + (easedValue * outRange)
+//   easeValue(value) -> easedValue
 rac.EaseFunction = class RacEaseFunction {
 
-  // Behaviors for the `easeRange` function when `range` falls before the
-  // `prefix` and after the ease transformation.
+  // Behaviors for the `easeValue` function when `value` falls before the
+  // `prefix` and after `inRange`.
   static Behavior = {
-    // The `range` value is returned without any easing transformation and
-    // applying `preFactor` or `postFactor`.
+    // `value` is returned without any easing transformation. `preFactor`
+    // and `postFactor` are applied.
     pass: "pass",
-    // Clamps the returned value to `prefix` or `prefix+outRange`;
+    // Clamps the returned value to `prefix` or `prefix+inRange`;
     clamp: "clamp",
-    // The `range` is applied the easing transformation before `prefix`
-    // and after `outRange`.
+    // Returns the applied easing transformation to `value` for values
+    // before `prefix` and after `inRange`.
     continue: "continue"
   };
 
@@ -1483,20 +1503,32 @@ rac.EaseFunction = class RacEaseFunction {
     // ratioFactor = .5
     // easeOffset = -.5
     // easeFactor = 2
+
+    // Applied to ratio before easing.
     this.ratioOffset = 0
     this.ratioFactor = 1;
 
+    // Applied to easedRatio.
     this.easeOffset = 0
     this.easeFactor = 1;
 
+    // Defines the lower limit of `value`` to apply easing.
     this.prefix = 0;
+
+    // `value` is received in `inRange` and output in `outRange`.
     this.inRange = 1;
     this.outRange = 1;
 
+    // Behavior for values before `prefix`.
     this.preBehavior = rac.EaseFunction.Behavior.pass;
+    // Behavior for values after `prefix+inRange`.
     this.postBehavior = rac.EaseFunction.Behavior.pass;
 
+    // For a `preBehavior` of `pass`, the factor applied to values before
+    // `prefix`.
     this.preFactor = 1;
+    // For a `postBehavior` of `pass`, the factor applied to the values
+    // after `prefix+inRange`.
     this.postFactor = 1;
   }
 
@@ -1504,6 +1536,9 @@ rac.EaseFunction = class RacEaseFunction {
   // `unit` and the returned value are in the [0,1] range. If `unit` is
   // outside the [0,1] the returned value follows the curve of the easing
   // function, which may be invalid for some values of `a`.
+  //
+  // This function is the base easing function, it does not apply any
+  // offsets or factors.
   easeUnit(unit) {
     // Source:
     // https://math.stackexchange.com/questions/121720/ease-in-out-function/121755#121755
@@ -1513,21 +1548,27 @@ rac.EaseFunction = class RacEaseFunction {
     return ra / (ra + ira);
   }
 
+  // Returns the ease function applied to the given ratio. `ratioOffset`
+  // and `ratioFactor` are applied to the input, `easeOffset` and
+  // `easeFactor` are applied to the output.
   easeRatio(ratio) {
-    let complexRatio = (ratio + this.ratioOffset) * this.ratioFactor
-    return (this.easeUnit(complexRatio) + this.easeOffset) * this.easeFactor;
+    let adjustedRatio = (ratio + this.ratioOffset) * this.ratioFactor;
+    let easedRatio = this.easeUnit(adjustedRatio);
+    return (easedRatio + this.easeOffset) * this.easeFactor;
   }
 
-  easeRange(range) {
+  // Applies the easing function to `value` considering the configuration
+  // of the whole instance.
+  easeValue(value) {
     let behavior = rac.EaseFunction.Behavior;
 
-    let shiftedRange = range - this.prefix;
-    let ratio = shiftedRange / this.inRange;
+    let shiftedValue = value - this.prefix;
+    let ratio = shiftedValue / this.inRange;
 
     // Before prefix
-    if (range < this.prefix) {
+    if (value < this.prefix) {
       if (this.preBehavior === behavior.pass) {
-        let distancetoPrefix = range - this.prefix;
+        let distancetoPrefix = value - this.prefix;
         // With a preFactor of 1 this is equivalent to `return range`
         return this.prefix + (distancetoPrefix * this.preFactor);
       }
@@ -1545,12 +1586,13 @@ rac.EaseFunction = class RacEaseFunction {
 
     // After prefix
     if (ratio <= 1 || this.postBehavior === behavior.continue) {
+      // Ease function applied within range (or after)
       let easedRatio = this.easeRatio(ratio);
       return this.prefix + easedRatio * this.outRange;
     }
     if (this.postBehavior === behavior.pass) {
       // Shifted to have inRange as origin
-      let shiftedPost = shiftedRange - this.inRange;
+      let shiftedPost = shiftedValue - this.inRange;
       return this.prefix + this.outRange + shiftedPost * this.postFactor;
     }
     if (this.postBehavior === behavior.clamp) {
@@ -1783,7 +1825,7 @@ rac.drawControls = function() {
     let segmentToDraggedCenter = constrainedShadowCenter
       .segmentToPoint(draggedShadowCenter);
 
-    let easedLength = ease.easeRange(segmentToDraggedCenter.length());
+    let easedLength = ease.easeValue(segmentToDraggedCenter.length());
     segmentToDraggedCenter.withLength(easedLength).draw(pointerStyle);
   }
 

@@ -193,13 +193,13 @@ function draw() {
     utilEase.postFactor = prePostFactorControl.value;
 
     // Utility line
-    let utilLength = utilEase.easeRange(lineLength);
+    let utilLength = utilEase.easeValue(lineLength);
     lineStart.segmentToAngle(rac.Angle.e, utilLength).draw();
 
     // Continious line
     utilEase.preBehavior = rac.EaseFunction.Behavior.continue;
     utilEase.postBehavior = rac.EaseFunction.Behavior.continue;
-    let continuousLength = utilEase.easeRange(lineLength);
+    let continuousLength = utilEase.easeValue(lineLength);
     lineStart.pointToAngle(rac.Angle.s, continuousMarkerOffset)
       .segmentToAngle(rac.Angle.e, continuousLength).draw(continuousMarker);
 
@@ -213,7 +213,7 @@ function draw() {
     controlEase.postBehavior = rac.EaseFunction.Behavior.continue;
 
     // Control line
-    let controlLength = controlEase.easeRange(lineLength);
+    let controlLength = controlEase.easeValue(lineLength);
     lineStart.pointToAngle(rac.Angle.s, controlMarkerOffset)
       .segmentToAngle(rac.Angle.e, controlLength).draw(controlMarker);
 
