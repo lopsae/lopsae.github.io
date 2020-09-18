@@ -976,7 +976,7 @@ rac.Segment.prototype.segmentToIntersectionWithSegment = function(other) {
   return new rac.Segment(this.start, end);
 };
 
-// TODO: maybe rename to nextSegment? reevaluate "relative" vs shift
+// TODO: rename maybe to nextSegment? reevaluate "relative" vs shift
 rac.Segment.prototype.segmentToRelativeAngle = function(
   relativeAngle, distance, clockwise = true)
 {

@@ -38,19 +38,19 @@ let outRangeControl = new rac.Control(.5);
 rac.Control.controls.push(outRangeControl);
 
 let ratioOffsetControl = new rac.Control(0, 2, -2);
-ratioOffsetControl.markers = [0];
+ratioOffsetControl.markers = [1, 0, -1];
 rac.Control.controls.push(ratioOffsetControl);
 
-let ratioFactorControl = new rac.Control(1, 4, -4);
-ratioFactorControl.markers = [0];
+let ratioFactorControl = new rac.Control(1, 3, -3);
+ratioFactorControl.markers = [2, 1, 0, -1, -2];
 rac.Control.controls.push(ratioFactorControl);
 
 let easeOffsetControl = new rac.Control(0, -2, 2);
-easeOffsetControl.markers = [0];
+easeOffsetControl.markers = [-1, 0, 1];
 rac.Control.controls.push(easeOffsetControl);
 
-let easeFactorControl = new rac.Control(1, -4, 4);
-easeFactorControl.markers = [0];
+let easeFactorControl = new rac.Control(1, -3, 3);
+easeFactorControl.markers = [-2, -1, 0, 1, 2];
 rac.Control.controls.push(easeFactorControl);
 
 let prePostFactorControl = new rac.Control(1, 2, 0);
