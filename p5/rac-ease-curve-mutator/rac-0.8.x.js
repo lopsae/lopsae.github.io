@@ -2133,16 +2133,15 @@ rac.Control.drawArcControl = function(control) {
   center.arc(rac.Control.radius)
     .attachToComposite();
 
-// TODO: arrows not showing for controls with negative distance
   // Negative arrow
-  if (control.value >= control.minLimit + rac.equalityThreshold) {
+  if (control.ratioValue() >= control.ratioMinLimit() + rac.equalityThreshold) {
     let negAngle = angle.perpendicular(anchor.clockwise).inverse();
     rac.Control.makeArrowShape(center, negAngle)
       .attachToComposite();
   }
 
   // Positive arrow
-  if (control.value <= control.maxValue - rac.equalityThreshold) {
+  if (control.ratioValue() <= control.ratioMaxLimit() - rac.equalityThreshold) {
     let posAngle = angle.perpendicular(anchor.clockwise);
     rac.Control.makeArrowShape(center, posAngle)
       .attachToComposite();
