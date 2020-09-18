@@ -2086,15 +2086,16 @@ rac.Control.drawSegmentControl = function(control) {
   center.arc(rac.Control.radius)
     .attachToComposite();
 
-// TODO: arrows not working for controls with negative direction
+  let ratioValue = control.ratioValue();
+
   // Negative arrow
-  if (control.value >= control.minLimit + rac.equalityThreshold) {
+  if (ratioValue >= control.ratioMinLimit() + rac.equalityThreshold) {
     rac.Control.makeArrowShape(center, angle.inverse())
       .attachToComposite();
   }
 
   // Positive arrow
-  if (control.value <= control.maxLimit - rac.equalityThreshold) {
+  if (ratioValue <= control.ratioMaxLimit() - rac.equalityThreshold) {
     rac.Control.makeArrowShape(center, angle)
       .attachToComposite();
   }
@@ -2133,15 +2134,17 @@ rac.Control.drawArcControl = function(control) {
   center.arc(rac.Control.radius)
     .attachToComposite();
 
+  let ratioValue = control.ratioValue();
+
   // Negative arrow
-  if (control.ratioValue() >= control.ratioMinLimit() + rac.equalityThreshold) {
+  if (ratioValue >= control.ratioMinLimit() + rac.equalityThreshold) {
     let negAngle = angle.perpendicular(anchor.clockwise).inverse();
     rac.Control.makeArrowShape(center, negAngle)
       .attachToComposite();
   }
 
   // Positive arrow
-  if (control.ratioValue() <= control.ratioMaxLimit() - rac.equalityThreshold) {
+  if (ratioValue <= control.ratioMaxLimit() - rac.equalityThreshold) {
     let posAngle = angle.perpendicular(anchor.clockwise);
     rac.Control.makeArrowShape(center, posAngle)
       .attachToComposite();
