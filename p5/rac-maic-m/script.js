@@ -10,37 +10,32 @@ function setup() {
 
 
 function mousePressed(event) {
-  rac.pointerPressed(rac.Point.mouse());
+  rac.Control.pointerPressed(rac.Point.mouse());
   redraw();
 }
 
 
 function mouseDragged(event) {
-  rac.pointerDragged(rac.Point.mouse());
+  rac.Control.pointerDragged(rac.Point.mouse());
   redraw();
 }
 
 
 function mouseReleased(event) {
-  rac.pointerReleased(rac.Point.mouse());
+  rac.Control.pointerReleased(rac.Point.mouse());
   redraw();
 }
 
 
-let wideControl = new rac.Control();
-wideControl.value = 120;
-wideControl.minLimit = 10;
-wideControl.maxLimit = 10;
+let wideControl = new rac.Control(.5, 240);
+wideControl.setRatioClamp(10/240, 10/240);
 rac.Control.controls.push(wideControl);
 
-let thinControl = new rac.Control();
-thinControl.value = 10;
+let thinControl = new rac.Control(.05, 200);
 rac.Control.controls.push(thinControl);
 
-let angleControl = new rac.Control();
-angleControl.value = rac.Angle.from(1/8);
-angleControl.minLimit = 1/100;
-angleControl.maxLimit = 1/100;
+let angleControl = new rac.Control(.5, rac.Angle.quarter);
+angleControl.setRatioClamp(0.05, 0.05);
 rac.Control.controls.push(angleControl);
 
 
@@ -78,9 +73,9 @@ function draw() {
   let start = new rac.Point(width * 1/4, height * 2/3);
 
   // Widths for drawing
-  let wide = wideControl.value;
-  let thin = thinControl.value;
-  let angle = angleControl.value.negative();
+  let wide = wideControl.distance();
+  let thin = thinControl.distance();
+  let angle = angleControl.distance().negative();
 
 
   // Wide control
@@ -88,7 +83,7 @@ function draw() {
     .segmentToAngle(rac.Angle.s, rac.Control.radius * 2)
     .draw()
     // TODO: range of control could be a control property?
-    .nextSegmentToAngle(rac.Angle.e, 250);
+    .nextSegmentToAngle(rac.Angle.e, 240);
 
   wideControl.center()
     .segmentToAngle(rac.Angle.n, rac.Control.radius * 2)
@@ -183,7 +178,7 @@ function draw() {
 
 
   // Controls draw on top
-  rac.drawControls();
+  rac.Control.drawControls();
 
   console.log(`👑 ~finis coronat opus ${Date.now()}`);
 }
