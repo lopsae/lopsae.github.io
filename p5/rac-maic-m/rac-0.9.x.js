@@ -1673,12 +1673,13 @@ rac.Control = class RacControl {
   // there is no selection.
   static selection = null;
 
-  // Creates a new Control instance with `value` and `limits` equal to
-  // `startValue` and `endValue`.
+  // Creates a new Control instance with the given `value` and `length`.
+  // By default the value range is [0,1] and limits are set to be the equal
+  // as `startValue` and `endValue`.
   constructor(value, length, startValue = 0, endValue = 1) {
     // Value is a number between startValue and endValue.
     this.value = value;
-    // TODO: length currently used only when anchor is missing
+    // Length for the copied anchor shape.
     this.length = length;
 
     this.startValue = startValue;
@@ -1693,6 +1694,10 @@ rac.Control = class RacControl {
     this.markers = [];
 
     this.style = null;
+
+    // Shape to which the control will be anchored. When the control is
+    // drawn and interacted a copy of the anchor is created with the
+    // control's `length`.
     this.anchor = null;
   }
 
@@ -1730,26 +1735,16 @@ rac.Control = class RacControl {
   // Returns a number when using a Segment anchor, or an Angle when using
   // an Arc anchor.
   distance() {
-    if (this.anchor === null) {
-      // TODO: likely will need to have different classes for each control anchor
-      if (typeof this.length === "number") {
-        return this.length * this.ratioValue();
-      }
-      if (this.length instanceof rac.Angle) {
-        return this.length.mult(this.ratioValue());
-      }
-      throw "dummyError";
+    // TODO: likely will need to have different classes for each control anchor
+    // to properly separate this code
+    if (typeof this.length === "number") {
+      return this.length * this.ratioValue();
+    }
+    if (this.length instanceof rac.Angle) {
+      return this.length.mult(this.ratioValue());
     }
 
-    if (this.anchor instanceof rac.Segment) {
-      return this.anchor.length() * this.ratioValue();
-    }
-
-    if (this.anchor instanceof rac.Arc) {
-      return this.anchor.arcLength().mult(this.ratioValue());
-    }
-
-    console.trace(`Cannot produce control distance - anchor.constructorName:${this.anchor.constructor.name}`);
+    console.trace(`Cannot produce control distance - length-type:${this.length.constructor.name ?? typeof this.length}`);
     throw rac.Error.invalidObjectToConvert;
   }
 
@@ -1757,27 +1752,21 @@ rac.Control = class RacControl {
   // user interaction with the pointer. Value can be updated regardless
   // of `start/endValue` or `min/maxLimit`.
   updateDistance(newDistance) {
-    // Needs anchor for further calculations
-    if (this.anchor === null) {
-      // TODO: what happens with this and length?
-      return;
-    }
-
     let lengthRatio;
-    if (this.anchor instanceof rac.Segment) {
-      lengthRatio = newDistance / this.anchor.length();
-    } else if (this.anchor instanceof rac.Arc) {
-      lengthRatio = newDistance.turn / this.anchor.arcLength().turn;
-    } else {
-      console.trace(`Cannot update control distance - anchor.constructorName:${this.anchor.constructor.name}`);
+    if (typeof this.length === "number") {
+      lengthRatio = newDistance / this.length;
+    } else if (this.length instanceof rac.Angle) {
+      lengthRatio = newDistance.turn / this.length.turn;
+    }else {
+      console.trace(`Cannot update control distance - length-type:${this.length.constructor.name ?? typeof this.length}`);
       throw rac.Error.invalidObjectToConvert;
     }
 
     this.value = this.valueOf(lengthRatio);
   }
 
-  // Sets `minLimit` and `maxLimit` through two clamping values that are
-  // relative to the value range.
+  // Sets `minLimit` and `maxLimit` through two clamping values relative
+  // to the value range.
   // `minClamp` is added to `startValue` while `maxClamp` is substracted
   // from `endValue`, in the direction of the value range.
   setValueClamp(minClamp, maxClamp) {
@@ -1787,8 +1776,8 @@ rac.Control = class RacControl {
     this.maxLimit = this.endValue - (maxClamp * rangeDirection);
   }
 
-  // Sets `minLimit` and `maxLimit` through two clamping ratios that are
-  // relative to the [0,1] range.
+  // Sets `minLimit` and `maxLimit` through two clamping values relative
+  // to the [0,1] range.
   // `minClamp` is added to `startValue` while `maxClamp` is substracted
   // from `endValue`, in the direction of the value range.
   setRatioClamp(minClamp, maxClamp) {
@@ -1796,9 +1785,11 @@ rac.Control = class RacControl {
     this.maxLimit = this.valueOf(1 - maxClamp);
   }
 
+  // TODO: implement setLengthClamp!
+
   center() {
-    // TODO: what happens with this and length?
     if (this.anchor === null) {
+      // Not posible to calculate a center
       return null;
     }
 
@@ -1809,7 +1800,25 @@ rac.Control = class RacControl {
       return this.anchor.withArcLength(this.distance()).endPoint();
     }
 
-    console.trace(`Cannot produce control center - anchor.constructorName:${this.anchor.constructor.name}`);
+    console.trace(`Cannot produce control center - anchor-type:${this.anchor.constructor.name ?? typeof this.anchor}`);
+    throw rac.Error.invalidObjectToConvert;
+  }
+
+  // Creates a copy of the current `anchor` with the control `length`.
+  anchorWithLength() {
+    if (this.anchor === null) {
+      // No anchor to copy
+      return null;
+    }
+
+    if (this.anchor instanceof rac.Segment) {
+      return this.anchor.withLength(this.length);
+    }
+    if (this.anchor instanceof rac.Arc) {
+      return this.anchor.withArcLength(this.length);
+    }
+
+    console.trace(`Cannot produce anchor with length - anchor-type:${this.anchor.constructor.name ?? typeof this.anchor}`);
     throw rac.Error.invalidObjectToConvert;
   }
 
@@ -1831,14 +1840,13 @@ rac.Control = class RacControl {
     }
   }
 
-
   static Selection = class RacControlSelection{
     constructor(control) {
       // Selected control instance.
       this.control = control;
       // Copy of the control anchor, so that the control can move tied to
       // the drawing, while the interaction range remains fixed.
-      this.anchorCopy = control.anchor.copy();
+      this.anchorCopy = control.anchorWithLength();
       // Segment from the captured pointer position to the contro center,
       // used to attach the control to the point where interaction started.
       // Pointer is at `segment.start` and control center is at `segment.end`.
@@ -1852,18 +1860,17 @@ rac.Control = class RacControl {
 // Controls drawing elements
 
 rac.Control.drawSegmentControl = function(control) {
-  let anchor = control.anchor;
+  let anchor = control.anchorWithLength();
   anchor.draw(control.style);
 
   let center = control.center();
   let angle = anchor.angle();
-  let length = anchor.length();
 
   // Markers
   control.markers.forEach(item => {
     let markerRatio = control.ratioOf(item);
     if (markerRatio < 0 || markerRatio > 1) { return }
-    let point = anchor.start.pointToAngle(angle, length * markerRatio);
+    let point = anchor.start.pointToAngle(angle, this.length * markerRatio);
     rac.Control.makeMarkerSegment(point, angle)
       .attachToComposite();
   });
@@ -1895,18 +1902,17 @@ rac.Control.drawSegmentControl = function(control) {
 };
 
 rac.Control.drawArcControl = function(control) {
-  let anchor = control.anchor;
+  let anchor = control.anchorWithLength();
   anchor.draw(control.style.withFill(rac.Fill.none));
 
   let center = control.center();
   let angle = anchor.center.angleToPoint(center);
-  let arcLength = anchor.arcLength();
 
   // Markers
   control.markers.forEach(item => {
     let markerRatio = control.ratioOf(item);
     if (markerRatio < 0 || markerRatio > 1) { return }
-    let markerArcLength = arcLength.mult(markerRatio);
+    let markerArcLength = this.length.mult(markerRatio);
     let markerAngle = anchor.shiftAngle(markerArcLength);
     let point = anchor.pointAtAngle(markerAngle);
     rac.Control.makeMarkerSegment(point, markerAngle.perpendicular(!anchor.clockwise))
@@ -1987,6 +1993,7 @@ rac.Control.makeMarkerSegment = function(point, someAngle) {
 rac.Control.pointerPressed = function(pointerCenter) {
   rac.Control.lastPointer = null;
 
+  // Test pointer hit
   let selected = rac.Control.controls.find(item => {
     let controlCenter = item.center();
     if (controlCenter === null) { return false; }
