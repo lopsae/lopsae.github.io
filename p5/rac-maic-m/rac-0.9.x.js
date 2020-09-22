@@ -1746,26 +1746,20 @@ rac.Control = class RacControl {
     return this.endValue - this.startValue;
   }
 
-  // TODO: rename to setLimitsByValueInsets
-  // Sets `startLimit` and `endLimit` through two clamping values relative
-  // to the value range.
-  // `minClamp` is added to `startValue` while `maxClamp` is substracted
-  // from `endValue`, in the direction of the value range.
-  setValueClamp(minClamp, maxClamp) {
+  // Sets `startLimit` and `endLimit` with two inset values relative to
+  // `startValue` and `endValue`.
+  setLimitsWithValueInsets(startInset, endInset) {
     let rangeDirection = this.valueRange() >= 0 ? 1 : -1;
 
-    this.startLimit = this.startValue + (minClamp * rangeDirection);
-    this.endLimit = this.endValue - (maxClamp * rangeDirection);
+    this.startLimit = this.startValue + (startInset * rangeDirection);
+    this.endLimit = this.endValue - (endInset * rangeDirection);
   }
 
-  // TODO: rename to setLimitsByRatioInsets
-  // Sets `startLimit` and `endLimit` through two clamping values relative
-  // to the [0,1] range.
-  // `minClamp` is added to `startValue` while `maxClamp` is substracted
-  // from `endValue`, in the direction of the value range.
-  setRatioClamp(minClamp, maxClamp) {
-    this.startLimit = this.valueOf(minClamp);
-    this.endLimit = this.valueOf(1 - maxClamp);
+  // Sets `startLimit` and `endLimit` with two inset values relative to the
+  // [0,1] range.
+  setLimitsWithRatioInsets(startInset, endInset) {
+    this.startLimit = this.valueOf(startInset);
+    this.endLimit = this.valueOf(1 - endInset);
   }
 
   // Returns `true` if this control is the currently selected control.
