@@ -2150,12 +2150,13 @@ rac.SegmentControl = class RacSegmentControl extends rac.BaseControl {
 
     // Limit markers
     let ratioMinLimit = this.ratioMinLimit();
-    let ratioMaxLimit = this.ratioMaxLimit();
     if (ratioMinLimit > 0) {
       let minPoint = anchorCopy.start.pointToAngle(angle, length * ratioMinLimit);
       rac.Control.makeLimitMarkerSegment(minPoint, angle)
         .draw(pointerStyle);
     }
+
+    let ratioMaxLimit = this.ratioMaxLimit();
     if (ratioMaxLimit < 1) {
       let maxPoint = anchorCopy.start.pointToAngle(angle, length * ratioMaxLimit);
       rac.Control.makeLimitMarkerSegment(maxPoint, angle.inverse())
@@ -2217,6 +2218,128 @@ rac.SegmentControl = class RacSegmentControl extends rac.BaseControl {
 
     let easedLength = easeOut.easeValue(draggedTail.length());
     draggedTail.withLength(easedLength).draw(pointerStyle);
+  }
+
+}
+
+
+// Control that uses an Arc as anchor.
+rac.ArcControl = class RacArcControl extends rac.BaseControl {
+
+  // Creates a new Control instance with the given `value` and an
+  // `arcLength` from `someArcLength`.
+  // By default the value range is [0,1] and limits are set to be the equal
+  // as `startValue` and `endValue`.
+  constructor(value, someArcLength, startValue = 0, endValue = 1) {
+    super(value, startValue, endValue);
+
+    // ArcLength for the copied anchor shape.
+    this.arcLength = rac.Angle.from(someArcLength);
+
+    // Arc to which the control will be anchored. When the control is
+    // drawn and interacted a copy of the anchor is created with the
+    // control's `arcLength`.
+    this.anchor = null;
+  }
+
+  // Returns the distance from `anchor.start` to the control center.
+  distance() {
+    return this.arcLength.mult(this.ratioValue());
+  }
+
+  // Used by `pointerDragged` to update the state of the control along the
+  // user interaction with the pointer. Value can be updated regardless
+  // of `start/endValue` or `min/maxLimit`.
+  // TODO: delete if used once
+  updateDistance(newDistance) {
+    let lengthRatio = newDistance.turn / this.arcLength.turn;
+    this.value = this.valueOf(lengthRatio);
+  }
+
+  center() {
+    // TODO: single line anchor === null lines
+    if (this.anchor === null) {
+      // Not posible to calculate a center
+      return null;
+    }
+    return this.anchor.withArcLength(this.distance()).endPoint();
+  }
+
+  // Creates a copy of the current `anchor` with the control's `arcLength`.
+  copyAnchor() {
+    if (this.anchor === null) {
+      // No anchor to copy
+      return null;
+    }
+    return this.anchor.withArcLength(this.arcLength);
+  }
+
+  draw() {
+    // TODO: copy code here
+    rac.Control.drawArcControl(this);
+  }
+
+  updateWithPointer(pointerControlCenter, anchorCopy) {
+    let arcLength = anchorCopy.arcLength();
+    let minClamp = arcLength.mult(this.ratioMinLimit());
+    let maxClamp = arcLength.mult(1 - this.ratioMaxLimit());
+
+    let selectionAngle = anchorCopy.center
+      .angleToPoint(pointerControlCenter);
+    selectionAngle = anchorCopy.clampToArcLength(selectionAngle,
+      minClamp, maxClamp);
+    let newDistance = anchorCopy.distanceFromStart(selectionAngle);
+
+    // Update control with new distance
+    this.updateDistance(newDistance);
+  }
+
+  drawSelection(pointerCenter, anchorCopy, pointerOffset) {
+    let pointerStyle = rac.Control.pointerStyle;
+    // TODO: do all drawing with composite
+    anchorCopy.draw(pointerStyle);
+
+    let arcLength = anchorCopy.arcLength();
+
+    // Custom markers
+    this.markers.forEach(item => {
+      let markerRatio = this.ratioOf(item);
+      if (markerRatio < 0 || markerRatio > 1) { return }
+      let markerAngle = anchorCopy.shiftAngle(arcLength.mult(markerRatio));
+      let markerPoint = anchorCopy.pointAtAngle(markerAngle);
+      rac.Control.makeMarkerSegment(markerPoint, markerAngle.perpendicular(!anchorCopy.clockwise))
+        .draw(pointerStyle)
+    });
+
+    // Limit markers
+    let ratioMinLimit = this.ratioMinLimit();
+    if (ratioMinLimit > 0) {
+      let minAngle = anchorCopy.shiftAngle(arcLength.mult(ratioMinLimit));
+      let minPoint = anchorCopy.pointAtAngle(minAngle);
+      let markerAngle = minAngle.perpendicular(anchorCopy.clockwise);
+      rac.Control.makeLimitMarkerSegment(minPoint, markerAngle)
+        .draw(pointerStyle);
+    }
+
+    let ratioMaxLimit = this.ratioMaxLimit();
+    if (ratioMaxLimit < 1) {
+      let maxAngle = anchorCopy.shiftAngle(arcLength.mult(ratioMaxLimit));
+      let maxPoint = anchorCopy.pointAtAngle(maxAngle);
+      let markerAngle = maxAngle.perpendicular(!anchorCopy.clockwise);
+      rac.Control.makeLimitMarkerSegment(maxPoint, markerAngle)
+        .draw(pointerStyle);
+    }
+
+    // Segment from pointer to control dragged center
+    let draggedCenter = pointerOffset
+      .translateToStart(pointerCenter)
+      .end;
+
+    // Control dragged center, attached to pointer
+    draggedCenter.arc(2)
+      .draw(pointerStyle);
+
+    // TODO: implement arc control dragging visuals!
   }
 
 }

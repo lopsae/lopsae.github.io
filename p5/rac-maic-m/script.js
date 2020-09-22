@@ -35,7 +35,7 @@ rac.Control.controls.push(wideControl);
 let thinControl = new rac.SegmentControl(.05, 200);
 rac.Control.controls.push(thinControl);
 
-let angleControl = new rac.Control(.5, rac.Angle.quarter);
+let angleControl = new rac.ArcControl(.5, 1/4);
 angleControl.setRatioClamp(0.05, 0.05);
 rac.Control.controls.push(angleControl);
 
