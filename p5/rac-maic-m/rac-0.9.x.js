@@ -744,16 +744,16 @@ rac.Segment = class RacSegment {
     return new rac.Segment(this.start, newEnd);
   }
 
-  // Returns `value` clamped to zero and the length of the segment. If
-  // `minClamp` or `maxClamp` are provided, these are added to zero or
-  // substracted from the length value for the clamp.
-  // If the `min/maxClamp` values result in a contradictory range, the
-  // returned value will comply with `minClamp`.
-  clampToLength(value, minClamp = 0, maxClamp = 0) {
+  // Returns `value` clamped to the given insets from zero and the length
+  // of the segment.
+  // TODO: invalid range could return a value centered in the insets! more visually congruent
+  // If the `min/maxInset` values result in a contradictory range, the
+  // returned value will comply with `minInset`.
+  clampToLengthInsets(value, startInset = 0, endInset = 0) {
     let clamped = value;
-    clamped = Math.min(clamped, this.length() - maxClamp);
+    clamped = Math.min(clamped, this.length() - endInset);
     // Comply at least with minClamp
-    clamped = Math.max(clamped, minClamp);
+    clamped = Math.max(clamped, startInset);
     return clamped;
   }
 
@@ -1107,6 +1107,7 @@ rac.Arc = class RacArc {
   // complete circle arcs.
   // If the `min/maxClamp` values result in a contradictory range, the
   // returned value will comply with `minClamp + this.start`.
+  // TODO: rename to clampToArcLengthInsets
   clampToArcLength(someAngle, someAngleMinClamp = rac.Angle.zero, someAngleMaxClamp = rac.Angle.zero) {
     let angle = rac.Angle.from(someAngle);
     let minClamp = rac.Angle.from(someAngleMinClamp);
@@ -1896,15 +1897,15 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
 
   updateWithPointer(pointerControlCenter, anchorCopy) {
     let length = anchorCopy.length();
-    let minClamp = length * this.ratioStartLimit();
-    let maxClamp = length * (1 - this.ratioEndLimit());
+    let startInset = length * this.ratioStartLimit();
+    let endInset = length * (1 - this.ratioEndLimit());
 
     // New value from the current pointer position, relative to anchorCopy
     let newDistance = anchorCopy
       .lengthToProjectedPoint(pointerControlCenter);
     // Clamping value (javascript has no Math.clamp)
-    newDistance = anchorCopy.clampToLength(newDistance,
-      minClamp, maxClamp);
+    newDistance = anchorCopy.clampToLengthInsets(newDistance,
+      startInset, endInset);
 
     // Update control with new distance
     let lengthRatio = newDistance / length;
@@ -1953,10 +1954,10 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
     // Constrained length clamped to limits
     let constrainedLength = anchorCopy
       .lengthToProjectedPoint(draggedCenter);
-    let minClamp = length * ratioStartLimit;
-    let maxClamp = length * (1 - ratioEndLimit);
-    constrainedLength = anchorCopy.clampToLength(constrainedLength,
-      minClamp, maxClamp);
+    let startInset = length * ratioStartLimit;
+    let endInset = length * (1 - ratioEndLimit);
+    constrainedLength = anchorCopy.clampToLengthInsets(constrainedLength,
+      startInset, endInset);
 
     let constrainedAnchorCenter = anchorCopy
       .withLength(constrainedLength)
