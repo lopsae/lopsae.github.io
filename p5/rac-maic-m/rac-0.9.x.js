@@ -1703,10 +1703,10 @@ rac.Control = class RacControl {
     this.startValue = startValue;
     this.endValue = endValue;
 
-    // Limits to which the control can be dragged. Interpreted as values
-    // within the value-range.
-    this.minLimit = startValue;
-    this.maxLimit = endValue;
+    // Limits to which the control can be dragged. Interpreted as values in
+    // the value-range.
+    this.startLimit = startValue;
+    this.endLimit = endValue;
 
     // Collection of values at which markers are drawn.
     this.markers = [];
@@ -1719,14 +1719,14 @@ rac.Control = class RacControl {
     return this.ratioOf(this.value);
   }
 
-  // Returns the `minLimit` of the control in a [0,1] range.
-  ratioMinLimit() {
-    return this.ratioOf(this.minLimit);
+  // Returns the `startLimit` of the control in a [0,1] range.
+  ratioStartLimit() {
+    return this.ratioOf(this.startLimit);
   }
 
-  // Returns the `maxLimit` of the control in a [0,1] range.
-  ratioMaxLimit() {
-    return this.ratioOf(this.maxLimit);
+  // Returns the `endLimit` of the control in a [0,1] range.
+  ratioEndLimit() {
+    return this.ratioOf(this.endLimit);
   }
 
   // Returns the equivalent of the given `value` in a [0,1] range.
@@ -1744,24 +1744,26 @@ rac.Control = class RacControl {
     return this.endValue - this.startValue;
   }
 
-  // Sets `minLimit` and `maxLimit` through two clamping values relative
+  // TODO: rename to setLimitsByValueInsets
+  // Sets `startLimit` and `endLimit` through two clamping values relative
   // to the value range.
   // `minClamp` is added to `startValue` while `maxClamp` is substracted
   // from `endValue`, in the direction of the value range.
   setValueClamp(minClamp, maxClamp) {
     let rangeDirection = this.valueRange() >= 0 ? 1 : -1;
 
-    this.minLimit = this.startValue + (minClamp * rangeDirection);
-    this.maxLimit = this.endValue - (maxClamp * rangeDirection);
+    this.startLimit = this.startValue + (minClamp * rangeDirection);
+    this.endLimit = this.endValue - (maxClamp * rangeDirection);
   }
 
-  // Sets `minLimit` and `maxLimit` through two clamping values relative
+  // TODO: rename to setLimitsByRatioInsets
+  // Sets `startLimit` and `endLimit` through two clamping values relative
   // to the [0,1] range.
   // `minClamp` is added to `startValue` while `maxClamp` is substracted
   // from `endValue`, in the direction of the value range.
   setRatioClamp(minClamp, maxClamp) {
-    this.minLimit = this.valueOf(minClamp);
-    this.maxLimit = this.valueOf(1 - maxClamp);
+    this.startLimit = this.valueOf(minClamp);
+    this.endLimit = this.valueOf(1 - maxClamp);
   }
 
   // Returns `true` if this control is the currently selected control.
@@ -1832,8 +1834,9 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
     // control's `length`.
     this.anchor = null;
   }
-
+  // TODO: rename clamp functions to inset!
   // TODO: implement setLengthClamp!
+
 
   // Returns the distance from `anchor.start` to the control center.
   distance() {
@@ -1876,13 +1879,13 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
     let ratioValue = this.ratioValue();
 
     // Negative arrow
-    if (ratioValue >= this.ratioMinLimit() + rac.equalityThreshold) {
+    if (ratioValue >= this.ratioStartLimit() + rac.equalityThreshold) {
       rac.Control.makeArrowShape(center, angle.inverse())
         .attachToComposite();
     }
 
     // Positive arrow
-    if (ratioValue <= this.ratioMaxLimit() - rac.equalityThreshold) {
+    if (ratioValue <= this.ratioEndLimit() - rac.equalityThreshold) {
       rac.Control.makeArrowShape(center, angle)
         .attachToComposite();
     }
@@ -1897,8 +1900,8 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
 
   updateWithPointer(pointerControlCenter, anchorCopy) {
     let length = anchorCopy.length();
-    let minClamp = length * this.ratioMinLimit();
-    let maxClamp = length * (1 - this.ratioMaxLimit());
+    let minClamp = length * this.ratioStartLimit();
+    let maxClamp = length * (1 - this.ratioEndLimit());
 
     // New value from the current pointer position, relative to anchorCopy
     let newDistance = anchorCopy
@@ -1928,16 +1931,16 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
     });
 
     // Limit markers
-    let ratioMinLimit = this.ratioMinLimit();
-    if (ratioMinLimit > 0) {
-      let minPoint = anchorCopy.start.pointToAngle(angle, length * ratioMinLimit);
+    let ratioStartLimit = this.ratioStartLimit();
+    if (ratioStartLimit > 0) {
+      let minPoint = anchorCopy.start.pointToAngle(angle, length * ratioStartLimit);
       rac.Control.makeLimitMarkerSegment(minPoint, angle)
         .attachToComposite();
     }
 
-    let ratioMaxLimit = this.ratioMaxLimit();
-    if (ratioMaxLimit < 1) {
-      let maxPoint = anchorCopy.start.pointToAngle(angle, length * ratioMaxLimit);
+    let ratioEndLimit = this.ratioEndLimit();
+    if (ratioEndLimit < 1) {
+      let maxPoint = anchorCopy.start.pointToAngle(angle, length * ratioEndLimit);
       rac.Control.makeLimitMarkerSegment(maxPoint, angle.inverse())
         .attachToComposite();
     }
@@ -1954,8 +1957,8 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
     // Constrained length clamped to limits
     let constrainedLength = anchorCopy
       .lengthToProjectedPoint(draggedCenter);
-    let minClamp = length * ratioMinLimit;
-    let maxClamp = length * (1 - ratioMaxLimit);
+    let minClamp = length * ratioStartLimit;
+    let maxClamp = length * (1 - ratioEndLimit);
     constrainedLength = anchorCopy.clampToLength(constrainedLength,
       minClamp, maxClamp);
 
@@ -2067,14 +2070,14 @@ rac.ArcControl = class RacArcControl extends rac.Control {
     let ratioValue = this.ratioValue();
 
     // Negative arrow
-    if (ratioValue >= this.ratioMinLimit() + rac.equalityThreshold) {
+    if (ratioValue >= this.ratioStartLimit() + rac.equalityThreshold) {
       let negAngle = angle.perpendicular(anchorCopy.clockwise).inverse();
       rac.Control.makeArrowShape(center, negAngle)
         .attachToComposite();
     }
 
     // Positive arrow
-    if (ratioValue <= this.ratioMaxLimit() - rac.equalityThreshold) {
+    if (ratioValue <= this.ratioEndLimit() - rac.equalityThreshold) {
       let posAngle = angle.perpendicular(anchorCopy.clockwise);
       rac.Control.makeArrowShape(center, posAngle)
         .attachToComposite();
@@ -2090,8 +2093,8 @@ rac.ArcControl = class RacArcControl extends rac.Control {
 
   updateWithPointer(pointerControlCenter, anchorCopy) {
     let arcLength = anchorCopy.arcLength();
-    let minClamp = arcLength.mult(this.ratioMinLimit());
-    let maxClamp = arcLength.mult(1 - this.ratioMaxLimit());
+    let minClamp = arcLength.mult(this.ratioStartLimit());
+    let maxClamp = arcLength.mult(1 - this.ratioEndLimit());
 
     let selectionAngle = anchorCopy.center
       .angleToPoint(pointerControlCenter);
@@ -2120,18 +2123,18 @@ rac.ArcControl = class RacArcControl extends rac.Control {
     });
 
     // Limit markers
-    let ratioMinLimit = this.ratioMinLimit();
-    if (ratioMinLimit > 0) {
-      let minAngle = anchorCopy.shiftAngle(arcLength.mult(ratioMinLimit));
+    let ratioStartLimit = this.ratioStartLimit();
+    if (ratioStartLimit > 0) {
+      let minAngle = anchorCopy.shiftAngle(arcLength.mult(ratioStartLimit));
       let minPoint = anchorCopy.pointAtAngle(minAngle);
       let markerAngle = minAngle.perpendicular(anchorCopy.clockwise);
       rac.Control.makeLimitMarkerSegment(minPoint, markerAngle)
         .attachToComposite();
     }
 
-    let ratioMaxLimit = this.ratioMaxLimit();
-    if (ratioMaxLimit < 1) {
-      let maxAngle = anchorCopy.shiftAngle(arcLength.mult(ratioMaxLimit));
+    let ratioEndLimit = this.ratioEndLimit();
+    if (ratioEndLimit < 1) {
+      let maxAngle = anchorCopy.shiftAngle(arcLength.mult(ratioEndLimit));
       let maxPoint = anchorCopy.pointAtAngle(maxAngle);
       let markerAngle = maxAngle.perpendicular(!anchorCopy.clockwise);
       rac.Control.makeLimitMarkerSegment(maxPoint, markerAngle)
