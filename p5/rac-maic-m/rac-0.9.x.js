@@ -1841,19 +1841,15 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
   }
 
   center() {
-    if (this.anchor === null) {
-      // Not posible to calculate a center
-      return null;
-    }
+    // Not posible to calculate a center
+    if (this.anchor === null) { return null; }
     return this.anchor.withLength(this.distance()).end;
   }
 
   // Creates a copy of the current `anchor` with the control `length`.
   copyAnchor() {
-    if (this.anchor === null) {
-      // No anchor to copy
-      return null;
-    }
+    // No anchor to copy
+    if (this.anchor === null) { return null; }
     return this.anchor.withLength(this.length);
   }
 
@@ -2033,20 +2029,15 @@ rac.ArcControl = class RacArcControl extends rac.Control {
   }
 
   center() {
-    // TODO: single line anchor === null lines
-    if (this.anchor === null) {
-      // Not posible to calculate a center
-      return null;
-    }
+    // Not posible to calculate a center
+    if (this.anchor === null) { return null; }
     return this.anchor.withArcLength(this.distance()).endPoint();
   }
 
   // Creates a copy of the current `anchor` with the control's `arcLength`.
   copyAnchor() {
-    if (this.anchor === null) {
-      // No anchor to copy
-      return null;
-    }
+    // No anchor to copy
+    if (this.anchor === null) { return null; }
     return this.anchor.withArcLength(this.arcLength);
   }
 
