@@ -1645,14 +1645,49 @@ rac.EaseFunction = class RacEaseFunction {
 }
 
 
-// TODO: Rename to control after migrating?
 // Parent class for all controls for manipulating a value with the pointer.
 // Represents a control with a value, value-range, limits, markers, and
 // drawing style. By default the control returns a `value` in the range
 // [0,1] coresponding to the location of the control center in relation to
 // the anchor shape. The value-range is defined by `startValue` and
 // `endValue`.
-rac.BaseControl = class RacBaseControl {
+rac.Control = class RacControl {
+
+  // Radius of the cicle drawn for the control center.
+  static radius = 22;
+
+  // Collection of all controls that are drawn with `drawControls()`
+  // and evaluated for selection with the `pointer...()` functions.
+  static controls = [];
+
+  // Last Point of the pointer position when it was pressed, or last
+  // Control interacted with. Set to `null` when there has been no
+  // interaction yet and while there is a selected control.
+  static lastPointer = null;
+
+  // Style used for visual elements related to selection and pointer
+  // interaction.
+  static pointerStyle = null;
+
+  // Selection information for the currently selected control, or `null` if
+  // there is no selection.
+  static selection = null;
+
+
+  static Selection = class RacControlSelection{
+    constructor(control) {
+      // Selected control instance.
+      this.control = control;
+      // Copy of the control anchor, so that the control can move tied to
+      // the drawing, while the interaction range remains fixed.
+      this.anchorCopy = control.copyAnchor();
+      // Segment from the captured pointer position to the contro center,
+      // used to attach the control to the point where interaction started.
+      // Pointer is at `segment.start` and control center is at `segment.end`.
+      this.pointerOffset = rac.Point.mouse().segmentToPoint(control.center());
+    }
+  }
+
 
   // Creates a new Control instance with the given `value`, a default
   // value-range of [0,1], and limits set equal to the value-range.
@@ -1725,8 +1760,6 @@ rac.BaseControl = class RacBaseControl {
     this.maxLimit = this.valueOf(1 - maxClamp);
   }
 
-  // TODO: implement setLengthClamp!
-
   isSelected() {
     if (rac.Control.selection === null) {
       return false;
@@ -1771,48 +1804,8 @@ rac.BaseControl = class RacBaseControl {
 }
 
 
-rac.Control = class RacControl extends rac.BaseControl {
-
-  // Radius of the cicle drawn for the control center.
-  static radius = 22;
-
-  // Collection of all controls that are drawn with `drawControls()`
-  // and evaluated for selection with the `pointer...()` functions.
-  static controls = [];
-
-  // Last Point of the pointer position when it was pressed, or last
-  // Control interacted with. Set to `null` when there has been no
-  // interaction yet and while there is a selected control.
-  static lastPointer = null;
-
-  // Style used for visual elements related to selection and pointer
-  // interaction.
-  static pointerStyle = null;
-
-  // Selection information for the currently selected control, or `null` if
-  // there is no selection.
-  static selection = null;
-
-
-  static Selection = class RacControlSelection{
-    constructor(control) {
-      // Selected control instance.
-      this.control = control;
-      // Copy of the control anchor, so that the control can move tied to
-      // the drawing, while the interaction range remains fixed.
-      this.anchorCopy = control.copyAnchor();
-      // Segment from the captured pointer position to the contro center,
-      // used to attach the control to the point where interaction started.
-      // Pointer is at `segment.start` and control center is at `segment.end`.
-      this.pointerOffset = rac.Point.mouse().segmentToPoint(control.center());
-    }
-  }
-
-}
-
-
 // Control that uses a Segment as anchor.
-rac.SegmentControl = class RacSegmentControl extends rac.BaseControl {
+rac.SegmentControl = class RacSegmentControl extends rac.Control {
 
   // Creates a new Control instance with the given `value` and `length`.
   // By default the value range is [0,1] and limits are set to be the equal
@@ -1828,6 +1821,8 @@ rac.SegmentControl = class RacSegmentControl extends rac.BaseControl {
     // control's `length`.
     this.anchor = null;
   }
+
+  // TODO: implement setLengthClamp!
 
   // Returns the distance from `anchor.start` to the control center.
   distance() {
@@ -1966,7 +1961,7 @@ rac.SegmentControl = class RacSegmentControl extends rac.BaseControl {
 
 
 // Control that uses an Arc as anchor.
-rac.ArcControl = class RacArcControl extends rac.BaseControl {
+rac.ArcControl = class RacArcControl extends rac.Control {
 
   // Creates a new Control instance with the given `value` and an
   // `arcLength` from `someArcLength`.
