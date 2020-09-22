@@ -27,11 +27,12 @@ function mouseReleased(event) {
 }
 
 
-let wideControl = new rac.Control(.5, 240);
+let wideControl = new rac.SegmentControl(.5, 240);
+// TODO: setLengthClamp
 wideControl.setRatioClamp(10/240, 10/240);
 rac.Control.controls.push(wideControl);
 
-let thinControl = new rac.Control(.05, 200);
+let thinControl = new rac.SegmentControl(.05, 200);
 rac.Control.controls.push(thinControl);
 
 let angleControl = new rac.Control(.5, rac.Angle.quarter);
