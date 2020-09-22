@@ -2042,8 +2042,49 @@ rac.ArcControl = class RacArcControl extends rac.Control {
   }
 
   draw() {
-    // TODO: copy code here
-    rac.Control.drawArcControl(this);
+    let anchorCopy = this.copyAnchor();
+    anchorCopy.draw(this.style.withFill(rac.Fill.none));
+
+    let center = this.center();
+    let angle = anchorCopy.center.angleToPoint(center);
+
+    // Markers
+    this.markers.forEach(item => {
+      let markerRatio = this.ratioOf(item);
+      if (markerRatio < 0 || markerRatio > 1) { return }
+      let markerArcLength = this.arcLength.mult(markerRatio);
+      let markerAngle = anchorCopy.shiftAngle(markerArcLength);
+      let point = anchorCopy.pointAtAngle(markerAngle);
+      rac.Control.makeMarkerSegment(point, markerAngle.perpendicular(!anchorCopy.clockwise))
+        .attachToComposite();
+    }, this);
+
+    // Control button
+    center.arc(rac.Control.radius)
+      .attachToComposite();
+
+    let ratioValue = this.ratioValue();
+
+    // Negative arrow
+    if (ratioValue >= this.ratioMinLimit() + rac.equalityThreshold) {
+      let negAngle = angle.perpendicular(anchorCopy.clockwise).inverse();
+      rac.Control.makeArrowShape(center, negAngle)
+        .attachToComposite();
+    }
+
+    // Positive arrow
+    if (ratioValue <= this.ratioMaxLimit() - rac.equalityThreshold) {
+      let posAngle = angle.perpendicular(anchorCopy.clockwise);
+      rac.Control.makeArrowShape(center, posAngle)
+        .attachToComposite();
+    }
+
+    rac.popComposite().draw(this.style);
+
+    // Selection
+    if (this.isSelected()) {
+      center.arc(rac.Control.radius * 1.5).draw(rac.Control.pointerStyle);
+    }
   }
 
   updateWithPointer(pointerControlCenter, anchorCopy) {
@@ -2113,53 +2154,7 @@ rac.ArcControl = class RacArcControl extends rac.Control {
 }
 
 
-// Controls drawing elements
-
-rac.Control.drawArcControl = function(control) {
-  let anchor = control.copyAnchor();
-  anchor.draw(control.style.withFill(rac.Fill.none));
-
-  let center = control.center();
-  let angle = anchor.center.angleToPoint(center);
-
-  // Markers
-  control.markers.forEach(item => {
-    let markerRatio = control.ratioOf(item);
-    if (markerRatio < 0 || markerRatio > 1) { return }
-    let markerArcLength = this.length.mult(markerRatio);
-    let markerAngle = anchor.shiftAngle(markerArcLength);
-    let point = anchor.pointAtAngle(markerAngle);
-    rac.Control.makeMarkerSegment(point, markerAngle.perpendicular(!anchor.clockwise))
-      .attachToComposite();
-  });
-
-  // Control button
-  center.arc(rac.Control.radius)
-    .attachToComposite();
-
-  let ratioValue = control.ratioValue();
-
-  // Negative arrow
-  if (ratioValue >= control.ratioMinLimit() + rac.equalityThreshold) {
-    let negAngle = angle.perpendicular(anchor.clockwise).inverse();
-    rac.Control.makeArrowShape(center, negAngle)
-      .attachToComposite();
-  }
-
-  // Positive arrow
-  if (ratioValue <= control.ratioMaxLimit() - rac.equalityThreshold) {
-    let posAngle = angle.perpendicular(anchor.clockwise);
-    rac.Control.makeArrowShape(center, posAngle)
-      .attachToComposite();
-  }
-
-  rac.popComposite().draw(control.style);
-
-  // Selection
-  if (control.isSelected()) {
-    center.arc(rac.Control.radius * 1.5).draw(rac.Control.pointerStyle);
-  }
-};
+// Controls shared drawing elements
 
 rac.Control.makeArrowShape = function(center, angle) {
   // Arc
