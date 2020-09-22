@@ -128,6 +128,8 @@ rac.protoFunctions.peek = function() {
   return rac.stack.peek();
 }
 
+// TODO: shape and composite should be stacks, so that several can be
+// started in different contexts
 rac.currentShape = null;
 rac.currentComposite = null;
 
@@ -1863,12 +1865,12 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
     let center = this.center();
     let angle = anchorCopy.angle();
 
-    // Markers
+    // Value markers
     this.markers.forEach(item => {
       let markerRatio = this.ratioOf(item);
       if (markerRatio < 0 || markerRatio > 1) { return }
       let point = anchorCopy.start.pointToAngle(angle, this.length * markerRatio);
-      rac.Control.makeMarkerSegment(point, angle)
+      rac.Control.makeValueMarker(point, angle)
         .attachToComposite();
     }, this);
 
@@ -1921,12 +1923,12 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
     let angle = anchorCopy.angle();
     let length = anchorCopy.length();
 
-    // Custom markers
+    // Value markers
     this.markers.forEach(item => {
       let markerRatio = this.ratioOf(item);
       if (markerRatio < 0 || markerRatio > 1) { return }
       let markerPoint = anchorCopy.start.pointToAngle(angle, length * markerRatio);
-      rac.Control.makeMarkerSegment(markerPoint, angle)
+      rac.Control.makeValueMarker(markerPoint, angle)
         .attachToComposite();
     });
 
@@ -1934,14 +1936,14 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
     let ratioStartLimit = this.ratioStartLimit();
     if (ratioStartLimit > 0) {
       let minPoint = anchorCopy.start.pointToAngle(angle, length * ratioStartLimit);
-      rac.Control.makeLimitMarkerSegment(minPoint, angle)
+      rac.Control.makeLimitMarker(minPoint, angle)
         .attachToComposite();
     }
 
     let ratioEndLimit = this.ratioEndLimit();
     if (ratioEndLimit < 1) {
       let maxPoint = anchorCopy.start.pointToAngle(angle, length * ratioEndLimit);
-      rac.Control.makeLimitMarkerSegment(maxPoint, angle.inverse())
+      rac.Control.makeLimitMarker(maxPoint, angle.inverse())
         .attachToComposite();
     }
 
@@ -2052,14 +2054,14 @@ rac.ArcControl = class RacArcControl extends rac.Control {
     let center = this.center();
     let angle = anchorCopy.center.angleToPoint(center);
 
-    // Markers
+    // Value markers
     this.markers.forEach(item => {
       let markerRatio = this.ratioOf(item);
       if (markerRatio < 0 || markerRatio > 1) { return }
       let markerArcLength = this.arcLength.mult(markerRatio);
       let markerAngle = anchorCopy.shiftAngle(markerArcLength);
       let point = anchorCopy.pointAtAngle(markerAngle);
-      rac.Control.makeMarkerSegment(point, markerAngle.perpendicular(!anchorCopy.clockwise))
+      rac.Control.makeValueMarker(point, markerAngle.perpendicular(!anchorCopy.clockwise))
         .attachToComposite();
     }, this);
 
@@ -2112,13 +2114,13 @@ rac.ArcControl = class RacArcControl extends rac.Control {
 
     let arcLength = anchorCopy.arcLength();
 
-    // Custom markers
+    // Value markers
     this.markers.forEach(item => {
       let markerRatio = this.ratioOf(item);
       if (markerRatio < 0 || markerRatio > 1) { return }
       let markerAngle = anchorCopy.shiftAngle(arcLength.mult(markerRatio));
       let markerPoint = anchorCopy.pointAtAngle(markerAngle);
-      rac.Control.makeMarkerSegment(markerPoint, markerAngle.perpendicular(!anchorCopy.clockwise))
+      rac.Control.makeValueMarker(markerPoint, markerAngle.perpendicular(!anchorCopy.clockwise))
         .attachToComposite();
     });
 
@@ -2128,7 +2130,7 @@ rac.ArcControl = class RacArcControl extends rac.Control {
       let minAngle = anchorCopy.shiftAngle(arcLength.mult(ratioStartLimit));
       let minPoint = anchorCopy.pointAtAngle(minAngle);
       let markerAngle = minAngle.perpendicular(anchorCopy.clockwise);
-      rac.Control.makeLimitMarkerSegment(minPoint, markerAngle)
+      rac.Control.makeLimitMarker(minPoint, markerAngle)
         .attachToComposite();
     }
 
@@ -2137,7 +2139,7 @@ rac.ArcControl = class RacArcControl extends rac.Control {
       let maxAngle = anchorCopy.shiftAngle(arcLength.mult(ratioEndLimit));
       let maxPoint = anchorCopy.pointAtAngle(maxAngle);
       let markerAngle = maxAngle.perpendicular(!anchorCopy.clockwise);
-      rac.Control.makeLimitMarkerSegment(maxPoint, markerAngle)
+      rac.Control.makeLimitMarker(maxPoint, markerAngle)
         .attachToComposite();
     }
 
@@ -2185,13 +2187,22 @@ rac.Control.makeArrowShape = function(center, angle) {
     return arrow;
 };
 
-rac.Control.makeLimitMarkerSegment = function(point, someAngle) {
+// maic
+rac.Control.makeLimitMarker = function(point, someAngle) {
   let angle = rac.Angle.from(someAngle);
-  return point.segmentToAngle(angle.perpendicular(false), 7)
-    .withStartExtended(3);
+  let perpendicular = angle.perpendicular(false);
+  let composite = new rac.Composite();
+
+  point.segmentToAngle(perpendicular, 4)
+    .withStartExtended(4)
+    .attachTo(composite);
+  point.pointToAngle(perpendicular, 8).arc(3)
+    .attachTo(composite);
+
+  return composite;
 };
 
-rac.Control.makeMarkerSegment = function(point, someAngle) {
+rac.Control.makeValueMarker = function(point, someAngle) {
   let angle = rac.Angle.from(someAngle);
   return point.segmentToAngle(angle.perpendicular(), 3)
     .withStartExtended(3);
