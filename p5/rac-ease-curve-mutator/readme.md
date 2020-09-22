@@ -1,4 +1,4 @@
-# Maic M
+# Ease Curve Mutator
 
 Display of the curve produced by rac.EaseFunction along with controls to modify its parameters.
 
