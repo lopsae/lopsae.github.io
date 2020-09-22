@@ -1913,9 +1913,7 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
   }
 
   drawSelection(pointerCenter, anchorCopy, pointerOffset) {
-    let pointerStyle = rac.Control.pointerStyle;
-    // TODO: collect all elements in composite and draw at once
-    anchorCopy.draw(pointerStyle);
+    anchorCopy.attachToComposite();
 
     let angle = anchorCopy.angle();
     let length = anchorCopy.length();
@@ -1926,7 +1924,7 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
       if (markerRatio < 0 || markerRatio > 1) { return }
       let markerPoint = anchorCopy.start.pointToAngle(angle, length * markerRatio);
       rac.Control.makeMarkerSegment(markerPoint, angle)
-        .draw(pointerStyle);
+        .attachToComposite();
     });
 
     // Limit markers
@@ -1934,14 +1932,14 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
     if (ratioMinLimit > 0) {
       let minPoint = anchorCopy.start.pointToAngle(angle, length * ratioMinLimit);
       rac.Control.makeLimitMarkerSegment(minPoint, angle)
-        .draw(pointerStyle);
+        .attachToComposite();
     }
 
     let ratioMaxLimit = this.ratioMaxLimit();
     if (ratioMaxLimit < 1) {
       let maxPoint = anchorCopy.start.pointToAngle(angle, length * ratioMaxLimit);
       rac.Control.makeLimitMarkerSegment(maxPoint, angle.inverse())
-        .draw(pointerStyle);
+        .attachToComposite();
     }
 
     // Segment from pointer to control dragged center
@@ -1951,7 +1949,7 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
 
     // Control dragged center, attached to pointer
     draggedCenter.arc(2)
-      .draw(pointerStyle);
+      .attachToComposite();
 
     // Constrained length clamped to limits
     let constrainedLength = anchorCopy
@@ -1967,7 +1965,7 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
 
     // Control center constrained to anchor
     constrainedAnchorCenter.arc(rac.Control.radius)
-      .draw(pointerStyle);
+      .attachToComposite();
 
     // Dragged shadow center, semi attached to pointer
     // always perpendicular to anchor
@@ -1977,12 +1975,12 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
       .reverse()
       .translateToStart(constrainedAnchorCenter)
       // Segment from constrained center to shadow center
-      .draw(pointerStyle)
+      .attachToComposite()
       .end;
 
     // Control shadow center
     draggedShadowCenter.arc(rac.Control.radius / 2)
-      .draw(pointerStyle);
+      .attachToComposite();
 
     // Ease for segment to dragged shadow center
     let easeOut = rac.EaseFunction.makeEaseOut();
@@ -1998,7 +1996,10 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
       .segmentToPoint(draggedCenter);
 
     let easedLength = easeOut.easeValue(draggedTail.length());
-    draggedTail.withLength(easedLength).draw(pointerStyle);
+    draggedTail.withLength(easedLength).attachToComposite();
+
+    // Draw all!
+    rac.popComposite().draw(rac.Control.pointerStyle);
   }
 
 }
@@ -2104,9 +2105,7 @@ rac.ArcControl = class RacArcControl extends rac.Control {
   }
 
   drawSelection(pointerCenter, anchorCopy, pointerOffset) {
-    let pointerStyle = rac.Control.pointerStyle;
-    // TODO: do all drawing with composite
-    anchorCopy.draw(pointerStyle);
+    anchorCopy.attachToComposite();
 
     let arcLength = anchorCopy.arcLength();
 
@@ -2117,7 +2116,7 @@ rac.ArcControl = class RacArcControl extends rac.Control {
       let markerAngle = anchorCopy.shiftAngle(arcLength.mult(markerRatio));
       let markerPoint = anchorCopy.pointAtAngle(markerAngle);
       rac.Control.makeMarkerSegment(markerPoint, markerAngle.perpendicular(!anchorCopy.clockwise))
-        .draw(pointerStyle)
+        .attachToComposite();
     });
 
     // Limit markers
@@ -2127,7 +2126,7 @@ rac.ArcControl = class RacArcControl extends rac.Control {
       let minPoint = anchorCopy.pointAtAngle(minAngle);
       let markerAngle = minAngle.perpendicular(anchorCopy.clockwise);
       rac.Control.makeLimitMarkerSegment(minPoint, markerAngle)
-        .draw(pointerStyle);
+        .attachToComposite();
     }
 
     let ratioMaxLimit = this.ratioMaxLimit();
@@ -2136,7 +2135,7 @@ rac.ArcControl = class RacArcControl extends rac.Control {
       let maxPoint = anchorCopy.pointAtAngle(maxAngle);
       let markerAngle = maxAngle.perpendicular(!anchorCopy.clockwise);
       rac.Control.makeLimitMarkerSegment(maxPoint, markerAngle)
-        .draw(pointerStyle);
+        .attachToComposite();
     }
 
     // Segment from pointer to control dragged center
@@ -2146,9 +2145,11 @@ rac.ArcControl = class RacArcControl extends rac.Control {
 
     // Control dragged center, attached to pointer
     draggedCenter.arc(2)
-      .draw(pointerStyle);
+      .attachToComposite();
 
     // TODO: implement arc control dragging visuals!
+
+    rac.popComposite().draw(rac.Control.pointerStyle);
   }
 
 }
