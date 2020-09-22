@@ -1686,6 +1686,10 @@ rac.Control = class RacControl {
       // Pointer is at `segment.start` and control center is at `segment.end`.
       this.pointerOffset = rac.Point.mouse().segmentToPoint(control.center());
     }
+
+    drawSelection(pointerCenter) {
+      this.control.drawSelection(pointerCenter, this.anchorCopy, this.pointerOffset);
+    }
   }
 
 
@@ -1760,6 +1764,7 @@ rac.Control = class RacControl {
     this.maxLimit = this.valueOf(1 - maxClamp);
   }
 
+  // Returns `true` if this control is the currently selected control.
   isSelected() {
     if (rac.Control.selection === null) {
       return false;
@@ -1789,13 +1794,19 @@ rac.Control = class RacControl {
     throw rac.Error.abstractFunctionCalled;
   }
 
-  // TODO: docs
+  // Abstract function.
+  // Updates the control value with `pointerControlCenter` in relation to
+  // `anchorCopy`. Called by `pointerDragged` as the user interacts with a
+  // selected control.
   updateWithPointer(pointerControlCenter, anchorCopy) {
     console.trace(`Abstract function called - this-type:${this.constructor.name ?? typeof this}`);
     throw rac.Error.abstractFunctionCalled;
   }
 
-  // TODO: docs
+  // Abstract function.
+  // Draws the selection state for the control, along with pointer
+  // interaction visuals. Called by `drawControls` for the currently
+  // selected control.
   drawSelection(pointerCenter, anchorCopy, pointerOffset) {
     console.trace(`Abstract function called - this-type:${this.constructor.name ?? typeof this}`);
     throw rac.Error.abstractFunctionCalled;
@@ -1984,15 +1995,6 @@ rac.ArcControl = class RacArcControl extends rac.Control {
     return this.arcLength.mult(this.ratioValue());
   }
 
-  // Used by `pointerDragged` to update the state of the control along the
-  // user interaction with the pointer. Value can be updated regardless
-  // of `start/endValue` or `min/maxLimit`.
-  // TODO: delete if used once
-  updateDistance(newDistance) {
-    let lengthRatio = newDistance.turn / this.arcLength.turn;
-    this.value = this.valueOf(lengthRatio);
-  }
-
   center() {
     // TODO: single line anchor === null lines
     if (this.anchor === null) {
@@ -2028,7 +2030,8 @@ rac.ArcControl = class RacArcControl extends rac.Control {
     let newDistance = anchorCopy.distanceFromStart(selectionAngle);
 
     // Update control with new distance
-    this.updateDistance(newDistance);
+    let lengthRatio = newDistance.turn / this.arcLength.turn;
+    this.value = this.valueOf(lengthRatio);
   }
 
   drawSelection(pointerCenter, anchorCopy, pointerOffset) {
@@ -2299,11 +2302,7 @@ rac.Control.drawControls = function() {
     return;
   }
 
-  // TODO: function of Selection?
-  let control = rac.Control.selection.control;
-  let anchorCopy = rac.Control.selection.anchorCopy;
-  let pointerOffset = rac.Control.selection.pointerOffset
-  control.drawSelection(pointerCenter, anchorCopy, pointerOffset);
+  rac.Control.selection.drawSelection(pointerCenter);
 };
 
 
