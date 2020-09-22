@@ -2092,15 +2092,6 @@ rac.SegmentControl = class RacSegmentControl extends rac.BaseControl {
     return this.length * this.ratioValue();
   }
 
-  // Used by `pointerDragged` to update the state of the control along the
-  // user interaction with the pointer. Value can be updated regardless
-  // of `start/endValue` or `min/maxLimit`.
-  // TODO: only used in updateWithPointer, could be deleted?
-  updateDistance(newDistance) {
-    let lengthRatio = newDistance / this.length;
-    this.value = this.valueOf(lengthRatio);
-  }
-
   center() {
     if (this.anchor === null) {
       // Not posible to calculate a center
@@ -2136,7 +2127,8 @@ rac.SegmentControl = class RacSegmentControl extends rac.BaseControl {
       minClamp, maxClamp);
 
     // Update control with new distance
-    this.updateDistance(newDistance);
+    let lengthRatio = newDistance / length;
+    this.value = this.valueOf(lengthRatio);
   }
 
   drawSelection(pointerCenter, anchorCopy, pointerOffset) {
@@ -2156,10 +2148,9 @@ rac.SegmentControl = class RacSegmentControl extends rac.BaseControl {
         .draw(pointerStyle);
     });
 
+    // Limit markers
     let ratioMinLimit = this.ratioMinLimit();
     let ratioMaxLimit = this.ratioMaxLimit();
-
-    // Limit markers
     if (ratioMinLimit > 0) {
       let minPoint = anchorCopy.start.pointToAngle(angle, length * ratioMinLimit);
       rac.Control.makeLimitMarkerSegment(minPoint, angle)
@@ -2171,18 +2162,18 @@ rac.SegmentControl = class RacSegmentControl extends rac.BaseControl {
         .draw(pointerStyle);
     }
 
-    // Ray from pointer to control shadow center
-    let draggedShadowCenter = pointerOffset
+    // Segment from pointer to control dragged center
+    let draggedCenter = pointerOffset
       .translateToStart(pointerCenter)
       .end;
 
-    // Control shadow center, attached to pointer
-    draggedShadowCenter.arc(2)
+    // Control dragged center, attached to pointer
+    draggedCenter.arc(2)
       .draw(pointerStyle);
 
     // Constrained length clamped to limits
     let constrainedLength = anchorCopy
-      .lengthToProjectedPoint(draggedShadowCenter);
+      .lengthToProjectedPoint(draggedCenter);
     let minClamp = length * ratioMinLimit;
     let maxClamp = length * (1 - ratioMaxLimit);
     constrainedLength = anchorCopy.clampToLength(constrainedLength,
@@ -2192,21 +2183,23 @@ rac.SegmentControl = class RacSegmentControl extends rac.BaseControl {
       .withLength(constrainedLength)
       .end;
 
-    // Control shadow at anchor
+    // Control center constrained to anchor
     constrainedAnchorCenter.arc(rac.Control.radius)
       .draw(pointerStyle);
 
-    let constrainedShadowCenter = draggedShadowCenter
+    // Dragged shadow center, semi attached to pointer
+    // always perpendicular to anchor
+    let draggedShadowCenter = draggedCenter
       .segmentPerpendicularToSegment(anchorCopy)
       // reverse and translated to constraint to anchor
       .reverse()
       .translateToStart(constrainedAnchorCenter)
-      // anchor to control shadow center
+      // Segment from constrained center to shadow center
       .draw(pointerStyle)
       .end;
 
-    // Control shadow, dragged and constrained to anchor
-    constrainedShadowCenter.arc(rac.Control.radius / 2)
+    // Control shadow center
+    draggedShadowCenter.arc(rac.Control.radius / 2)
       .draw(pointerStyle);
 
     // Ease for segment to dragged shadow center
@@ -2219,12 +2212,11 @@ rac.SegmentControl = class RacSegmentControl extends rac.BaseControl {
     easeOut.outRange = maxDraggedTailLength;
 
     // Segment to dragged shadow center
-    let segmentToDraggedCenter = constrainedShadowCenter
-      .segmentToPoint(draggedShadowCenter);
+    let draggedTail = draggedShadowCenter
+      .segmentToPoint(draggedCenter);
 
-    let easedLength = easeOut.easeValue(segmentToDraggedCenter.length());
-    segmentToDraggedCenter.withLength(easedLength).draw(pointerStyle);
-
+    let easedLength = easeOut.easeValue(draggedTail.length());
+    draggedTail.withLength(easedLength).draw(pointerStyle);
   }
 
 }
