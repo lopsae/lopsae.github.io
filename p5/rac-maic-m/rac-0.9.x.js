@@ -1098,22 +1098,21 @@ rac.Arc = class RacArc {
     return distance <= rac.equalityThreshold;
   }
 
-  // Returns `someAngle` clamped to `this.start` and `this.end`, whichever
-  // is closest in distance if `someAngle` is outside the arc.
-  // Returns `someAngle` as an angle if the arc is a complete circle,
-  // unless if `min/maxClamp` are provided.
-  // If `minClamp` or `maxClamp` are provided, these are added to `start`,
-  // or substracted from `end` in the orientation of the arc, including in
-  // complete circle arcs.
-  // If the `min/maxClamp` values result in a contradictory range, the
-  // returned value will comply with `minClamp + this.start`.
-  // TODO: rename to clampToArcLengthInsets
-  clampToArcLength(someAngle, someAngleMinClamp = rac.Angle.zero, someAngleMaxClamp = rac.Angle.zero) {
-    let angle = rac.Angle.from(someAngle);
-    let minClamp = rac.Angle.from(someAngleMinClamp);
-    let maxClamp = rac.Angle.from(someAngleMaxClamp);
+  // Returns `value` clamped to the given insets from zero and the length
+  // of the segment.
 
-    if (this.isCircle() && minClamp.turn == 0 && maxClamp.turn == 0) {
+  // Returns `someAngle` clamped to the given insets from `this.start` and
+  // `this.end`, whichever is closest in distance if `someAngle` is outside
+  // the arc.
+  // TODO: invalid range could return a value centered in the insets? more visually congruent
+  // If the `start/endInset` values result in a contradictory range, the
+  // returned value will comply with `startInset + this.start`.
+  clampToInsets(someAngle, someAngleStartInset = rac.Angle.zero, someAngleEndInset = rac.Angle.zero) {
+    let angle = rac.Angle.from(someAngle);
+    let startInset = rac.Angle.from(someAngleStartInset);
+    let endInset = rac.Angle.from(someAngleEndInset);
+
+    if (this.isCircle() && startInset.turn == 0 && endInset.turn == 0) {
       // Complete circle
       return angle;
     }
@@ -1121,21 +1120,21 @@ rac.Arc = class RacArc {
     // Angle in arc, with arc as origin
     // All comparisons are made in a clockwise orientation
     let shiftedAngle = this.distanceFromStart(angle);
-    let shiftedMin = minClamp;
-    let shiftedMax = this.arcLength().substract(maxClamp);
+    let shiftedStartClamp = startInset;
+    let shiftedEndClamp = this.arcLength().substract(endInset);
 
-    if (shiftedAngle.turn >= shiftedMin.turn && shiftedAngle.turn <= shiftedMax.turn) {
+    if (shiftedAngle.turn >= shiftedStartClamp.turn && shiftedAngle.turn <= shiftedEndClamp.turn) {
       // Inside clamp range
       return angle;
     }
 
     // Outside range, figure out closest limit
-    let distanceToMin = shiftedMin.distance(shiftedAngle, false);
-    let distanceToMax = shiftedMax.distance(shiftedAngle);
-    if (distanceToMin.turn <= distanceToMax.turn) {
-      return this.shiftAngle(minClamp);
+    let distanceToStartClamp = shiftedStartClamp.distance(shiftedAngle, false);
+    let distanceToEndClamp = shiftedEndClamp.distance(shiftedAngle);
+    if (distanceToStartClamp.turn <= distanceToEndClamp.turn) {
+      return this.shiftAngle(startInset);
     } else {
-      return this.reverse().shiftAngle(maxClamp);
+      return this.reverse().shiftAngle(endInset);
     }
   }
 
@@ -2090,13 +2089,13 @@ rac.ArcControl = class RacArcControl extends rac.Control {
 
   updateWithPointer(pointerControlCenter, anchorCopy) {
     let arcLength = anchorCopy.arcLength();
-    let minClamp = arcLength.mult(this.ratioStartLimit());
-    let maxClamp = arcLength.mult(1 - this.ratioEndLimit());
+    let startInset = arcLength.mult(this.ratioStartLimit());
+    let endInset = arcLength.mult(1 - this.ratioEndLimit());
 
     let selectionAngle = anchorCopy.center
       .angleToPoint(pointerControlCenter);
-    selectionAngle = anchorCopy.clampToArcLength(selectionAngle,
-      minClamp, maxClamp);
+    selectionAngle = anchorCopy.clampToInsets(selectionAngle,
+      startInset, endInset);
     let newDistance = anchorCopy.distanceFromStart(selectionAngle);
 
     // Update control with new distance
