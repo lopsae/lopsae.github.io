@@ -9,6 +9,11 @@ function setup() {
 }
 
 
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
+
+
 function mousePressed(event) {
   rac.Control.pointerPressed(rac.Point.mouse());
   redraw();
