@@ -46,11 +46,11 @@ thinControl.setValueWithLength(initialMeasure/5);
 // thinControl.markers = [length at startValue];
 rac.Control.controls.push(thinControl);
 
-let firstOpeningControl = new rac.SegmentControl(0, 300);
-firstOpeningControl.setValueWithLength(120);
+let firstOpeningControl = new rac.SegmentControl(0, 250);
+firstOpeningControl.setValueWithLength(Math.sqrt(2)*initialMeasure/2);
 rac.Control.controls.push(firstOpeningControl);
 
-let secondOpeningControl = new rac.SegmentControl(0, 350);
+let secondOpeningControl = new rac.SegmentControl(0, 300);
 secondOpeningControl.setValueWithLength(Math.sqrt(2)*initialMeasure);
 rac.Control.controls.push(secondOpeningControl);
 
@@ -131,6 +131,17 @@ function draw() {
   let firstStrokeTopGuide = baseline.start
     .segmentToAngle(angle, 100);
 
+  // Middle descender guide
+  let middleDescenderGuide = baseline
+    .nextSegmentWithLength(firstOpening)
+    .end.segmentToAngle(rac.Angle.n, 100);
+
+  // First stroke bottom
+  let firstStrokeEndBottom = baseline.end
+    .segmentToAngleToIntersectionWithSegment(angle, middleDescenderGuide)
+    .draw()
+    .attachToShape()
+    .end;
 
   // First opening control
   firstOpeningControl.anchor = baseline.end
@@ -144,11 +155,15 @@ function draw() {
     .segmentToAngle(angle.perpendicular(), rac.Control.radius*1.5)
     .draw(secondaryStroke);
 
-  // First stroke bottom
-  let firstStrokeEndBottom = baseline.end
-    .segmentToAngle(angle, firstOpening).draw()
-    .attachToShape()
-    .end;
+  // First opening control arc reticule
+  middleDescenderGuide.start
+    .segmentToPoint(baseline.end)
+    .reverse()
+    .arcWithEnd(angle, false)
+    .draw(secondaryStroke)
+    .endPoint()
+    .segmentToAngleToIntersectionWithSegment(angle.perpendicular(false), firstStrokeTopGuide)
+    .draw(secondaryStroke);
 
   // Arc for baseline opening guide
   let baselineAtFirstStrokeBottomGuideS = baseline.reverse()
