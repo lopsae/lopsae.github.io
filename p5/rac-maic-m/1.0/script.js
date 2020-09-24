@@ -42,7 +42,7 @@ rac.Control.controls.push(angleControl);
 let wideControl = new rac.SegmentControl(0, 250);
 wideControl.setValueWithLength(initialMeasure);
 wideControl.markers = [.5];
-wideControl.setLimitsWithLengthInsets(10, 10);
+wideControl.setLimitsWithLengthInsets(10, 0);
 rac.Control.controls.push(wideControl);
 
 let secondStrokeWidthControl = new rac.SegmentControl(0, 250);
@@ -58,7 +58,7 @@ thinControl.setValueWithLength(initialMeasure/5);
 rac.Control.controls.push(thinControl);
 
 let firstOpeningControl = new rac.SegmentControl(0, 250);
-firstOpeningControl.setValueWithLength(Math.sqrt(2)*initialMeasure/2);
+firstOpeningControl.setValueWithLength(initialMeasure);
 rac.Control.controls.push(firstOpeningControl);
 
 let secondOpeningControl = new rac.SegmentControl(0, 300);
