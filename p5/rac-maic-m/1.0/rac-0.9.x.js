@@ -1762,6 +1762,11 @@ rac.Control = class RacControl {
     this.endLimit = this.valueOf(1 - endInset);
   }
 
+  // Adds a marker at the current `value`.
+  addMarkerAtCurrentValue() {
+    this.markers.push(this.value);
+  }
+
   // Returns `true` if this control is the currently selected control.
   isSelected() {
     if (rac.Control.selection === null) {

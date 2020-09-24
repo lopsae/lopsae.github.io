@@ -35,35 +35,33 @@ let initialMeasure = 120;
 
 let angleControl = new rac.ArcControl(1/4, 1/2);
 angleControl.setLimitsWithRatioInsets(0.05, 0.05);
-// TODO: how to set markers with length?
-// angleControl.markers = [lengthAtStartValue];
+angleControl.addMarkerAtCurrentValue();
 rac.Control.controls.push(angleControl);
 
 let firstStrokeWidthControl = new rac.SegmentControl(0, 250);
 firstStrokeWidthControl.setValueWithLength(initialMeasure);
-// TODO: how to set markers with length?
-// firstStrokeWidthControl.markers = [lengthAtStartValue];
+firstStrokeWidthControl.addMarkerAtCurrentValue();
 firstStrokeWidthControl.setLimitsWithLengthInsets(10, 0);
 rac.Control.controls.push(firstStrokeWidthControl);
 
 let secondStrokeWidthControl = new rac.SegmentControl(0, 250);
 secondStrokeWidthControl.setValueWithLength(Math.sqrt(2)*initialMeasure/2 + initialMeasure/2);
-// TODO: how to set markers with length?
-// secondStrokeWidthControl.markers = [lengthAtStartValue];
+secondStrokeWidthControl.addMarkerAtCurrentValue();
 rac.Control.controls.push(secondStrokeWidthControl);
 
 let thinControl = new rac.SegmentControl(0, 150);
 thinControl.setValueWithLength(initialMeasure/5);
-// TODO: how to set markers with length?
-// thinControl.markers = [length at startValue];
+thinControl.addMarkerAtCurrentValue();
 rac.Control.controls.push(thinControl);
 
 let firstOpeningControl = new rac.SegmentControl(0, 250);
 firstOpeningControl.setValueWithLength(initialMeasure);
+firstOpeningControl.addMarkerAtCurrentValue();
 rac.Control.controls.push(firstOpeningControl);
 
 let secondOpeningControl = new rac.SegmentControl(0, 300);
 secondOpeningControl.setValueWithLength(Math.sqrt(2)*initialMeasure);
+secondOpeningControl.addMarkerAtCurrentValue();
 rac.Control.controls.push(secondOpeningControl);
 
 
