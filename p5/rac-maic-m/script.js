@@ -185,9 +185,14 @@ function draw() {
     .attachToShape()
     .end;
 
+  let endDescenderGuide = secondStrokeStartBottom
+    .pointToAngle(rac.Angle.e, secondOpening)
+    .segmentToAngle(rac.Angle.n, 100);
+
   // Second stroke end bottom
   let secondStrokeEndBottom = secondStrokeStartBottom
-    .segmentToAngle(angle, wide*2).draw()
+    .segmentToAngleToIntersectionWithSegment(angle, endDescenderGuide)
+    .draw()
     .attachToShape()
     .end;
 
