@@ -29,8 +29,7 @@ function mouseReleased(event) {
 
 let wideControl = new rac.SegmentControl(.5, 240);
 wideControl.markers = [.5];
-// TODO: setLengthClamp
-wideControl.setLimitsWithRatioInsets(10/240, 10/240);
+wideControl.setLimitsWithLengthInsets(10, 10);
 rac.Control.controls.push(wideControl);
 
 let thinControl = new rac.SegmentControl(.05, 200);
@@ -84,13 +83,13 @@ function draw() {
 
   // Wide control
   wideControl.anchor = start
-    .segmentToAngle(rac.Angle.s, rac.Control.radius * 2)
+    .segmentToAngle(rac.Angle.s, rac.Control.radius * 3)
     .draw()
     // TODO: range of control could be a control property?
     .nextSegmentToAngle(rac.Angle.e, 240);
 
   wideControl.center()
-    .segmentToAngle(rac.Angle.n, rac.Control.radius * 2)
+    .segmentToAngle(rac.Angle.n, rac.Control.radius * 1.5)
     .draw();
 
 
@@ -114,6 +113,15 @@ function draw() {
     .segmentToAngle(angle, wide).draw()
     .attachToShape()
     .end;
+
+  // Opening guide
+  let firstStrokeEndBottomSGuide = firstStrokeEndBottom
+    .segmentToAngle(rac.Angle.s, 100);
+  baseline.end.pointToAngle(rac.Angle.s, 10)
+    .segmentToAngle(rac.Angle.s, 5).draw()
+    .end.segmentToAngleToIntersectionWithSegment(rac.Angle.e, firstStrokeEndBottomSGuide).draw()
+    .nextSegmentToAngle(rac.Angle.n, 5).draw();
+
 
   // Second stroke start bottom
   let secondStrokeStartBottom = firstStrokeEndBottom
@@ -140,12 +148,12 @@ function draw() {
   // Thin control
   thinControl.anchor = endAscenderGuide.start
     .pointToAngle(rac.Angle.w, thin)
-    .segmentToAngle(rac.Angle.s, rac.Control.radius*4)
+    .segmentToAngle(rac.Angle.s, rac.Control.radius*6)
     .draw()
     .nextSegmentToAngle(rac.Angle.e, 200);
 
   thinControl.center()
-    .segmentToAngle(rac.Angle.n, rac.Control.radius*4)
+    .segmentToAngle(rac.Angle.n, rac.Control.radius*6)
     .draw();
 
   // Middle ascender guide

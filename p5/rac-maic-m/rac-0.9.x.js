@@ -1830,8 +1830,13 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
     // control's `length`.
     this.anchor = null;
   }
-  // TODO: rename clamp functions to inset!
-  // TODO: implement setLengthClamp!
+
+  // Sets `startLimit` and `endLimit` with two inset values relative to
+  // zero and `length`.
+  setLimitsWithLengthInsets(startInset, endInset) {
+    this.startLimit = this.valueOf(startInset / this.length);
+    this.endLimit = this.valueOf((this.length - endInset) / this.length);
+  }
 
 
   // Returns the distance from `anchor.start` to the control center.
