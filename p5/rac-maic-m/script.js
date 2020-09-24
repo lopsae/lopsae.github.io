@@ -86,6 +86,8 @@ function draw() {
   let thin = thinControl.distance();
   let angle = angleControl.distance().negative();
 
+  let firstOpening = firstOpeningControl.distance();
+
 
   // Wide control
   wideControl.anchor = start
@@ -134,7 +136,7 @@ function draw() {
 
   // First stroke bottom
   let firstStrokeEndBottom = baseline.end
-    .segmentToAngle(angle, wide).draw()
+    .segmentToAngle(angle, firstOpening).draw()
     .attachToShape()
     .end;
 
@@ -143,7 +145,7 @@ function draw() {
     .arcWithEnd(angle).draw()
     .endPoint().segmentToAngle(rac.Angle.s, 100);
 
-  // Opening guide
+  // Openings base size guide
   let reticule = 5;
   let baselineAtFirstStrokeWidth = baseline.end
     .pointToAngle(rac.Angle.s, reticule*2)
