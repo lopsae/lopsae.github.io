@@ -41,6 +41,10 @@ angleControl.setLimitsWithRatioInsets(0.05, 0.05);
 angleControl.markers = [.5];
 rac.Control.controls.push(angleControl);
 
+let firstOpeningControl = new rac.SegmentControl(.5, 240);
+firstOpeningControl.markers = [.5];
+rac.Control.controls.push(firstOpeningControl);
+
 
 
 
@@ -50,7 +54,7 @@ function draw() {
   let colorScheme = {
     background:  new rac.Color( .1,  .1,  .1), // blackish
     stroke:      new rac.Color( .9,  .2,  .2,  .8), // red,
-    marker:      new rac.Color( .7,  .3,  .3,  .3), // rose pink
+    secondary:   new rac.Color( .7,  .3,  .3,  .3), // rose pink
     fill:        new rac.Color( .8,  .8,  .8,  .7), // whiteish
     controlFill: new rac.Color( .8,  .8,  .8, 1.0), // whiteish
     pointer:     new rac.Color( .9,  .9,  .9,  .6), // whiteish
@@ -60,6 +64,8 @@ function draw() {
 
   let mainStroke = colorScheme.stroke.stroke(2);
   mainStroke.apply();
+
+  let secondaryStroke = colorScheme.secondary.stroke(2);
 
   // Testing highlight
   let highlight = colorScheme.highlight.stroke(5);
@@ -86,7 +92,7 @@ function draw() {
     .segmentToAngle(rac.Angle.s, rac.Control.radius * 3)
     .draw()
     // TODO: range of control could be a control property?
-    .nextSegmentToAngle(rac.Angle.e, 240);
+    .nextSegmentToAngle(rac.Angle.e, 100);
 
   wideControl.center()
     .segmentToAngle(rac.Angle.n, rac.Control.radius * 1.5)
@@ -107,11 +113,24 @@ function draw() {
     .draw();
 
 
-
   // Baseline
   let baseline = start.segmentToAngle(rac.Angle.e, wide)
     .draw()
     .attachToShape();
+
+  let firstStrokeTopGuide = baseline.start
+    .segmentToAngle(angle, 100);
+
+
+  // First opening control
+  firstOpeningControl.anchor = baseline.end
+    .segmentToAngleToIntersectionWithSegment(angle.perpendicular(false), firstStrokeTopGuide)
+    .nextSegmentWithLength(rac.Control.radius*2).draw()
+    .nextSegmentToAngle(angle, 100);
+
+  firstOpeningControl.center()
+    .segmentToAngle(angle.perpendicular(), rac.Control.radius*1.5)
+    .draw();
 
   // First stroke bottom
   let firstStrokeEndBottom = baseline.end
@@ -133,9 +152,9 @@ function draw() {
   baselineAtFirstStrokeWidth
     .nextSegmentToAngle(rac.Angle.n, reticule).draw();
   baselineAtFirstStrokeWidth
-    .pointAtBisector().segmentToAngle(rac.Angle.s, reticule*3).draw()
-    .nextSegmentToAngle(rac.Angle.e, baselineAtFirstStrokeWidth.length()*1.5).draw()
-    .nextSegmentToAngle(rac.Angle.n, reticule).draw()
+    .pointAtBisector().segmentToAngle(rac.Angle.s, reticule*4).draw(secondaryStroke)
+    .nextSegmentToAngle(rac.Angle.e, baselineAtFirstStrokeWidth.length()*1.5).draw(secondaryStroke)
+    .nextSegmentToAngle(rac.Angle.n, reticule*2).draw(secondaryStroke)
     .push()
     .nextSegmentToAngle(rac.Angle.e, baselineAtFirstStrokeWidth.length()).draw()
     .nextSegmentToAngle(rac.Angle.n, reticule).draw()
@@ -194,8 +213,8 @@ function draw() {
     .attachToShape()
     .end;
 
-  let firstStrokeTop = baseline.start
-    .segmentToAngleToIntersectionWithSegment(angle, middleAscenderGuide)
+  let firstStrokeTop = firstStrokeTopGuide
+    .segmentToIntersectionWithSegment(middleAscenderGuide)
     .draw()
 
   // Middle ascender
