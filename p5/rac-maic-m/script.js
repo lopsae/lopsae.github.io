@@ -41,7 +41,7 @@ wideControl.setLimitsWithLengthInsets(10, 10);
 rac.Control.controls.push(wideControl);
 
 let secondStrokeWidthControl = new rac.SegmentControl(0, 250);
-secondStrokeWidthControl.setValueWithLength(initialMeasure*1.5);
+secondStrokeWidthControl.setValueWithLength(Math.sqrt(2)*initialMeasure/2 + initialMeasure/2);
 // TODO: how to set markers with length?
 // secondStrokeWidthControl.markers = [lengthAtStartValue];
 rac.Control.controls.push(secondStrokeWidthControl);
@@ -253,7 +253,8 @@ function draw() {
     .draw(secondaryStroke);
 
   // Second stroke guide
-  let secondStrokeGuide = baseline.pointAtBisector()
+  let secondStrokeGuide = middleDescenderGuide.start
+    .pointToAngle(rac.Angle.w, secondStrokeWidth)
     .segmentToAngle(angle, 100);
 
   // Thin control
@@ -283,8 +284,9 @@ function draw() {
     .draw()
     .attachToShape();
 
-  secondStrokeGuide.start
-    .segmentToPoint(endAscender.end)
+  // Baseline bisector reticule
+  baseline.pointAtBisector()
+    .segmentToAngleToIntersectionWithSegment(angle, endAscenderGuide)
     .draw(secondaryStroke);
 
   // Second stroke start top
