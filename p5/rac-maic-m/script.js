@@ -204,7 +204,7 @@ function draw() {
     .nextSegmentToAngle(rac.Angle.e, thin).draw()
     .attachToShape()
     // End ascender guide
-    .nextSegmentToAngle(rac.Angle.n, wide*3.5).draw();
+    .nextSegmentToAngle(rac.Angle.n, 100);
 
   // Thin control
   thinControl.anchor = endAscenderGuide.start
@@ -226,33 +226,49 @@ function draw() {
     .segmentToAngle(rac.Angle.w, rac.Control.radius*1.5)
     .draw(secondaryStroke);
 
+  // Second stroke guide
+  let secondStrokeGuide = baseline.pointAtBisector()
+    .segmentToAngle(angle, 100);
+
   // Middle ascender guide
   let middleAscenderGuide = secondStrokeStartBottom
-    .segmentToAngle(rac.Angle.e, thin).draw()
-    .nextSegmentToAngle(rac.Angle.n, wide*2.5).draw();
+    .segmentToAngle(rac.Angle.e, thin)
+    .draw(secondaryStroke)
+    .nextSegmentToAngle(rac.Angle.n, 100);
 
-  let secondStrokeGuide = baseline.pointAtBisector()
-    .segmentToAngle(angle, wide*4).draw();
-
-  let secondStrokeStartTop = endAscenderGuide
-    // End ascender
+  middleAscenderGuide
     .segmentToIntersectionWithSegment(secondStrokeGuide)
-    .attachToShape()
-    // Second stroke top
-    .end.segmentToAngleToIntersectionWithSegment(angle.inverse(), middleAscenderGuide)
+    .draw(secondaryStroke);
+
+
+  // End ascender
+  let endAscender = endAscenderGuide
+    .segmentToIntersectionWithSegment(secondStrokeGuide)
+    .draw()
+    .attachToShape();
+
+  secondStrokeGuide.start
+    .segmentToPoint(endAscender.end)
+    .draw(secondaryStroke);
+
+  // Second stroke start top
+  let secondStrokeStartTop = endAscender.end
+    .segmentToAngleToIntersectionWithSegment(angle.inverse(), middleAscenderGuide)
+    .draw()
     .attachToShape()
     .end;
 
   let firstStrokeTop = firstStrokeTopGuide
-    .segmentToIntersectionWithSegment(middleAscenderGuide)
-    .draw()
+    .segmentToIntersectionWithSegment(middleAscenderGuide);
 
   // Middle ascender
   secondStrokeStartTop.segmentToPoint(firstStrokeTop.end)
+    .draw()
     .attachToShape();
 
   // Close shape with first stroke
   firstStrokeTop.reverse()
+    .draw()
     .attachToShape();
 
 
