@@ -59,8 +59,8 @@ firstOpeningControl.setValueWithLength(initialMeasure);
 firstOpeningControl.addMarkerAtCurrentValue();
 rac.Control.controls.push(firstOpeningControl);
 
-let secondOpeningControl = new rac.SegmentControl(0, 300);
-secondOpeningControl.setValueWithLength(Math.sqrt(2)*initialMeasure);
+let secondOpeningControl = new rac.SegmentControl(0, 350);
+secondOpeningControl.setValueWithLength(initialMeasure*2);
 secondOpeningControl.addMarkerAtCurrentValue();
 rac.Control.controls.push(secondOpeningControl);
 
