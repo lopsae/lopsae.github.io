@@ -218,16 +218,6 @@ function draw() {
     .pointToAngle(rac.Angle.w, secondStrokeWidth)
     .segmentToAngle(angle, 100);
 
-  // Middle ascender guide
-  let middleAscenderGuide = secondStrokeBottom.start
-    .segmentToAngle(rac.Angle.e, thin)
-    .draw(secondaryStroke)
-    .nextSegmentToAngle(rac.Angle.n, 100);
-
-  middleAscenderGuide
-    .segmentToIntersectionWithSegment(secondStrokeTopGuide)
-    .draw(secondaryStroke);
-
   // End ascender
   let endAscender = endBaseline.end
     .segmentToAngleToIntersectionWithSegment(rac.Angle.n, secondStrokeTopGuide)
@@ -255,23 +245,34 @@ function draw() {
     .nextSegmentToPoint(endAscender.end)
     .draw(secondaryStroke);
 
-  // Second stroke start top
-  let secondStrokeStartTop = endAscender.end
+  // Middle ascender guide
+  let middleAscenderGuide = secondStrokeBottom.start
+    .segmentToAngle(rac.Angle.e, thin)
+    .draw(secondaryStroke)
+    .nextSegmentToAngle(rac.Angle.n, 100);
+
+  // Middle ascender reticule
+  middleAscenderGuide
+    .segmentToIntersectionWithSegment(secondStrokeTopGuide)
+    .draw(secondaryStroke);
+
+  // Second stroke top
+  let secondStrokeTop = endAscender.end
     .segmentToAngleToIntersectionWithSegment(angle.inverse(), middleAscenderGuide)
     .draw()
-    .attachToShape()
-    .end;
+    .attachToShape();
 
   let firstStrokeTop = firstStrokeTopGuide
-    .segmentToIntersectionWithSegment(middleAscenderGuide);
+    .segmentToIntersectionWithSegment(middleAscenderGuide)
+    .reverse();
 
   // Middle ascender
-  secondStrokeStartTop.segmentToPoint(firstStrokeTop.end)
+  secondStrokeTop.end.segmentToPoint(firstStrokeTop.start)
     .draw()
     .attachToShape();
 
   // Close shape with first stroke
-  firstStrokeTop.reverse()
+  firstStrokeTop
     .draw()
     .attachToShape();
 
