@@ -140,18 +140,17 @@ function draw() {
     .attachToShape();
 
   // First stroke bottom
-  let firstStrokeEndBottom = baseline
+  let firstStrokeBottom = baseline
     .nextSegmentToAngle(angle, firstOpening)
     .draw()
-    .attachToShape()
-    .end;
+    .attachToShape();
 
   // First stroke top guide
   let firstStrokeTopGuide = baseline.start
     .segmentToAngle(angle, 100);
 
   // First opening control
-  firstOpeningControl.anchor = baseline.end
+  firstOpeningControl.anchor = firstStrokeBottom.start
     .segmentToAngleToIntersectionWithSegment(angle.perpendicular(false), firstStrokeTopGuide)
     .withEndExtended(rac.Control.radius*4.5)
     .draw(secondaryStroke)
@@ -161,12 +160,12 @@ function draw() {
     .draw(secondaryStroke);
 
   // First opening control reticule
-  firstStrokeEndBottom
+  firstStrokeBottom.end
     .segmentToAngleToIntersectionWithSegment(angle.perpendicular(false), firstStrokeTopGuide)
     .draw(secondaryStroke);
 
   // Middle descender
-  let middleDescender = firstStrokeEndBottom
+  let middleDescender = firstStrokeBottom.end
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, baseline)
     .draw()
     .attachToShape();
