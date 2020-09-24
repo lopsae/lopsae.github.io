@@ -140,26 +140,21 @@ function draw() {
     .draw()
     .attachToShape();
 
-  let firstStrokeTopGuide = baseline.start
-    .segmentToAngle(angle, 100);
-
-  // Middle descender guide
-  let middleDescenderGuide = baseline
-    .nextSegmentWithLength(firstOpening)
-    .end.segmentToAngle(rac.Angle.n, 100);
-
   // First stroke bottom
-  let firstStrokeEndBottom = baseline.end
-    .segmentToAngleToIntersectionWithSegment(angle, middleDescenderGuide)
+  let firstStrokeEndBottom = baseline
+    .nextSegmentToAngle(angle, firstOpening)
     .draw()
     .attachToShape()
     .end;
 
+  // First stroke top guide
+  let firstStrokeTopGuide = baseline.start
+    .segmentToAngle(angle, 100);
+
   // First opening control
   firstOpeningControl.anchor = baseline.end
     .segmentToAngleToIntersectionWithSegment(angle.perpendicular(false), firstStrokeTopGuide)
-    .draw(secondaryStroke)
-    .nextSegmentWithLength(rac.Control.radius*2)
+    .withEndExtended(rac.Control.radius*2)
     .draw(secondaryStroke)
     .nextSegmentToAngle(angle, 100);
 
@@ -167,15 +162,19 @@ function draw() {
     .segmentToAngle(angle.perpendicular(), rac.Control.radius*1.5)
     .draw(secondaryStroke);
 
-  // First opening control arc reticule
-  middleDescenderGuide.start
-    .segmentToPoint(baseline.end)
-    .reverse()
-    .arcWithEnd(angle, false)
-    .draw(secondaryStroke)
-    .endPoint()
+  // First opening control reticule
+  firstStrokeEndBottom
     .segmentToAngleToIntersectionWithSegment(angle.perpendicular(false), firstStrokeTopGuide)
     .draw(secondaryStroke);
+
+  // Middle descender
+  let middleDescender = firstStrokeEndBottom
+    .segmentToAngleToIntersectionWithSegment(rac.Angle.s, baseline)
+    .draw()
+    .attachToShape();
+
+  // Second stroke start bottom
+  let secondStrokeStartBottom = middleDescender.end;
 
   // Arc for baseline opening guide
   let baselineAtFirstStrokeBottomGuideS = baseline.reverse()
@@ -205,12 +204,6 @@ function draw() {
     .nextSegmentToAngle(rac.Angle.w, baselineAtFirstStrokeWidth.length()).draw()
     .nextSegmentToAngle(rac.Angle.n, reticule).draw();
 
-
-  // Second stroke start bottom
-  let secondStrokeStartBottom = firstStrokeEndBottom
-    .segmentToAngleToIntersectionWithSegment(rac.Angle.s, baseline).draw()
-    .attachToShape()
-    .end;
 
   let endDescenderGuide = secondStrokeStartBottom
     .pointToAngle(rac.Angle.e, secondOpening)
@@ -263,7 +256,7 @@ function draw() {
     .draw(secondaryStroke);
 
   // Second stroke guide
-  let secondStrokeGuide = middleDescenderGuide.start
+  let secondStrokeGuide = secondStrokeStartBottom
     .pointToAngle(rac.Angle.w, secondStrokeWidth)
     .segmentToAngle(angle, 100);
 
