@@ -189,6 +189,8 @@ function draw() {
   // Second opening control reticule
   secondStrokeBottom.end
     .segmentToAngleToIntersectionWithSegment(angle.perpendicular(false), firstStrokeTopGuide)
+    .draw(secondaryStroke)
+    .nextSegmentToPoint(start)
     .draw(secondaryStroke);
 
   // Second stroke width control
