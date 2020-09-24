@@ -41,8 +41,8 @@ let thinControl = new rac.SegmentControl(.05, 200);
 thinControl.markers = [.05];
 rac.Control.controls.push(thinControl);
 
-let firstOpeningControl = new rac.SegmentControl(.5, 240);
-firstOpeningControl.markers = [.5];
+let firstOpeningControl = new rac.SegmentControl(0, 300);
+firstOpeningControl.setValueWithLength(120);
 rac.Control.controls.push(firstOpeningControl);
 
 
@@ -95,23 +95,22 @@ function draw() {
 
   angleControl.center()
     .segmentToPoint(start)
-    .draw();
+    .draw(secondaryStroke);
   angleControl.anchor.startSegment()
     .reverse()
     .segmentToBisector()
-    .draw();
+    .draw(secondaryStroke);
 
 
   // Wide control
   wideControl.anchor = start
     .segmentToAngle(rac.Angle.s, rac.Control.radius * 3)
-    .draw()
-    // TODO: range of control could be a control property?
+    .draw(secondaryStroke)
     .nextSegmentToAngle(rac.Angle.e, 100);
 
   wideControl.center()
     .segmentToAngle(rac.Angle.n, rac.Control.radius * 1.5)
-    .draw();
+    .draw(secondaryStroke);
 
 
   // Baseline
@@ -126,12 +125,14 @@ function draw() {
   // First opening control
   firstOpeningControl.anchor = baseline.end
     .segmentToAngleToIntersectionWithSegment(angle.perpendicular(false), firstStrokeTopGuide)
-    .nextSegmentWithLength(rac.Control.radius*2).draw()
+    .draw(secondaryStroke)
+    .nextSegmentWithLength(rac.Control.radius*2)
+    .draw(secondaryStroke)
     .nextSegmentToAngle(angle, 100);
 
   firstOpeningControl.center()
     .segmentToAngle(angle.perpendicular(), rac.Control.radius*1.5)
-    .draw();
+    .draw(secondaryStroke);
 
   // First stroke bottom
   let firstStrokeEndBottom = baseline.end
@@ -141,8 +142,12 @@ function draw() {
 
   // Arc for baseline opening guide
   let baselineAtFirstStrokeBottomGuideS = baseline.reverse()
-    .arcWithEnd(angle).draw()
+    .arcWithEnd(angle).draw(secondaryStroke)
     .endPoint().segmentToAngle(rac.Angle.s, 100);
+  baselineAtFirstStrokeBottomGuideS.start
+    .segmentToPoint(baseline.end).draw(secondaryStroke);
+  baselineAtFirstStrokeBottomGuideS
+    .segmentToIntersectionWithSegment(baseline).draw(secondaryStroke);
 
   // Openings base size guide
   let reticule = 5;
