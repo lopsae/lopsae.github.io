@@ -229,12 +229,6 @@ function draw() {
     // End ascender guide
     .nextSegmentToAngle(rac.Angle.n, 100);
 
-  // Second stroke width control
-  secondStrokeWidthControl.anchor = endAscenderGuide.start
-    .segmentToAngle(rac.Angle.s, rac.Control.radius*5.5)
-    .draw(secondaryStroke)
-    .nextSegmentToAngle(rac.Angle.w, 100);
-
   // Second opening control
   secondOpeningControl.anchor = endAscenderGuide.start
     .segmentToAngle(rac.Angle.e, rac.Control.radius*2)
@@ -251,6 +245,15 @@ function draw() {
     .draw(secondaryStroke)
     .endPoint().segmentToAngle(rac.Angle.e, thin)
     .draw(secondaryStroke);
+
+  // Second stroke width control
+  secondStrokeWidthControl.anchor = secondStrokeEndBottom
+    .segmentToAngleToIntersectionWithSegment(angle, endAscenderGuide)
+    .draw(secondaryStroke)
+    .nextSegmentToAngle(rac.Angle.e, rac.Control.radius*3.5)
+    .nextSegmentWithLength(rac.Control.radius*1)
+    .draw(secondaryStroke)
+    .nextSegmentToAngle(rac.Angle.n, 100);
 
   // Second stroke guide
   let secondStrokeGuide = middleDescenderGuide.start
