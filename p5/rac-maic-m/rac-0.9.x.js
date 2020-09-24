@@ -1831,6 +1831,11 @@ rac.SegmentControl = class RacSegmentControl extends rac.Control {
     this.anchor = null;
   }
 
+  setValueWithLength(lengthValue) {
+    let lengthRatio = lengthValue / this.length;
+    this.value = this.valueOf(lengthRatio);
+  }
+
   // Sets `startLimit` and `endLimit` with two inset values relative to
   // zero and `length`.
   setLimitsWithLengthInsets(startInset, endInset) {
