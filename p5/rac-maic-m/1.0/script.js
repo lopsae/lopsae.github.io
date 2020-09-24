@@ -212,11 +212,6 @@ function draw() {
     .draw()
     .attachToShape();
 
-  // End ascender guide
-  // TODO: move/remove?
-  let endAscenderGuide = endBaseline
-    .nextSegmentToAngle(rac.Angle.n, 100);
-
   // Second stroke top guide
   // TODO: confusing?
   let secondStrokeTopGuide = secondStrokeBottom.end
@@ -234,8 +229,8 @@ function draw() {
     .draw(secondaryStroke);
 
   // End ascender
-  let endAscender = endAscenderGuide
-    .segmentToIntersectionWithSegment(secondStrokeTopGuide)
+  let endAscender = endBaseline.end
+    .segmentToAngleToIntersectionWithSegment(rac.Angle.n, secondStrokeTopGuide)
     .draw()
     .attachToShape();
 
@@ -255,7 +250,7 @@ function draw() {
 
   // Baseline bisector reticule
   baseline.pointAtBisector()
-    .segmentToAngleToIntersectionWithSegment(angle, endAscenderGuide)
+    .segmentToAngleToIntersectionWithSegment(angle, endAscender)
     .draw(secondaryStroke)
     .nextSegmentToPoint(endAscender.end)
     .draw(secondaryStroke);
