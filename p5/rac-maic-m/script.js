@@ -26,24 +26,33 @@ function mouseReleased(event) {
   redraw();
 }
 
+let initialMeasure = 120;
 
 let angleControl = new rac.ArcControl(1/4, 1/2);
 angleControl.setLimitsWithRatioInsets(0.05, 0.05);
-angleControl.markers = [.5];
+// TODO: how to set markers with length?
+// angleControl.markers = [lengthAtStartValue];
 rac.Control.controls.push(angleControl);
 
-let wideControl = new rac.SegmentControl(.5, 240);
+let wideControl = new rac.SegmentControl(0, 250);
+wideControl.setValueWithLength(initialMeasure);
 wideControl.markers = [.5];
 wideControl.setLimitsWithLengthInsets(10, 10);
 rac.Control.controls.push(wideControl);
 
-let thinControl = new rac.SegmentControl(.05, 200);
-thinControl.markers = [.05];
+let thinControl = new rac.SegmentControl(0, 150);
+thinControl.setValueWithLength(initialMeasure/5);
+// TODO: how to set markers with length?
+// thinControl.markers = [length at startValue];
 rac.Control.controls.push(thinControl);
 
 let firstOpeningControl = new rac.SegmentControl(0, 300);
 firstOpeningControl.setValueWithLength(120);
 rac.Control.controls.push(firstOpeningControl);
+
+let secondOpeningControl = new rac.SegmentControl(0, 350);
+secondOpeningControl.setValueWithLength(Math.sqrt(2)*initialMeasure);
+rac.Control.controls.push(secondOpeningControl);
 
 
 
@@ -86,6 +95,7 @@ function draw() {
   let thin = thinControl.distance();
 
   let firstOpening = firstOpeningControl.distance();
+  let secondOpening = secondOpeningControl.distance();
 
 
   // Angle control
@@ -109,7 +119,7 @@ function draw() {
     .nextSegmentToAngle(rac.Angle.e, 100);
 
   wideControl.center()
-    .segmentToAngle(rac.Angle.n, rac.Control.radius * 1.5)
+    .segmentToAngle(rac.Angle.n, rac.Control.radius * 2)
     .draw(secondaryStroke);
 
 
@@ -195,12 +205,21 @@ function draw() {
   thinControl.anchor = endAscenderGuide.start
     .pointToAngle(rac.Angle.w, thin)
     .segmentToAngle(rac.Angle.s, rac.Control.radius*6)
-    .draw()
-    .nextSegmentToAngle(rac.Angle.e, 200);
+    .draw(secondaryStroke)
+    .nextSegmentToAngle(rac.Angle.e, 100);
 
   thinControl.center()
-    .segmentToAngle(rac.Angle.n, rac.Control.radius*6)
-    .draw();
+    .segmentToAngle(rac.Angle.n, rac.Control.radius*5)
+    .draw(secondaryStroke);
+
+  // Second opening control
+  secondOpeningControl.anchor = endAscenderGuide.start
+    .segmentToAngle(rac.Angle.e, rac.Control.radius*2)
+    .draw(secondaryStroke)
+    .nextSegmentToAngle(rac.Angle.n, 100);
+  secondOpeningControl.center()
+    .segmentToAngle(rac.Angle.w, rac.Control.radius*1.5)
+    .draw(secondaryStroke);
 
   // Middle ascender guide
   let middleAscenderGuide = secondStrokeStartBottom
