@@ -39,11 +39,12 @@ angleControl.setLimitsWithRatioInsets(0.05, 0.05);
 // angleControl.markers = [lengthAtStartValue];
 rac.Control.controls.push(angleControl);
 
-let wideControl = new rac.SegmentControl(0, 250);
-wideControl.setValueWithLength(initialMeasure);
-wideControl.markers = [.5];
-wideControl.setLimitsWithLengthInsets(10, 0);
-rac.Control.controls.push(wideControl);
+let firstStrokeWidthControl = new rac.SegmentControl(0, 250);
+firstStrokeWidthControl.setValueWithLength(initialMeasure);
+// TODO: how to set markers with length?
+// firstStrokeWidthControl.markers = [lengthAtStartValue];
+firstStrokeWidthControl.setLimitsWithLengthInsets(10, 0);
+rac.Control.controls.push(firstStrokeWidthControl);
 
 let secondStrokeWidthControl = new rac.SegmentControl(0, 250);
 secondStrokeWidthControl.setValueWithLength(Math.sqrt(2)*initialMeasure/2 + initialMeasure/2);
@@ -102,7 +103,7 @@ function draw() {
 
   // Values for drawing
   let angle = angleControl.distance().negative();
-  let wide = wideControl.distance();
+  let firstStrokeWidth = firstStrokeWidthControl.distance();
   let secondStrokeWidth = secondStrokeWidthControl.distance();
   let thin = thinControl.distance();
 
@@ -124,19 +125,19 @@ function draw() {
     .draw(secondaryStroke);
 
 
-  // Wide control
-  wideControl.anchor = start
+  // First stroke width control
+  firstStrokeWidthControl.anchor = start
     .segmentToAngle(rac.Angle.s, rac.Control.radius * 3)
     .draw(secondaryStroke)
     .nextSegmentToAngle(rac.Angle.e, 100);
 
-  wideControl.center()
+  firstStrokeWidthControl.center()
     .segmentToAngle(rac.Angle.n, rac.Control.radius * 2)
     .draw(secondaryStroke);
 
 
   // Baseline
-  let baseline = start.segmentToAngle(rac.Angle.e, wide)
+  let baseline = start.segmentToAngle(rac.Angle.e, firstStrokeWidth)
     .draw()
     .attachToShape();
 
