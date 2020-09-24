@@ -40,6 +40,12 @@ wideControl.markers = [.5];
 wideControl.setLimitsWithLengthInsets(10, 10);
 rac.Control.controls.push(wideControl);
 
+let secondStrokeWidthControl = new rac.SegmentControl(0, 250);
+secondStrokeWidthControl.setValueWithLength(initialMeasure*1.5);
+// TODO: how to set markers with length?
+// secondStrokeWidthControl.markers = [lengthAtStartValue];
+rac.Control.controls.push(secondStrokeWidthControl);
+
 let thinControl = new rac.SegmentControl(0, 150);
 thinControl.setValueWithLength(initialMeasure/5);
 // TODO: how to set markers with length?
@@ -92,6 +98,7 @@ function draw() {
   // Values for drawing
   let angle = angleControl.distance().negative();
   let wide = wideControl.distance();
+  let secondStrokeWidth = secondStrokeWidthControl.distance();
   let thin = thinControl.distance();
 
   let firstOpening = firstOpeningControl.distance();
@@ -211,6 +218,7 @@ function draw() {
     .attachToShape()
     .end;
 
+  // End ascender guide
   let endAscenderGuide = secondStrokeEndBottom
     // End descender
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, baseline).draw()
@@ -220,6 +228,12 @@ function draw() {
     .attachToShape()
     // End ascender guide
     .nextSegmentToAngle(rac.Angle.n, 100);
+
+  // Second stroke width control
+  secondStrokeWidthControl.anchor = endAscenderGuide.start
+    .segmentToAngle(rac.Angle.s, rac.Control.radius*5.5)
+    .draw(secondaryStroke)
+    .nextSegmentToAngle(rac.Angle.w, 100);
 
   // Second opening control
   secondOpeningControl.anchor = endAscenderGuide.start
@@ -245,12 +259,12 @@ function draw() {
   // Thin control
   thinControl.anchor = secondStrokeStartBottom
     .segmentToAngle(rac.Angle.s, rac.Control.radius*2)
-    .nextSegmentWithLength(rac.Control.radius*4)
+    .nextSegmentWithLength(rac.Control.radius*6)
     .draw(secondaryStroke)
     .nextSegmentToAngle(rac.Angle.e, 100);
 
   thinControl.center()
-    .segmentToAngle(rac.Angle.n, rac.Control.radius*4)
+    .segmentToAngle(rac.Angle.n, rac.Control.radius*6)
     .draw(secondaryStroke);
 
   // Middle ascender guide
