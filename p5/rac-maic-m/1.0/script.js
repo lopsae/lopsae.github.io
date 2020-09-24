@@ -267,17 +267,6 @@ function draw() {
     .pointToAngle(rac.Angle.w, secondStrokeWidth)
     .segmentToAngle(angle, 100);
 
-  // Thin control
-  thinControl.anchor = secondStrokeStartBottom
-    .segmentToAngle(rac.Angle.s, rac.Control.radius*2)
-    .nextSegmentWithLength(rac.Control.radius*6)
-    .draw(secondaryStroke)
-    .nextSegmentToAngle(rac.Angle.e, 100);
-
-  thinControl.center()
-    .segmentToAngle(rac.Angle.n, rac.Control.radius*6)
-    .draw(secondaryStroke);
-
   // Middle ascender guide
   let middleAscenderGuide = secondStrokeStartBottom
     .segmentToAngle(rac.Angle.e, thin)
@@ -293,6 +282,15 @@ function draw() {
     .segmentToIntersectionWithSegment(secondStrokeGuide)
     .draw()
     .attachToShape();
+
+  // Thin control
+  thinControl.anchor = endAscender.start
+    .segmentToAngle(rac.Angle.e, rac.Control.radius*2)
+    .draw(secondaryStroke)
+    .nextSegmentToAngle(rac.Angle.n, 100);
+  thinControl.center()
+    .segmentToAngle(rac.Angle.w, rac.Control.radius*1.5)
+    .draw(secondaryStroke);
 
   // Baseline bisector reticule
   baseline.pointAtBisector()
