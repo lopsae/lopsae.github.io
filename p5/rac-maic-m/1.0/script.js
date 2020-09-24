@@ -153,12 +153,11 @@ function draw() {
   // First opening control
   firstOpeningControl.anchor = baseline.end
     .segmentToAngleToIntersectionWithSegment(angle.perpendicular(false), firstStrokeTopGuide)
-    .withEndExtended(rac.Control.radius*2)
+    .withEndExtended(rac.Control.radius*4.5)
     .draw(secondaryStroke)
     .nextSegmentToAngle(angle, 100);
-
   firstOpeningControl.center()
-    .segmentToAngle(angle.perpendicular(), rac.Control.radius*1.5)
+    .segmentToAngle(angle.perpendicular(), rac.Control.radius*4)
     .draw(secondaryStroke);
 
   // First opening control reticule
@@ -174,6 +173,16 @@ function draw() {
 
   // Second stroke start bottom
   let secondStrokeStartBottom = middleDescender.end;
+
+  // Second opening control
+  secondOpeningControl.anchor = middleDescender.end
+    .segmentToAngleToIntersectionWithSegment(angle.perpendicular(false), firstStrokeTopGuide)
+    .withEndExtended(rac.Control.radius*2)
+    .draw(secondaryStroke)
+    .nextSegmentToAngle(angle, 100);
+  secondOpeningControl.center()
+    .segmentToAngle(angle.perpendicular(), rac.Control.radius*1.5)
+    .draw(secondaryStroke);
 
   // Arc for baseline opening guide
   let baselineAtFirstStrokeBottomGuideS = baseline.reverse()
@@ -203,7 +212,7 @@ function draw() {
     .nextSegmentToAngle(rac.Angle.w, baselineAtFirstStrokeWidth.length()).draw()
     .nextSegmentToAngle(rac.Angle.n, reticule).draw();
 
-
+  // End descender guide
   let endDescenderGuide = secondStrokeStartBottom
     .pointToAngle(rac.Angle.e, secondOpening)
     .segmentToAngle(rac.Angle.n, 100);
@@ -226,15 +235,7 @@ function draw() {
     // End ascender guide
     .nextSegmentToAngle(rac.Angle.n, 100);
 
-  // Second opening control
-  secondOpeningControl.anchor = endAscenderGuide.start
-    .segmentToAngle(rac.Angle.e, rac.Control.radius*4.5)
-    .draw(secondaryStroke)
-    .nextSegmentToAngle(rac.Angle.n, 100);
-  secondOpeningControl.center()
-    .segmentToAngle(rac.Angle.w, rac.Control.radius*4)
-    .draw(secondaryStroke);
-
+  // TODO: remove/modify
   // Second opening control arc reticule
   secondStrokeStartBottom.segmentToAngle(rac.Angle.e, secondOpening)
     .reverse()
