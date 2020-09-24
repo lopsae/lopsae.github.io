@@ -231,11 +231,11 @@ function draw() {
 
   // Second opening control
   secondOpeningControl.anchor = endAscenderGuide.start
-    .segmentToAngle(rac.Angle.e, rac.Control.radius*2)
+    .segmentToAngle(rac.Angle.e, rac.Control.radius*4.5)
     .draw(secondaryStroke)
     .nextSegmentToAngle(rac.Angle.n, 100);
   secondOpeningControl.center()
-    .segmentToAngle(rac.Angle.w, rac.Control.radius*1.5)
+    .segmentToAngle(rac.Angle.w, rac.Control.radius*4)
     .draw(secondaryStroke);
 
   // Second opening control arc reticule
@@ -250,10 +250,12 @@ function draw() {
   secondStrokeWidthControl.anchor = secondStrokeEndBottom
     .segmentToAngleToIntersectionWithSegment(angle, endAscenderGuide)
     .draw(secondaryStroke)
-    .nextSegmentToAngle(rac.Angle.e, rac.Control.radius*3.5)
-    .nextSegmentWithLength(rac.Control.radius*1)
+    .nextSegmentToAngle(rac.Angle.e, rac.Control.radius*2)
     .draw(secondaryStroke)
     .nextSegmentToAngle(rac.Angle.n, 100);
+  secondStrokeWidthControl.center()
+    .segmentToAngle(rac.Angle.w, rac.Control.radius*1.5)
+    .draw(secondaryStroke);
 
   // Second stroke guide
   let secondStrokeGuide = middleDescenderGuide.start
@@ -290,6 +292,8 @@ function draw() {
   // Baseline bisector reticule
   baseline.pointAtBisector()
     .segmentToAngleToIntersectionWithSegment(angle, endAscenderGuide)
+    .draw(secondaryStroke)
+    .nextSegmentToPoint(endAscender.end)
     .draw(secondaryStroke);
 
   // Second stroke start top
