@@ -159,7 +159,7 @@ function draw() {
   baselineAtFirstStrokeBottomGuideS
     .segmentToIntersectionWithSegment(baseline).draw(secondaryStroke);
 
-  // Openings base size guide
+  // Openings base size reticule
   let reticule = 5;
   let baselineAtFirstStrokeWidth = baseline.end
     .pointToAngle(rac.Angle.s, reticule*2)
@@ -206,17 +206,6 @@ function draw() {
     // End ascender guide
     .nextSegmentToAngle(rac.Angle.n, 100);
 
-  // Thin control
-  thinControl.anchor = endAscenderGuide.start
-    .pointToAngle(rac.Angle.w, thin)
-    .segmentToAngle(rac.Angle.s, rac.Control.radius*6)
-    .draw(secondaryStroke)
-    .nextSegmentToAngle(rac.Angle.e, 100);
-
-  thinControl.center()
-    .segmentToAngle(rac.Angle.n, rac.Control.radius*5)
-    .draw(secondaryStroke);
-
   // Second opening control
   secondOpeningControl.anchor = endAscenderGuide.start
     .segmentToAngle(rac.Angle.e, rac.Control.radius*2)
@@ -230,6 +219,17 @@ function draw() {
   let secondStrokeGuide = baseline.pointAtBisector()
     .segmentToAngle(angle, 100);
 
+  // Thin control
+  thinControl.anchor = secondStrokeStartBottom
+    .segmentToAngle(rac.Angle.s, rac.Control.radius*2)
+    .nextSegmentWithLength(rac.Control.radius*4)
+    .draw(secondaryStroke)
+    .nextSegmentToAngle(rac.Angle.e, 100);
+
+  thinControl.center()
+    .segmentToAngle(rac.Angle.n, rac.Control.radius*4)
+    .draw(secondaryStroke);
+
   // Middle ascender guide
   let middleAscenderGuide = secondStrokeStartBottom
     .segmentToAngle(rac.Angle.e, thin)
@@ -239,7 +239,6 @@ function draw() {
   middleAscenderGuide
     .segmentToIntersectionWithSegment(secondStrokeGuide)
     .draw(secondaryStroke);
-
 
   // End ascender
   let endAscender = endAscenderGuide
