@@ -292,6 +292,11 @@ function draw() {
     .segmentToAngle(rac.Angle.w, rac.Control.radius*1.5)
     .draw(secondaryStroke);
 
+  // Thin control arc reticule
+  endAscender.start.segmentToAngle(rac.Angle.w, thin)
+    .arcWithEnd(rac.Angle.n)
+    .draw(secondaryStroke);
+
   // Baseline bisector reticule
   baseline.pointAtBisector()
     .segmentToAngleToIntersectionWithSegment(angle, endAscenderGuide)
