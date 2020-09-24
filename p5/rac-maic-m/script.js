@@ -51,7 +51,7 @@ function draw() {
     background:  new rac.Color( .1,  .1,  .1), // blackish
     stroke:      new rac.Color( .9,  .2,  .2,  .8), // red,
     marker:      new rac.Color( .7,  .3,  .3,  .3), // rose pink
-    fill:        new rac.Color( .8,  .8,  .8,  .9), // whiteish
+    fill:        new rac.Color( .8,  .8,  .8,  .7), // whiteish
     controlFill: new rac.Color( .8,  .8,  .8, 1.0), // whiteish
     pointer:     new rac.Color( .9,  .9,  .9,  .6), // whiteish
     highlight:   new rac.Color(  0, 1.0, 1.0,  .8)// cyan
@@ -95,12 +95,17 @@ function draw() {
 
   // Angle control
   angleControl.anchor = start
-    .segmentToAngle(rac.Angle.w, rac.Control.radius * 5).draw()
+    .segmentToAngle(rac.Angle.w, rac.Control.radius * 6)
     .arcWithEnd(1/4, false);
 
   angleControl.center()
     .segmentToPoint(start)
     .draw();
+  angleControl.anchor.startSegment()
+    .reverse()
+    .segmentToBisector()
+    .draw();
+
 
 
   // Baseline
@@ -114,13 +119,29 @@ function draw() {
     .attachToShape()
     .end;
 
+  // Arc for baseline opening guide
+  let baselineAtFirstStrokeBottomGuideS = baseline.reverse()
+    .arcWithEnd(angle).draw()
+    .endPoint().segmentToAngle(rac.Angle.s, 100);
+
   // Opening guide
-  let firstStrokeEndBottomSGuide = firstStrokeEndBottom
-    .segmentToAngle(rac.Angle.s, 100);
-  baseline.end.pointToAngle(rac.Angle.s, 10)
-    .segmentToAngle(rac.Angle.s, 5).draw()
-    .end.segmentToAngleToIntersectionWithSegment(rac.Angle.e, firstStrokeEndBottomSGuide).draw()
-    .nextSegmentToAngle(rac.Angle.n, 5).draw();
+  let reticule = 5;
+  let baselineAtFirstStrokeWidth = baseline.end
+    .pointToAngle(rac.Angle.s, reticule*2)
+    .segmentToAngle(rac.Angle.s, reticule).draw()
+    .end.segmentToAngleToIntersectionWithSegment(rac.Angle.e, baselineAtFirstStrokeBottomGuideS).draw();
+  baselineAtFirstStrokeWidth
+    .nextSegmentToAngle(rac.Angle.n, reticule).draw();
+  baselineAtFirstStrokeWidth
+    .pointAtBisector().segmentToAngle(rac.Angle.s, reticule*3).draw()
+    .nextSegmentToAngle(rac.Angle.e, baselineAtFirstStrokeWidth.length()*1.5).draw()
+    .nextSegmentToAngle(rac.Angle.n, reticule).draw()
+    .push()
+    .nextSegmentToAngle(rac.Angle.e, baselineAtFirstStrokeWidth.length()).draw()
+    .nextSegmentToAngle(rac.Angle.n, reticule).draw()
+    .pop()
+    .nextSegmentToAngle(rac.Angle.w, baselineAtFirstStrokeWidth.length()).draw()
+    .nextSegmentToAngle(rac.Angle.n, reticule).draw();
 
 
   // Second stroke start bottom
