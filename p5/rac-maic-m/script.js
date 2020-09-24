@@ -27,6 +27,11 @@ function mouseReleased(event) {
 }
 
 
+let angleControl = new rac.ArcControl(1/4, 1/2);
+angleControl.setLimitsWithRatioInsets(0.05, 0.05);
+angleControl.markers = [.5];
+rac.Control.controls.push(angleControl);
+
 let wideControl = new rac.SegmentControl(.5, 240);
 wideControl.markers = [.5];
 wideControl.setLimitsWithLengthInsets(10, 10);
@@ -36,15 +41,9 @@ let thinControl = new rac.SegmentControl(.05, 200);
 thinControl.markers = [.05];
 rac.Control.controls.push(thinControl);
 
-let angleControl = new rac.ArcControl(.5, 1/4);
-angleControl.setLimitsWithRatioInsets(0.05, 0.05);
-angleControl.markers = [.5];
-rac.Control.controls.push(angleControl);
-
 let firstOpeningControl = new rac.SegmentControl(.5, 240);
 firstOpeningControl.markers = [.5];
 rac.Control.controls.push(firstOpeningControl);
-
 
 
 
@@ -81,24 +80,12 @@ function draw() {
   // Start point of M
   let start = new rac.Point(width * 1/4, height * 2/3);
 
-  // Widths for drawing
+  // Values for drawing
+  let angle = angleControl.distance().negative();
   let wide = wideControl.distance();
   let thin = thinControl.distance();
-  let angle = angleControl.distance().negative();
 
   let firstOpening = firstOpeningControl.distance();
-
-
-  // Wide control
-  wideControl.anchor = start
-    .segmentToAngle(rac.Angle.s, rac.Control.radius * 3)
-    .draw()
-    // TODO: range of control could be a control property?
-    .nextSegmentToAngle(rac.Angle.e, 100);
-
-  wideControl.center()
-    .segmentToAngle(rac.Angle.n, rac.Control.radius * 1.5)
-    .draw();
 
 
   // Angle control
@@ -112,6 +99,18 @@ function draw() {
   angleControl.anchor.startSegment()
     .reverse()
     .segmentToBisector()
+    .draw();
+
+
+  // Wide control
+  wideControl.anchor = start
+    .segmentToAngle(rac.Angle.s, rac.Control.radius * 3)
+    .draw()
+    // TODO: range of control could be a control property?
+    .nextSegmentToAngle(rac.Angle.e, 100);
+
+  wideControl.center()
+    .segmentToAngle(rac.Angle.n, rac.Control.radius * 1.5)
     .draw();
 
 
