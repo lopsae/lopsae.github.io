@@ -215,6 +215,14 @@ function draw() {
     .segmentToAngle(rac.Angle.w, rac.Control.radius*1.5)
     .draw(secondaryStroke);
 
+  // Second opening control arc reticule
+  secondStrokeStartBottom.segmentToAngle(rac.Angle.e, secondOpening)
+    .reverse()
+    .arcWithEnd(rac.Angle.n)
+    .draw(secondaryStroke)
+    .endPoint().segmentToAngle(rac.Angle.e, thin)
+    .draw(secondaryStroke);
+
   // Second stroke guide
   let secondStrokeGuide = baseline.pointAtBisector()
     .segmentToAngle(angle, 100);
