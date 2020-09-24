@@ -191,6 +191,15 @@ function draw() {
     .segmentToAngleToIntersectionWithSegment(angle.perpendicular(false), firstStrokeTopGuide)
     .draw(secondaryStroke);
 
+  // Second stroke width control
+  secondStrokeWidthControl.anchor = secondStrokeBottom.start
+    .segmentToAngle(rac.Angle.s, rac.Control.radius*5.5)
+    .draw(secondaryStroke)
+    .nextSegmentToAngle(rac.Angle.e, 100);
+  secondStrokeWidthControl.center()
+    .segmentToAngle(rac.Angle.n, rac.Control.radius*5)
+    .draw(secondaryStroke);
+
   // End descender
   let endDescender = secondStrokeBottom.end
     .segmentToAngleToIntersectionWithSegment(rac.Angle.s, baseline)
@@ -204,21 +213,12 @@ function draw() {
     .attachToShape();
 
   // End ascender guide
+  // TODO: move/remove?
   let endAscenderGuide = endBaseline
     .nextSegmentToAngle(rac.Angle.n, 100);
 
-  // Second stroke width control
-  secondStrokeWidthControl.anchor = secondStrokeBottom.end
-    .segmentToAngleToIntersectionWithSegment(angle, endAscenderGuide)
-    .draw(secondaryStroke)
-    .nextSegmentToAngle(rac.Angle.e, rac.Control.radius*2)
-    .draw(secondaryStroke)
-    .nextSegmentToAngle(rac.Angle.n, 100);
-  secondStrokeWidthControl.center()
-    .segmentToAngle(rac.Angle.w, rac.Control.radius*1.5)
-    .draw(secondaryStroke);
-
   // Second stroke top guide
+  // TODO: confusing?
   let secondStrokeTopGuide = secondStrokeBottom.end
     .pointToAngle(rac.Angle.w, secondStrokeWidth)
     .segmentToAngle(angle, 100);
