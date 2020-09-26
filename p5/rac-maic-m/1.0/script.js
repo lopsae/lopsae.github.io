@@ -33,9 +33,8 @@ function mouseReleased(event) {
 
 let initialMeasure = 120;
 
-let angleControl = new rac.ArcControl(1/4, .99);
+let angleControl = new rac.ArcControl(1/4, 1);
 angleControl.setValueWithArcLength(1/8);
-angleControl.setLimitsWithArcLengthInsets(1/50, 1/50);
 angleControl.addMarkerAtCurrentValue();
 rac.Control.controls.push(angleControl);
 
