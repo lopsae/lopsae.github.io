@@ -45,7 +45,7 @@ firstStrokeWidthControl.setLimitsWithLengthInsets(10, 0);
 rac.Control.controls.push(firstStrokeWidthControl);
 
 let secondStrokeWidthControl = new rac.SegmentControl(0, 250);
-secondStrokeWidthControl.setValueWithLength(Math.sqrt(2)*initialMeasure/2 + initialMeasure/2);
+secondStrokeWidthControl.setValueWithLength(initialMeasure/2);
 secondStrokeWidthControl.addMarkerAtCurrentValue();
 rac.Control.controls.push(secondStrokeWidthControl);
 
@@ -204,8 +204,6 @@ function draw() {
   secondStrokeBottom.end
     .segmentToAngleToIntersectionWithSegment(angle.perpendicular(false), firstStrokeTopGuide)
     .draw(secondaryStroke)
-    .nextSegmentToPoint(start)
-    .draw(secondaryStroke);
 
   // End descender
   let endDescender = secondStrokeBottom.end
@@ -283,14 +281,23 @@ function draw() {
     .attachToShape();
 
 
+  // First stroke extension reticules
+  firstStrokeTopGuide.segmentToIntersectionWithSegment(endAscender)
+    .draw(secondaryStroke)
+    .nextSegmentToPoint(endAscender.end)
+    .draw(secondaryStroke);
+  firstStrokeBottom.segmentToIntersectionWithSegment(endAscender)
+    .draw(secondaryStroke);
+
+
   // Arc for baseline opening reticule
   let baselineAtFirstStrokeBottomGuideS = baseline.reverse()
-    .arcWithEnd(angle).draw(secondaryStroke)
+    .arcWithEnd(angle)
+    .draw(secondaryStroke)
     .endPoint().segmentToAngle(rac.Angle.s, 100);
-  baselineAtFirstStrokeBottomGuideS.start
-    .segmentToPoint(baseline.end).draw(secondaryStroke);
   baselineAtFirstStrokeBottomGuideS
-    .segmentToIntersectionWithSegment(baseline).draw(secondaryStroke);
+    .segmentToIntersectionWithSegment(baseline)
+    .draw(secondaryStroke);
 
   // Openings base size reticule
   let reticule = 5;
