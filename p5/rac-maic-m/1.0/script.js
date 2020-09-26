@@ -33,15 +33,16 @@ function mouseReleased(event) {
 
 let initialMeasure = 120;
 
-let angleControl = new rac.ArcControl(1/4, 1/2);
-angleControl.setLimitsWithRatioInsets(0.05, 0.05);
+let angleControl = new rac.ArcControl(1/4, .99);
+angleControl.setValueWithArcLength(1/8);
+angleControl.setLimitsWithArcLengthInsets(1/50, 1/50);
 angleControl.addMarkerAtCurrentValue();
 rac.Control.controls.push(angleControl);
 
 let firstStrokeWidthControl = new rac.SegmentControl(0, 250);
 firstStrokeWidthControl.setValueWithLength(initialMeasure);
 firstStrokeWidthControl.addMarkerAtCurrentValue();
-firstStrokeWidthControl.setLimitsWithLengthInsets(10, 0);
+firstStrokeWidthControl.setLimitsWithLengthInsets(5, 0);
 rac.Control.controls.push(firstStrokeWidthControl);
 
 let secondStrokeWidthControl = new rac.SegmentControl(0, 250);
@@ -56,6 +57,7 @@ rac.Control.controls.push(thinControl);
 
 let firstOpeningControl = new rac.SegmentControl(0, 250);
 firstOpeningControl.setValueWithLength(initialMeasure);
+firstOpeningControl.setLimitsWithLengthInsets(5, 0);
 firstOpeningControl.addMarkerAtCurrentValue();
 rac.Control.controls.push(firstOpeningControl);
 
@@ -326,12 +328,11 @@ function draw() {
     .nextSegmentToAngle(rac.Angle.n, reticule).draw();
 
 
-  // Draw whole M!
-  rac.popShape().draw(colorScheme.fill.fill());
-
-
   // Controls draw on top
   rac.Control.drawControls();
+
+  // Draw whole M!
+  rac.popShape().draw(colorScheme.fill.fill());
 
   console.log(`👑 ~finis coronat opus ${Date.now()}`);
 }
