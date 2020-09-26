@@ -2038,6 +2038,19 @@ rac.ArcControl = class RacArcControl extends rac.Control {
     this.anchor = null;
   }
 
+  setValueWithArcLength(arcLengthValue) {
+    arcLengthValue = rac.Angle.from(arcLengthValue)
+    let arcLengthRatio = arcLengthValue.turn / this.arcLength.turn;
+    this.value = this.valueOf(arcLengthRatio);
+  }
+
+  setLimitsWithArcLengthInsets(startInset, endInset) {
+    startInset = rac.Angle.from(startInset);
+    endInset = rac.Angle.from(endInset);
+    this.startLimit = this.valueOf(startInset.turn / this.arcLength.turn);
+    this.endLimit = this.valueOf((this.arcLength.turn - endInset.turn) / this.arcLength.turn);
+  }
+
   // Returns the distance from `anchor.start` to the control center.
   distance() {
     return this.arcLength.mult(this.ratioValue());
