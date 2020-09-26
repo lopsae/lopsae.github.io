@@ -149,6 +149,20 @@ function draw() {
   let firstStrokeTopGuide = baseline.start
     .segmentToAngle(angle, 100);
 
+  // Second stroke width control
+  secondStrokeWidthControl.anchor = start
+    .segmentToAngle(rac.Angle.s, rac.Control.radius*5.5)
+    .draw(secondaryStroke)
+    .nextSegmentToAngle(rac.Angle.e, 100);
+  secondStrokeWidthControl.center()
+    .segmentToAngle(rac.Angle.n, rac.Control.radius*5)
+    .draw(secondaryStroke);
+
+  // Second stroke top guide
+  let secondStrokeTopGuide = start
+    .pointToAngle(rac.Angle.e, secondStrokeWidth)
+    .segmentToAngle(angle, 100);
+
   // First opening control
   firstOpeningControl.anchor = firstStrokeBottom.start
     .segmentToAngleToIntersectionWithSegment(angle.perpendicular(false), firstStrokeTopGuide)
@@ -192,31 +206,6 @@ function draw() {
     .draw(secondaryStroke)
     .nextSegmentToPoint(start)
     .draw(secondaryStroke);
-
-  // Second stroke width control
-  secondStrokeWidthControl.anchor = secondStrokeBottom.start
-    .segmentToAngle(rac.Angle.s, rac.Control.radius*5.5)
-    .draw(secondaryStroke)
-    .nextSegmentToAngle(rac.Angle.e, 100);
-  secondStrokeWidthControl.center()
-    .segmentToAngle(rac.Angle.n, rac.Control.radius*5)
-    .draw(secondaryStroke);
-
-  // Second stroke with arc reticule
-  let secondStrokeWidthArcReticule = secondStrokeBottom.start
-    .arc(secondStrokeWidth, rac.Angle.e, rac.Angle.n, false)
-    .draw(secondaryStroke);
-  secondStrokeWidthArcReticule.startPoint()
-    .segmentToAngle(rac.Angle.w, rac.Control.radius/2)
-    .draw(secondaryStroke);
-  secondStrokeWidthArcReticule.endPoint()
-    .segmentToPoint(firstStrokeBottom.end)
-    .draw(secondaryStroke);
-
-  // Second stroke top guide
-  let secondStrokeTopGuide = secondStrokeBottom.start
-    .pointToAngle(rac.Angle.n, secondStrokeWidth)
-    .segmentToAngle(angle, 100);
 
   // End descender
   let endDescender = secondStrokeBottom.end
@@ -268,16 +257,15 @@ function draw() {
     .segmentToIntersectionWithSegment(secondStrokeTopGuide)
     .draw(secondaryStroke);
 
+  // Second stroke width reticule
+  secondStrokeTopGuide.segmentToIntersectionWithSegment(middleAscenderGuide)
+    .draw(secondaryStroke);
+
   // Second stroke top
   let secondStrokeTop = endAscender.end
     .segmentToAngleToIntersectionWithSegment(angle.inverse(), middleAscenderGuide)
     .draw()
     .attachToShape();
-
-  // Last bit of second stroke width reticules
-  secondStrokeWidthArcReticule.endPoint()
-    .segmentToPoint(secondStrokeTop.end)
-    .draw(secondaryStroke);
 
   // First stroke top
   let firstStrokeTop = firstStrokeTopGuide
