@@ -288,6 +288,13 @@ function draw() {
     .draw(secondaryStroke);
   firstStrokeBottom.segmentToIntersectionWithSegment(endAscender)
     .draw(secondaryStroke);
+  middleDescender.end.segmentToAngle(rac.Angle.n, firstStrokeWidth)
+    .draw(secondaryStroke)
+    .arcWithEnd(rac.Angle.w, false)
+    .draw(secondaryStroke)
+    .endPoint()
+    .segmentToAngleToIntersectionWithSegment(angle, endAscender)
+    .draw(secondaryStroke);
 
 
   // Arc for baseline opening reticule
