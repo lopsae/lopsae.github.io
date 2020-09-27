@@ -70,7 +70,7 @@ function draw() {
 
 
   // Start point
-  let start = new rac.Point(width * 1/4, height * 2/3);
+  let start = new rac.Point(width * 1/4, height * 1/4);
 
 
   // Angle control
@@ -85,6 +85,28 @@ function draw() {
     .reverse()
     .segmentToBisector()
     .draw(secondaryStroke);
+
+
+  let chainringArc = start.arc(50)
+    .draw();
+
+  let gearCenter = start
+    .segmentToAngle(rac.Angle.s, 400).draw()
+    .end.arc(30).draw()
+    .center;
+
+  let firstDerrailCenter = gearCenter
+    .segmentToAngle(rac.Angle.ene, 100).draw()
+    .end.arc(10).draw()
+    .center;
+
+  let secondDerrailCenter = firstDerrailCenter
+    .segmentToAngle(rac.Angle.ese, 60).draw()
+    .end.arc(10).draw()
+    .center;
+
+  secondDerrailCenter
+    .segmentToPoint(chainringArc.pointAtAngle(rac.Angle.e)).draw();
 
 
 
