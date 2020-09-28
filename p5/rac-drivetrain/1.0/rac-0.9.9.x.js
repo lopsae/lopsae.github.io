@@ -952,6 +952,16 @@ rac.Segment.prototype.segmentPerpendicular = function(clockwise = true) {
   return this.end.segmentToPoint(newEnd);
 };
 
+// Returns an complete circle Arc using this segment `start` as center,
+// `length()` as radiusm, and `angle()` as start and end angles.
+rac.Segment.prototype.arc = function(clockwise = true) {
+  let angle = this.angle();
+  return new rac.Arc(
+    this.start, this.length(),
+    angle, angle,
+    clockwise);
+};
+
 // Returns an Arc using this segment `start` as center, `length()` as
 // radius, starting from the `angle()` to the given angle and orientation.
 rac.Segment.prototype.arcWithEnd = function(

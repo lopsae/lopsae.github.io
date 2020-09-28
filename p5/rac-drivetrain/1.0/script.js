@@ -90,22 +90,41 @@ function draw() {
   let chainringArc = start.arc(50)
     .draw();
 
-  let gearCenter = start
-    .segmentToAngle(rac.Angle.s, 400).draw()
-    .end.arc(30).draw()
+  let firstTopChain = chainringArc.pointAtAngle(rac.Angle.w)
+    .segmentToAngle(rac.Angle.s, 400)
+    .draw();
+
+  let gearCenter = firstTopChain
+    .nextSegmentToAngle(rac.Angle.e, 30)
+    .reverse().arc().draw()
     .center;
 
-  let firstDerrailCenter = gearCenter
-    .segmentToAngle(rac.Angle.ene, 100).draw()
+  let firstDerrailLeg = 80;
+  let secondDerrailLeg = 120;
+
+  let startFirstDerrailCenter = gearCenter
+    .segmentToAngle(rac.Angle.nne, firstDerrailLeg).draw()
     .end.arc(10).draw()
     .center;
 
-  let secondDerrailCenter = firstDerrailCenter
-    .segmentToAngle(rac.Angle.ese, 60).draw()
+  let endFirstDerrailCenter = gearCenter
+    .segmentToAngle(rac.Angle.ene, firstDerrailLeg).draw()
     .end.arc(10).draw()
     .center;
 
-  secondDerrailCenter
+  let startSecondDerrailCenter = startFirstDerrailCenter
+    .segmentToAngle(rac.Angle.sse, secondDerrailLeg).draw()
+    .end.arc(10).draw()
+    .center;
+
+  let endSecondDerrailCenter = endFirstDerrailCenter
+    .segmentToAngle(rac.Angle.ese, secondDerrailLeg).draw()
+    .end.arc(10).draw()
+    .center;
+
+  startSecondDerrailCenter
+    .segmentToPoint(chainringArc.pointAtAngle(rac.Angle.e)).draw();
+  endSecondDerrailCenter
     .segmentToPoint(chainringArc.pointAtAngle(rac.Angle.e)).draw();
 
 
