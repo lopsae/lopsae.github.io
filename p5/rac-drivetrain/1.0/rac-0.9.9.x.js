@@ -488,6 +488,10 @@ rac.Angle.prototype.radians = function() {
   return this.turn * TWO_PI;
 };
 
+rac.Angle.prototype.degrees = function() {
+  return this.turn * 360;
+};
+
 rac.Angle.zero =    new rac.Angle(0.0);
 rac.Angle.square =  new rac.Angle(1/4);
 rac.Angle.inverse = new rac.Angle(1/2);

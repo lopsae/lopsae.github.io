@@ -128,6 +128,34 @@ function draw() {
     .segmentToPoint(chainringArc.pointAtAngle(rac.Angle.e)).draw();
 
 
+  // Circle adyacent line intersection
+  // TODO: function to calculate this, name?
+  let interArc = (new rac.Point(500, 200)).arc(100);
+  interArc.draw();
+
+  let interPoint = new rac.Point(550, 600);
+  let interSegment = interPoint.segmentToPoint(interArc.center)
+    .draw();
+
+  let distance = interSegment.length();
+
+  let angleSine = interArc.radius / distance;
+  let angleRadians = Math.asin(angleSine);
+  let angle = rac.Angle.fromRadians(angleRadians);
+  let absCwAngle = interSegment.angle().shift(angle, true);
+  let absCcAngle = interSegment.angle().shift(angle, false);
+
+  interPoint.segmentToAngle(absCwAngle, distance+100).draw();
+  interPoint.segmentToAngle(absCcAngle, distance+100).draw();
+
+  // TODO: function to draw a radiusSegment?
+  interArc.center.segmentToAngle(absCwAngle.perpendicular(true), interArc.radius)
+    .draw(highlight);
+
+  interArc.center.segmentToAngle(absCcAngle.perpendicular(false), interArc.radius)
+    .draw();
+
+
 
   // Controls draw on top
   rac.Control.drawControls();
