@@ -133,7 +133,7 @@ function draw() {
   let interArc = (new rac.Point(500, 200)).arc(100);
   interArc.draw();
 
-  let interPoint = new rac.Point(550, 600);
+  let interPoint = interArc.center.pointToAngle(angleControl.distance(), 300);
   let interSegment = interPoint.segmentToPoint(interArc.center)
     .draw();
 
