@@ -130,6 +130,19 @@ function draw() {
     .draw();
 
 
+  // Circle to circle tangent
+  // TODO: function to calculate this, name?
+  let interArcEnd = (new rac.Point(500, 400)).arc(100)
+    .draw();
+
+  let interPoint = interArcEnd.center.pointToAngle(angleControl.distance(), 300);
+  let interArcStart = interPoint.arc(50)
+    .draw();
+
+  interArcStart.center.segmentToPoint(interArcEnd.center)
+    .draw();
+
+
   // Controls draw on top
   rac.Control.drawControls();
 
