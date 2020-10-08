@@ -544,6 +544,36 @@ rac.Point = class RacPoint{
     return new rac.Text(string, format, this, rotation);
   }
 
+  withX(newX) {
+    return new rac.Point(newX, this.y);
+  }
+
+  withY(newY) {
+    return new rac.Point(this.x, newY);
+  }
+
+  // Returns a segment that is tangent to `arc` in the `clockwise`
+  // orientation from the segment formed by `this` and `arc.center`. The
+  // returned segment has `this` as `start` and `end` is a point in `arc`.
+  // `arc` is considered as a complete circle.
+  segmentToArcTangent(arc, clockwise = true) {
+    let hypotenuse = this.segmentToPoint(arc.center);
+    let ops = arc.radius;
+
+    let angleRadians = Math.asin(ops / hypotenuse.length());
+    let angle = rac.Angle.fromRadians(angleRadians);
+    let shiftedAngle = hypotenuse.angle().shift(angle, clockwise);
+
+    let end = arc.pointAtAngle(shiftedAngle.perpendicular(clockwise));
+    return this.segmentToPoint(end);
+  }
+
+
+
+  static mouse() {
+    return new rac.Point(mouseX, mouseY);
+  }
+
 }
 
 
@@ -553,17 +583,6 @@ rac.defaultDrawer.setDrawFunction(rac.Point, function() {
 
 rac.setupProtoFunctions(rac.Point);
 
-rac.Point.mouse = function() {
-  return new rac.Point(mouseX, mouseY);
-}
-
-rac.Point.prototype.withX = function(newX) {
-  return new rac.Point(newX, this.y);
-};
-
-rac.Point.prototype.withY = function(newY) {
-  return new rac.Point(this.x, newY);
-};
 
 rac.Point.prototype.add = function(other, y = undefined) {
   if (other instanceof rac.Point && y === undefined) {
@@ -2237,7 +2256,6 @@ rac.Control.makeArrowShape = function(center, angle) {
     return arrow;
 };
 
-// maic
 rac.Control.makeLimitMarker = function(point, someAngle) {
   let angle = rac.Angle.from(someAngle);
   let perpendicular = angle.perpendicular(false);

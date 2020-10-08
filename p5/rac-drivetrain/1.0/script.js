@@ -134,6 +134,10 @@ function draw() {
   interArc.draw();
 
   let interPoint = interArc.center.pointToAngle(angleControl.distance(), 300);
+
+  interPoint.segmentToArcTangent(interArc, true)
+    .draw(highlight);
+
   let interSegment = interPoint.segmentToPoint(interArc.center)
     .draw();
 
