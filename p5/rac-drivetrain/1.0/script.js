@@ -136,29 +136,14 @@ function draw() {
   let interPoint = interArc.center.pointToAngle(angleControl.distance(), 300);
 
   interPoint.segmentToArcTangent(interArc, true)
-    .draw(highlight);
-
-  let interSegment = interPoint.segmentToPoint(interArc.center)
+    .draw(highlight)
+    .nextSegmentToPoint(interArc.center)
     .draw();
 
-  let distance = interSegment.length();
-
-  let angleSine = interArc.radius / distance;
-  let angleRadians = Math.asin(angleSine);
-  let angle = rac.Angle.fromRadians(angleRadians);
-  let absCwAngle = interSegment.angle().shift(angle, true);
-  let absCcAngle = interSegment.angle().shift(angle, false);
-
-  interPoint.segmentToAngle(absCwAngle, distance+100).draw();
-  interPoint.segmentToAngle(absCcAngle, distance+100).draw();
-
-  // TODO: function to draw a radiusSegment?
-  interArc.center.segmentToAngle(absCwAngle.perpendicular(true), interArc.radius)
-    .draw(highlight);
-
-  interArc.center.segmentToAngle(absCcAngle.perpendicular(false), interArc.radius)
+  interPoint.segmentToArcTangent(interArc, false)
+    .draw()
+    .nextSegmentToPoint(interArc.center)
     .draw();
-
 
 
   // Controls draw on top
