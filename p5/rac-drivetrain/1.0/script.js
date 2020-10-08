@@ -123,26 +123,10 @@ function draw() {
     .center;
 
   startSecondDerrailCenter
-    .segmentToPoint(chainringArc.pointAtAngle(rac.Angle.e)).draw();
-  endSecondDerrailCenter
-    .segmentToPoint(chainringArc.pointAtAngle(rac.Angle.e)).draw();
-
-
-  // Circle adyacent line intersection
-  // TODO: function to calculate this, name?
-  let interArc = (new rac.Point(500, 200)).arc(100);
-  interArc.draw();
-
-  let interPoint = interArc.center.pointToAngle(angleControl.distance(), 300);
-
-  interPoint.segmentToArcTangent(interArc, true)
-    .draw(highlight)
-    .nextSegmentToPoint(interArc.center)
+    .segmentToArcTangent(chainringArc, true)
     .draw();
-
-  interPoint.segmentToArcTangent(interArc, false)
-    .draw()
-    .nextSegmentToPoint(interArc.center)
+  endSecondDerrailCenter
+    .segmentToArcTangent(chainringArc, true)
     .draw();
 
 
