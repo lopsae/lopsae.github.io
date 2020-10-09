@@ -43,6 +43,16 @@ rac.Control.controls.push(angleControl);
 
 
 
+function makeExampleContext(center, exampleAngle, arcsAngle, arcsDistance, closure) {
+  let distanceToExample = 220;
+  let endCenter = center.pointToAngle(exampleAngle, distanceToExample);
+  let startCenter = endCenter.pointToAngle(arcsAngle, arcsDistance);
+
+  closure(startCenter, endCenter);
+}
+
+
+
 function draw() {
   clear();
 
@@ -74,7 +84,7 @@ function draw() {
 
 
   // General measurements
-  let distanceToExample = 220;
+  let distanceToExample = 220; // TODO: delete
   let startArcRadius = 30;
   let endArcRadius = 80;
 
@@ -133,21 +143,18 @@ function draw() {
     .draw();
 
 
+  // Circle to circle
+  makeExampleContext(center, rac.Angle.ne, angleControl.distance(), distanceControl.distance(),
+    (startCenter, endCenter) => {
+    endCenter.arc(endArcRadius)
+      .draw();
 
+    startCenter.arc(startArcRadius)
+      .draw();
 
-
-  let interArcEnd = center
-    .pointToAngle(rac.Angle.ne, distanceToExample)
-    .arc(endArcRadius)
-    .draw();
-
-  let interArcStart = interArcEnd.center
-    .pointToAngle(angleControl.distance(), distanceControl.distance())
-    .arc(startArcRadius)
-    .draw();
-
-  interArcStart.center.segmentToPoint(interArcEnd.center)
-    .draw();
+    startCenter.segmentToPoint(endCenter)
+      .draw();
+  });
 
 
   // Controls draw on top
