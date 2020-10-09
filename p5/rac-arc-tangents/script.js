@@ -69,17 +69,17 @@ function draw() {
   rac.Control.pointerStyle = colorScheme.pointer.stroke(3);
 
 
-  // Start point
-  let start = new rac.Point(width * 1/4, height * 1/4);
+  // Center pont
+  let center = new rac.Point(width/2, height/2);
 
 
   // Angle control
-  angleControl.anchor = start
-    .segmentToAngle(rac.Angle.w, rac.Control.radius * 6)
-    .arcWithEnd(1/4, false);
+  angleControl.anchor = center
+    .segmentToAngle(rac.Angle.e, rac.Control.radius * 4)
+    .arcWithEnd(1/4);
 
   angleControl.center()
-    .segmentToPoint(start)
+    .segmentToPoint(center)
     .draw(secondaryStroke);
   angleControl.anchor.startSegment()
     .reverse()
@@ -87,52 +87,7 @@ function draw() {
     .draw(secondaryStroke);
 
 
-  let chainringArc = start.arc(50)
-    .draw();
-
-  let firstTopChain = chainringArc.pointAtAngle(rac.Angle.w)
-    .segmentToAngle(rac.Angle.s, 400)
-    .draw();
-
-  let gearCenter = firstTopChain
-    .nextSegmentToAngle(rac.Angle.e, 30)
-    .reverse().arc().draw()
-    .center;
-
-  let firstDerrailLeg = 80;
-  let secondDerrailLeg = 120;
-
-  let startFirstDerrailCenter = gearCenter
-    .segmentToAngle(rac.Angle.nne, firstDerrailLeg).draw()
-    .end.arc(10).draw()
-    .center;
-
-  let endFirstDerrailCenter = gearCenter
-    .segmentToAngle(rac.Angle.ene, firstDerrailLeg).draw()
-    .end.arc(10).draw()
-    .center;
-
-  let startSecondDerrailCenter = startFirstDerrailCenter
-    .segmentToAngle(rac.Angle.sse, secondDerrailLeg).draw()
-    .end.arc(10).draw()
-    .center;
-
-  let endSecondDerrailCenter = endFirstDerrailCenter
-    .segmentToAngle(rac.Angle.ese, secondDerrailLeg).draw()
-    .end.arc(10).draw()
-    .center;
-
-  startSecondDerrailCenter
-    .segmentToArcTangent(chainringArc, true)
-    .draw();
-  endSecondDerrailCenter
-    .segmentToArcTangent(chainringArc, true)
-    .draw();
-
-
-  // Circle to circle tangent
-  // TODO: function to calculate this, name?
-  let interArcEnd = (new rac.Point(500, 400)).arc(100)
+  let interArcEnd = center.pointToAngle(rac.Angle.ne, 300).arc(100)
     .draw();
 
   let interPoint = interArcEnd.center.pointToAngle(angleControl.distance(), 300);
