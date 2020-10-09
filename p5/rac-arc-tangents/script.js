@@ -32,6 +32,10 @@ function mouseReleased(event) {
 }
 
 
+let distanceControl = new rac.SegmentControl(0, 200)
+distanceControl.setValueWithLength(150);
+rac.Control.controls.push(distanceControl);
+
 let angleControl = new rac.ArcControl(1/4, 1);
 angleControl.setValueWithArcLength(1/8);
 angleControl.addMarkerAtCurrentValue();
@@ -73,17 +77,22 @@ function draw() {
   let distanceToExample = 220;
   let startArcRadius = 30;
   let endArcRadius = 80;
-  let distanceBetweenArcs = 150;
 
 
   // Center pont
   let center = new rac.Point(width/2, height/2);
 
 
+  // Distance control
+  distanceControl.anchor = center
+    .segmentToAngle(rac.Angle.n, distanceControl.length/2)
+    .reverse();
+
+
   // Angle control
   angleControl.anchor = center
     .pointToAngle(rac.Angle.nw, distanceToExample)
-    .segmentToAngle(rac.Angle.e, rac.Control.radius * 4)
+    .segmentToAngle(rac.Angle.w, rac.Control.radius * 4)
     .arcWithEnd(1/4);
 
   angleControl.center()
@@ -98,7 +107,7 @@ function draw() {
   // Arc-tangent segment from point
 
   let fromPointStart = angleControl.anchor.center
-    .pointToAngle(angleControl.distance(), rac.Control.radius * 8);
+    .pointToAngle(angleControl.distance(), distanceControl.distance());
 
   fromPointStart.segmentToArcTangent(angleControl.anchor, true)
     .draw(highlight);
@@ -133,7 +142,7 @@ function draw() {
     .draw();
 
   let interArcStart = interArcEnd.center
-    .pointToAngle(angleControl.distance(), distanceBetweenArcs)
+    .pointToAngle(angleControl.distance(), distanceControl.distance())
     .arc(startArcRadius)
     .draw();
 
