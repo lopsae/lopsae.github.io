@@ -96,33 +96,31 @@ function draw() {
 
 
   // Arc-tangent segment from point
-  let interArc = (new rac.Point(500, 200)).arc(100);
-  interArc.draw();
 
-  let interPoint = interArc.center.pointToAngle(angleControl.distance(), 300);
+  let fromPointStart = angleControl.anchor.center
+    .pointToAngle(angleControl.distance(), rac.Control.radius * 8);
 
-  interPoint.segmentToArcTangent(interArc, true)
+  fromPointStart.segmentToArcTangent(angleControl.anchor, true)
     .draw(highlight);
 
-  let interSegment = interPoint.segmentToPoint(interArc.center)
+  let interSegment = fromPointStart.segmentToPoint(angleControl.anchor.center)
     .draw();
 
   let distance = interSegment.length();
 
-  let angleSine = interArc.radius / distance;
+  let angleSine = angleControl.anchor.radius / distance;
   let angleRadians = Math.asin(angleSine);
   let angle = rac.Angle.fromRadians(angleRadians);
   let absCwAngle = interSegment.angle().shift(angle, true);
   let absCcAngle = interSegment.angle().shift(angle, false);
 
-  interPoint.segmentToAngle(absCwAngle, distance+100).draw();
-  interPoint.segmentToAngle(absCcAngle, distance+100).draw();
+  fromPointStart.segmentToAngle(absCwAngle, distance+100).draw();
+  fromPointStart.segmentToAngle(absCcAngle, distance+100).draw();
 
-  // TODO: function to draw a radiusSegment?
-  interArc.center.segmentToAngle(absCwAngle.perpendicular(true), interArc.radius)
+  angleControl.anchor.center.segmentToAngle(absCwAngle.perpendicular(true), angleControl.anchor.radius)
     .draw(highlight);
 
-  interArc.center.segmentToAngle(absCcAngle.perpendicular(false), interArc.radius)
+  angleControl.anchor.center.segmentToAngle(absCcAngle.perpendicular(false), angleControl.anchor.radius)
     .draw();
 
 
