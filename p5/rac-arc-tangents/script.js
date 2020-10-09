@@ -69,17 +69,25 @@ function draw() {
   rac.Control.pointerStyle = colorScheme.pointer.stroke(3);
 
 
+  // General measurements
+  let distanceToExample = 220;
+  let startArcRadius = 30;
+  let endArcRadius = 80;
+  let distanceBetweenArcs = 150;
+
+
   // Center pont
   let center = new rac.Point(width/2, height/2);
 
 
   // Angle control
   angleControl.anchor = center
+    .pointToAngle(rac.Angle.nw, distanceToExample)
     .segmentToAngle(rac.Angle.e, rac.Control.radius * 4)
     .arcWithEnd(1/4);
 
   angleControl.center()
-    .segmentToPoint(center)
+    .segmentToPoint(angleControl.anchor.center)
     .draw(secondaryStroke);
   angleControl.anchor.startSegment()
     .reverse()
@@ -87,11 +95,14 @@ function draw() {
     .draw(secondaryStroke);
 
 
-  let interArcEnd = center.pointToAngle(rac.Angle.ne, 300).arc(100)
+  let interArcEnd = center
+    .pointToAngle(rac.Angle.ne, distanceToExample)
+    .arc(endArcRadius)
     .draw();
 
-  let interPoint = interArcEnd.center.pointToAngle(angleControl.distance(), 300);
-  let interArcStart = interPoint.arc(50)
+  let interPoint = interArcEnd.center
+    .pointToAngle(angleControl.distance(), distanceBetweenArcs);
+  let interArcStart = interPoint.arc(startArcRadius)
     .draw();
 
   interArcStart.center.segmentToPoint(interArcEnd.center)
