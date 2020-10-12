@@ -130,12 +130,14 @@ function draw() {
 
     let angleSine = ops / hyp;
     let angleRadians = Math.asin(angleSine);
-    let angle = rac.Angle.fromRadians(angleRadians);
+    let opsAngle = rac.Angle.fromRadians(angleRadians);
 
     // Clockwise segments
-    let absCwAngle = distanceSegment.angle().shift(angle, true);
+    let cwAbsAdjAngle = distanceSegment.angle()
+      .shift(opsAngle, true)
+      .perpendicular(true);
     let cwEnd = angleControl.anchor
-      .pointAtAngle(absCwAngle.perpendicular(true));
+      .pointAtAngle(cwAbsAdjAngle);
     angleControl.anchor.center
       .segmentToPoint(cwEnd)
       .draw()
@@ -143,10 +145,19 @@ function draw() {
       .withStartExtended(overflow)
       .draw();
 
+    // With implemented function
+    startCenter.segmentToArcTangent(angleControl.anchor, true)
+      .translate(rac.Point.origin.pointToAngle(cwAbsAdjAngle, 20))
+      .draw()
+      .nextSegmentToPoint(cwEnd)
+      .draw(secondaryStroke);
+
     // Counter-clockwise segments
-    let absCcAngle = distanceSegment.angle().shift(angle, false);
+    let ccAbsAdjAngle = distanceSegment.angle()
+      .shift(opsAngle, false)
+      .perpendicular(false);
     let ccEnd = angleControl.anchor
-      .pointAtAngle(absCcAngle.perpendicular(false));
+      .pointAtAngle(ccAbsAdjAngle);
     angleControl.anchor.center
       .segmentToPoint(ccEnd)
       .draw(secondaryStroke)
@@ -154,8 +165,12 @@ function draw() {
       .withStartExtended(overflow)
       .draw(secondaryStroke);
 
-    // startCenter.segmentToArcTangent(angleControl.anchor, true)
-    //   .draw(highlight);
+    // With implemented function
+    startCenter.segmentToArcTangent(angleControl.anchor, false)
+      .translate(rac.Point.origin.pointToAngle(ccAbsAdjAngle, 20))
+      .draw(secondaryStroke)
+      .nextSegmentToPoint(ccEnd)
+      .draw(secondaryStroke);
   });
 
 

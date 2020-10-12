@@ -5,9 +5,6 @@
 let rac;
 rac = rac ?? {};
 
-// Container for prototype functions
-rac.protoFunctions = {};
-
 
 // Draws using p5js canvas
 rac.Drawer = class RacDrawer {
@@ -102,6 +99,9 @@ rac.Drawer = class RacDrawer {
 
 rac.defaultDrawer = new rac.Drawer();
 
+
+// Container for prototype functions
+rac.protoFunctions = {};
 
 rac.protoFunctions.draw = function(style = null){
   rac.defaultDrawer.drawElement(this, style);
@@ -223,7 +223,14 @@ rac.Error = {
 };
 
 
+// Returns the constructor name of `obj`, or its type name.
+rac.typeName = function(obj) {
+  return obj.constructor.name ?? typeof obj
+};
+
+
 rac.Color = class RacColor {
+
   constructor(r, g, b, alpha = 1) {
     this.r = r;
     this.g = g;
@@ -592,12 +599,38 @@ rac.Point.prototype.add = function(other, y = undefined) {
   }
 
   if (typeof other === "number" && typeof y === "number") {
+    let x = other;
     return new rac.Point(
-      this.x + other,
+      this.x + x,
       this.y + y);
   }
 
+  // TODO: use typeName in other situations, look for constructor.name
+  console.trace(`Invalid parameter combination - other-type:${rac.typeName(other)} y-type:${rac.typeName(y)}`);
   throw rac.Error.invalidParameterCombination;
+};
+
+rac.Point.prototype.substract = function(other, y = undefined) {
+  if (other instanceof rac.Point && y === undefined) {
+    return new rac.Point(
+    this.x - other.x,
+    this.y - other.y);
+  }
+
+  if (typeof other === "number" && typeof y === "number") {
+    let x = other;
+    return new rac.Point(
+      this.x - x,
+      this.y - y);
+  }
+
+  console.trace(`Invalid parameter combination - other-type:${rac.typeName(other)} y-type:${rac.typeName(y)}`);
+  throw rac.Error.invalidParameterCombination;
+};
+
+
+rac.Point.prototype.sub = function(other, y = undefined) {
+  this.substract(other, y);
 };
 
 rac.Point.prototype.addX = function(x) {
@@ -663,6 +696,9 @@ rac.Point.prototype.segmentPerpendicularToSegment = function(segment) {
 rac.Point.prototype.arc = function(radius, start = rac.Angle.zero, end = start, clockwise = true) {
   return new rac.Arc(this, radius, start, end, clockwise);
 };
+
+
+rac.Point.origin = new rac.Point(0, 0);
 
 
 
@@ -906,9 +942,29 @@ rac.Segment.prototype.reverse = function() {
 };
 
 rac.Segment.prototype.translateToStart = function(newStart) {
-  let offset = newStart.add(this.start.negative());
+  let offset = newStart.substract(this.start);
   return new rac.Segment(this.start.add(offset), this.end.add(offset));
 };
+
+// Translates the segment by the entire `point`, or by the given `x` and
+// `y` components.
+rac.Segment.prototype.translate = function(point, y = undefined) {
+  if (point instanceof rac.Point && y === undefined) {
+    return new rac.Segment(
+      this.start.add(point),
+      this.end.add(point));
+  }
+
+  if (typeof point === "number" && typeof y === "number") {
+    let x = point;
+    return new rac.Segment(
+      this.start.add(x, y),
+      this.end.add(x, y));
+  }
+
+  console.trace(`Invalid parameter combination - point-type:${rac.typeName(point)} y-type:${rac.typeName(y)}`);
+  throw rac.Error.invalidParameterCombination;
+}
 
 // Returns the intersecting point of `this` and `other`. Both segments are
 // considered lines without endpoints.
