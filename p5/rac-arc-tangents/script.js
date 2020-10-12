@@ -188,6 +188,34 @@ function draw() {
   });
 
 
+  // Example 3
+  makeExampleContext(center, rac.Angle.sw, exampleAngle, exampleDistance,
+    (startCenter, endCenter) => {
+    endCenter.arc(endArcRadius)
+      .draw();
+
+    startCenter.arc(startArcRadius)
+      .draw();
+
+    startCenter.segmentToPoint(endCenter)
+      .draw();
+  });
+
+
+  // Example 4
+  makeExampleContext(center, rac.Angle.se, exampleAngle, exampleDistance,
+    (startCenter, endCenter) => {
+    endCenter.arc(endArcRadius)
+      .draw();
+
+    startCenter.arc(startArcRadius)
+      .draw();
+
+    startCenter.segmentToPoint(endCenter)
+      .draw();
+  });
+
+
   // Controls draw on top
   rac.Control.drawControls();
 
