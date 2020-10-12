@@ -95,7 +95,7 @@ function draw() {
 
   // Distance control
   distanceControl.anchor = center
-    .segmentToAngle(rac.Angle.n, distanceControl.length/2)
+    .segmentToAngle(rac.Angle.w, distanceControl.length/2)
     .reverse();
 
 
@@ -113,38 +113,40 @@ function draw() {
     .segmentToBisector()
     .draw(secondaryStroke);
 
+  let exampleAngle = angleControl.distance();
+  let exampleDistance = distanceControl.distance();
+
 
   // Arc-tangent segment from point
+  makeExampleContext(center, rac.Angle.nw, exampleAngle, exampleDistance,
+    (startCenter, endCenter) => {
+    startCenter.segmentToArcTangent(angleControl.anchor, true)
+      .draw(highlight);
 
-  let fromPointStart = angleControl.anchor.center
-    .pointToAngle(angleControl.distance(), distanceControl.distance());
+    let interSegment = startCenter.segmentToPoint(endCenter)
+      .draw();
 
-  fromPointStart.segmentToArcTangent(angleControl.anchor, true)
-    .draw(highlight);
+    let distance = interSegment.length();
 
-  let interSegment = fromPointStart.segmentToPoint(angleControl.anchor.center)
-    .draw();
+    let angleSine = angleControl.anchor.radius / distance;
+    let angleRadians = Math.asin(angleSine);
+    let angle = rac.Angle.fromRadians(angleRadians);
+    let absCwAngle = interSegment.angle().shift(angle, true);
+    let absCcAngle = interSegment.angle().shift(angle, false);
 
-  let distance = interSegment.length();
+    startCenter.segmentToAngle(absCwAngle, distance+100).draw();
+    startCenter.segmentToAngle(absCcAngle, distance+100).draw();
 
-  let angleSine = angleControl.anchor.radius / distance;
-  let angleRadians = Math.asin(angleSine);
-  let angle = rac.Angle.fromRadians(angleRadians);
-  let absCwAngle = interSegment.angle().shift(angle, true);
-  let absCcAngle = interSegment.angle().shift(angle, false);
+    endCenter.segmentToAngle(absCwAngle.perpendicular(true), angleControl.anchor.radius)
+      .draw(highlight);
 
-  fromPointStart.segmentToAngle(absCwAngle, distance+100).draw();
-  fromPointStart.segmentToAngle(absCcAngle, distance+100).draw();
-
-  angleControl.anchor.center.segmentToAngle(absCwAngle.perpendicular(true), angleControl.anchor.radius)
-    .draw(highlight);
-
-  angleControl.anchor.center.segmentToAngle(absCcAngle.perpendicular(false), angleControl.anchor.radius)
-    .draw();
+    endCenter.segmentToAngle(absCcAngle.perpendicular(false), angleControl.anchor.radius)
+      .draw();
+  });
 
 
   // Circle to circle
-  makeExampleContext(center, rac.Angle.ne, angleControl.distance(), distanceControl.distance(),
+  makeExampleContext(center, rac.Angle.ne, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
     endCenter.arc(endArcRadius)
       .draw();
