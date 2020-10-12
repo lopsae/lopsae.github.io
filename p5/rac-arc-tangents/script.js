@@ -137,19 +137,22 @@ function draw() {
     let cwEnd = angleControl.anchor
       .pointAtAngle(absCwAngle.perpendicular(true));
     angleControl.anchor.center
-      .segmentToPoint(cwEnd).draw()
-      .nextSegmentToPoint(startCenter).draw();
+      .segmentToPoint(cwEnd)
+      .draw()
+      .nextSegmentToPoint(startCenter)
+      .withStartExtended(overflow)
+      .draw();
 
     // Counter-clockwise segments
     let absCcAngle = distanceSegment.angle().shift(angle, false);
     let ccEnd = angleControl.anchor
       .pointAtAngle(absCcAngle.perpendicular(false));
     angleControl.anchor.center
-      .segmentToPoint(ccEnd).draw(secondaryStroke)
-      .nextSegmentToPoint(startCenter).draw(secondaryStroke);
-
-    // startCenter.segmentToAngle(absCwAngle, hyp+overflow).draw();
-    // startCenter.segmentToAngle(absCcAngle, hyp+overflow).draw();
+      .segmentToPoint(ccEnd)
+      .draw(secondaryStroke)
+      .nextSegmentToPoint(startCenter)
+      .withStartExtended(overflow)
+      .draw(secondaryStroke);
 
     // startCenter.segmentToArcTangent(angleControl.anchor, true)
     //   .draw(highlight);
