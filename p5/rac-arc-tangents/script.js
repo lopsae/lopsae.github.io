@@ -34,6 +34,7 @@ function mouseReleased(event) {
 
 let distanceControl = new rac.SegmentControl(0, 200)
 distanceControl.setValueWithLength(150);
+distanceControl.setLimitsWithLengthInsets(10, 0);
 rac.Control.controls.push(distanceControl);
 
 let angleControl = new rac.ArcControl(1/4, 1);
@@ -134,7 +135,6 @@ function draw() {
 
     let angleRadians = Math.asin(angleSine);
     let opsAngle = rac.Angle.fromRadians(angleRadians);
-    console.log(`${opsAngle.turn}`);
 
     // Clockwise segments
     let cwAbsOpsAngle = distanceSegment.angle()
@@ -156,7 +156,10 @@ function draw() {
     }
 
     // With implemented function
-    startCenter.segmentToArcTangent(angleControl.anchor, true)
+    let cwArcTangent = startCenter
+      .segmentToArcTangent(angleControl.anchor, true)
+      ?? cwEnd.segmentToPoint(cwEnd);
+    cwArcTangent
       .translate(rac.Point.origin.pointToAngle(cwAbsAdjAngle, 20))
       .draw()
       .nextSegmentToPoint(cwEnd)
@@ -182,7 +185,10 @@ function draw() {
     }
 
     // With implemented function
-    startCenter.segmentToArcTangent(angleControl.anchor, false)
+    let ccArcTangent = startCenter
+      .segmentToArcTangent(angleControl.anchor, false)
+      ?? ccEnd.segmentToPoint(ccEnd);
+    ccArcTangent
       .translate(rac.Point.origin.pointToAngle(ccAbsAdjAngle, 20))
       .draw(secondaryStroke)
       .nextSegmentToPoint(ccEnd)
