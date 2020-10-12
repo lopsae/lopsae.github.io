@@ -72,7 +72,7 @@ rac.Drawer = class RacDrawer {
     let routine = this.routines
       .find(routine => element instanceof routine.classObj);
     if (routine === undefined) {
-      console.trace(`Cannot draw element - constructorName:${element.constructor.name}`);
+      console.trace(`Cannot draw element - element-type:${rac.typeName(element)}`);
       throw rac.Error.invalidObjectToDraw;
     }
 
@@ -188,7 +188,7 @@ rac.protoFunctions.attachTo = function(someComposite) {
     return this;
   }
 
-  console.trace(`Cannot attachTo composite - constructorName:${someComposite.constructor.name}`);
+  console.trace(`Cannot attachTo composite - someComposite-type:${rac.typeName(someComposite)}`);
   throw rac.Error.invalidObjectToConvert;
 };
 
@@ -400,7 +400,7 @@ rac.Angle.from = function(something) {
     return something.angle();
   }
 
-  console.trace(`Cannot convert to rac.Angle - constructorName:${something.constructor.name}`);
+  console.trace(`Cannot convert to rac.Angle - something-type:${rac.typeName(something)}`);
   throw rac.Error.invalidObjectToConvert;
 }
 
@@ -605,7 +605,6 @@ rac.Point.prototype.add = function(other, y = undefined) {
       this.y + y);
   }
 
-  // TODO: use typeName in other situations, look for constructor.name
   console.trace(`Invalid parameter combination - other-type:${rac.typeName(other)} y-type:${rac.typeName(y)}`);
   throw rac.Error.invalidParameterCombination;
 };
@@ -1881,7 +1880,7 @@ rac.Control = class RacControl {
   // Abstract function.
   // Returns the center of the control hitpoint.
   center() {
-    console.trace(`Abstract function called - this-type:${this.constructor.name ?? typeof this}`);
+    console.trace(`Abstract function called - this-type:${rac.typeName(this)}`);
     throw rac.Error.abstractFunctionCalled;
   }
 
@@ -1889,14 +1888,14 @@ rac.Control = class RacControl {
   // Returns the persistent copy of the control anchor to be used during
   // user interaction.
   copyAnchor() {
-    console.trace(`Abstract function called - this-type:${this.constructor.name ?? typeof this}`);
+    console.trace(`Abstract function called - this-type:${rac.typeName(this)}`);
     throw rac.Error.abstractFunctionCalled;
   }
 
   // Abstract function.
   // Draws the current state of the control.
   draw() {
-    console.trace(`Abstract function called - this-type:${this.constructor.name ?? typeof this}`);
+    console.trace(`Abstract function called - this-type:${rac.typeName(this)}`);
     throw rac.Error.abstractFunctionCalled;
   }
 
@@ -1905,7 +1904,7 @@ rac.Control = class RacControl {
   // `anchorCopy`. Called by `pointerDragged` as the user interacts with a
   // selected control.
   updateWithPointer(pointerControlCenter, anchorCopy) {
-    console.trace(`Abstract function called - this-type:${this.constructor.name ?? typeof this}`);
+    console.trace(`Abstract function called - this-type:${rac.typeName(this)}`);
     throw rac.Error.abstractFunctionCalled;
   }
 
@@ -1914,7 +1913,7 @@ rac.Control = class RacControl {
   // interaction visuals. Called by `drawControls` for the currently
   // selected control.
   drawSelection(pointerCenter, anchorCopy, pointerOffset) {
-    console.trace(`Abstract function called - this-type:${this.constructor.name ?? typeof this}`);
+    console.trace(`Abstract function called - this-type:${rac.typeName(this)}`);
     throw rac.Error.abstractFunctionCalled;
   }
 
