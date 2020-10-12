@@ -453,7 +453,7 @@ rac.Angle.prototype.shift = function(someAngle, clockwise = true) {
     : this.sub(angle);
 };
 
-// Returns the equivalent of `self` when `someOrigin` is considered the
+// Returns the equivalent of `this` when `someOrigin` is considered the
 // origin, in the `clockwise` orientation.
 rac.Angle.prototype.shiftToOrigin = function(someOrigin, clockwise) {
   let origin = rac.Angle.from(someOrigin);
@@ -563,11 +563,18 @@ rac.Point = class RacPoint{
   // orientation from the segment formed by `this` and `arc.center`. The
   // returned segment has `this` as `start` and `end` is a point in `arc`.
   // `arc` is considered as a complete circle.
+  // Returns `null` if `this` is inside `arc` and thus no tangent segment
+  // is possible.
   segmentToArcTangent(arc, clockwise = true) {
     let hypotenuse = this.segmentToPoint(arc.center);
     let ops = arc.radius;
 
-    let angleRadians = Math.asin(ops / hypotenuse.length());
+    let angleSine = ops / hypotenuse.length();
+    if (angleSine > 1) {
+      return null;
+    }
+
+    let angleRadians = Math.asin(angleSine);
     let angle = rac.Angle.fromRadians(angleRadians);
     let shiftedAngle = hypotenuse.angle().shift(angle, clockwise);
 
@@ -1009,7 +1016,7 @@ rac.Segment.prototype.segmentWithRatioOfLength = function(ratio) {
 };
 
 // Returns a new segment from `end` with the given `length` with the same
-// angle as `self`.
+// angle as `this`.
 rac.Segment.prototype.nextSegmentWithLength = function(length) {
   return this.end.segmentToAngle(this.angle(), length);
 };
@@ -1283,7 +1290,7 @@ rac.Arc.prototype.containsAngle = function(someAngle) {
   }
 };
 
-// Returns a segment for the chord formed by the intersection of `self` and
+// Returns a segment for the chord formed by the intersection of `this` and
 // `other`, or `null` if there is no intersection.
 // Both arcs are considered complete circles for the calculation of the
 // chord, thus the endpoints of the returned segment may not lay inside the
