@@ -84,9 +84,11 @@ function draw() {
 
 
   // General measurements
-  let distanceToExample = 220; // TODO: delete
   let startArcRadius = 30;
   let endArcRadius = 80;
+
+  // Aesthetics
+  let overflow = 50;
 
 
   // Center pont
@@ -99,20 +101,6 @@ function draw() {
     .reverse();
 
 
-  // Angle control
-  angleControl.anchor = center
-    .pointToAngle(rac.Angle.nw, distanceToExample)
-    .segmentToAngle(rac.Angle.w, rac.Control.radius * 4)
-    .arcWithEnd(1/4);
-
-  angleControl.center()
-    .segmentToPoint(angleControl.anchor.center)
-    .draw(secondaryStroke);
-  angleControl.anchor.startSegment()
-    .reverse()
-    .segmentToBisector()
-    .draw(secondaryStroke);
-
   let exampleAngle = angleControl.distance();
   let exampleDistance = distanceControl.distance();
 
@@ -120,28 +108,51 @@ function draw() {
   // Arc-tangent segment from point
   makeExampleContext(center, rac.Angle.nw, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
-    startCenter.segmentToArcTangent(angleControl.anchor, true)
-      .draw(highlight);
+    // Angle control
+    angleControl.anchor = endCenter
+      .segmentToAngle(rac.Angle.w, rac.Control.radius * 4)
+      .arcWithEnd(1/4);
 
-    let interSegment = startCenter.segmentToPoint(endCenter)
+    angleControl.center()
+      .segmentToPoint(angleControl.anchor.center)
+      .draw(secondaryStroke);
+    angleControl.anchor.startSegment()
+      .reverse()
+      .segmentToBisector()
+      .draw(secondaryStroke);
+
+    // Example
+    let distanceSegment = startCenter.segmentToPoint(endCenter)
       .draw();
 
-    let distance = interSegment.length();
+    let hyp = distanceSegment.length();
+    let ops = angleControl.anchor.radius
 
-    let angleSine = angleControl.anchor.radius / distance;
+    let angleSine = ops / hyp;
     let angleRadians = Math.asin(angleSine);
     let angle = rac.Angle.fromRadians(angleRadians);
-    let absCwAngle = interSegment.angle().shift(angle, true);
-    let absCcAngle = interSegment.angle().shift(angle, false);
 
-    startCenter.segmentToAngle(absCwAngle, distance+100).draw();
-    startCenter.segmentToAngle(absCcAngle, distance+100).draw();
+    // Clockwise segments
+    let absCwAngle = distanceSegment.angle().shift(angle, true);
+    let cwEnd = angleControl.anchor
+      .pointAtAngle(absCwAngle.perpendicular(true));
+    angleControl.anchor.center
+      .segmentToPoint(cwEnd).draw()
+      .nextSegmentToPoint(startCenter).draw();
 
-    endCenter.segmentToAngle(absCwAngle.perpendicular(true), angleControl.anchor.radius)
-      .draw(highlight);
+    // Counter-clockwise segments
+    let absCcAngle = distanceSegment.angle().shift(angle, false);
+    let ccEnd = angleControl.anchor
+      .pointAtAngle(absCcAngle.perpendicular(false));
+    angleControl.anchor.center
+      .segmentToPoint(ccEnd).draw(secondaryStroke)
+      .nextSegmentToPoint(startCenter).draw(secondaryStroke);
 
-    endCenter.segmentToAngle(absCcAngle.perpendicular(false), angleControl.anchor.radius)
-      .draw();
+    // startCenter.segmentToAngle(absCwAngle, hyp+overflow).draw();
+    // startCenter.segmentToAngle(absCcAngle, hyp+overflow).draw();
+
+    // startCenter.segmentToArcTangent(angleControl.anchor, true)
+    //   .draw(highlight);
   });
 
 
