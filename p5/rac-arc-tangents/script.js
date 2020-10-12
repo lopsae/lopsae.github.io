@@ -128,22 +128,32 @@ function draw() {
     let hyp = distanceSegment.length();
     let ops = angleControl.anchor.radius
 
+    // Sine over 1 is invalid
     let angleSine = ops / hyp;
+    angleSine = Math.min(angleSine, 1);
+
     let angleRadians = Math.asin(angleSine);
     let opsAngle = rac.Angle.fromRadians(angleRadians);
+    console.log(`${opsAngle.turn}`);
 
     // Clockwise segments
-    let cwAbsAdjAngle = distanceSegment.angle()
-      .shift(opsAngle, true)
-      .perpendicular(true);
+    let cwAbsOpsAngle = distanceSegment.angle()
+      .shift(opsAngle, true);
+    let cwAbsAdjAngle = cwAbsOpsAngle.perpendicular(true);
     let cwEnd = angleControl.anchor
       .pointAtAngle(cwAbsAdjAngle);
-    angleControl.anchor.center
-      .segmentToPoint(cwEnd)
-      .draw()
-      .nextSegmentToPoint(startCenter)
-      .withStartExtended(overflow)
-      .draw();
+
+    if (angleSine < 1) {
+      angleControl.anchor.center
+        .segmentToPoint(cwEnd)
+        .draw()
+        .nextSegmentToPoint(startCenter)
+        .withStartExtended(overflow)
+        .draw();
+    } else {
+      cwEnd.segmentToAngle(cwAbsOpsAngle, overflow)
+        .draw();
+    }
 
     // With implemented function
     startCenter.segmentToArcTangent(angleControl.anchor, true)
@@ -153,17 +163,23 @@ function draw() {
       .draw(secondaryStroke);
 
     // Counter-clockwise segments
-    let ccAbsAdjAngle = distanceSegment.angle()
-      .shift(opsAngle, false)
-      .perpendicular(false);
+    let ccAbsOpsAngle = distanceSegment.angle()
+      .shift(opsAngle, false);
+    let ccAbsAdjAngle = ccAbsOpsAngle.perpendicular(false);
     let ccEnd = angleControl.anchor
       .pointAtAngle(ccAbsAdjAngle);
-    angleControl.anchor.center
-      .segmentToPoint(ccEnd)
-      .draw(secondaryStroke)
-      .nextSegmentToPoint(startCenter)
-      .withStartExtended(overflow)
-      .draw(secondaryStroke);
+
+    if (angleSine < 1) {
+      angleControl.anchor.center
+        .segmentToPoint(ccEnd)
+        .draw(secondaryStroke)
+        .nextSegmentToPoint(startCenter)
+        .withStartExtended(overflow)
+        .draw(secondaryStroke);
+    } else {
+      ccEnd.segmentToAngle(ccAbsOpsAngle, overflow)
+        .draw(secondaryStroke);
+    }
 
     // With implemented function
     startCenter.segmentToArcTangent(angleControl.anchor, false)
