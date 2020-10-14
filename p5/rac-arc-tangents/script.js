@@ -216,14 +216,33 @@ function draw() {
 
     let angleRadians = Math.asin(angleSine);
     let opsAngle = rac.Angle.fromRadians(angleRadians);
+    let adjAngle = opsAngle.perpendicular(true);
+    let rootAngle = distanceSegment.angle();
 
-    let cwAbsOpsAngle = distanceSegment.angle()
-      .shift(opsAngle, true);
-    let cwAbsAdjAngle = cwAbsOpsAngle.perpendicular(true);
+    // Clock-wise absolute angles
+    let cwOpsAngle = rootAngle.shift(opsAngle, true);
+    let cwAdjAngle = rootAngle.shift(adjAngle, true);
 
-    startCenter.segmentToAngle(cwAbsOpsAngle, hyp).draw(highlight);
-    let cwStart = startArc.pointAtAngle(cwAbsAdjAngle);
-    let cwEnd = endArc.pointAtAngle(cwAbsAdjAngle);
+    // Detached triangle
+    let detachedEndCenter = endCenter
+      .pointToAngle(rootAngle.perpendicular(true), endArcRadius*2)
+      .arc(endArcRadius, rootAngle.perpendicular(false), cwAdjAngle)
+      .draw(secondaryStroke)
+      .endSegment()
+      .draw(secondaryStroke)
+      .end;
+    detachedEndCenter.arc(startArcRadius, cwAdjAngle, rootAngle.perpendicular(false), false)
+      .draw(secondaryStroke);
+    detachedEndCenter.segmentToAngle(cwAdjAngle.inverse(), ops)
+      .draw()
+      .nextSegmentToAngle(rootAngle.inverse(), hyp)
+      .draw()
+      .nextSegmentToPoint(detachedEndCenter)
+      .draw();
+
+    startCenter.segmentToAngle(cwOpsAngle, hyp).draw(highlight);
+    let cwStart = startArc.pointAtAngle(cwAdjAngle);
+    let cwEnd = endArc.pointAtAngle(cwAdjAngle);
 
     startCenter.segmentToPoint(cwStart).draw()
       .nextSegmentToPoint(cwEnd).draw()
