@@ -196,17 +196,38 @@ function draw() {
   });
 
 
-  // Circle to circle
+  // Circle to circle, external
   makeExampleContext(center, rac.Angle.ne, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
-    endCenter.arc(endArcRadius)
+    let startArc = startCenter.arc(startArcRadius)
+      .draw();
+    let endArc = endCenter.arc(endArcRadius)
       .draw();
 
-    startCenter.arc(startArcRadius)
+    let distanceSegment = startCenter.segmentToPoint(endCenter)
       .draw();
 
-    startCenter.segmentToPoint(endCenter)
-      .draw();
+    let hyp = distanceSegment.length();
+    let ops = endArcRadius - startArcRadius;
+
+    // Sine over 1 is invalid
+    let angleSine = ops / hyp;
+    angleSine = Math.min(angleSine, 1);
+
+    let angleRadians = Math.asin(angleSine);
+    let opsAngle = rac.Angle.fromRadians(angleRadians);
+
+    let cwAbsOpsAngle = distanceSegment.angle()
+      .shift(opsAngle, true);
+    let cwAbsAdjAngle = cwAbsOpsAngle.perpendicular(true);
+
+    startCenter.segmentToAngle(cwAbsOpsAngle, hyp).draw(highlight);
+    let cwStart = startArc.pointAtAngle(cwAbsAdjAngle);
+    let cwEnd = endArc.pointAtAngle(cwAbsAdjAngle);
+
+    startCenter.segmentToPoint(cwStart).draw()
+      .nextSegmentToPoint(cwEnd).draw()
+      .nextSegmentToPoint(endCenter).draw();
   });
 
 
