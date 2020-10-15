@@ -244,7 +244,7 @@ function draw() {
     // Detached reticule
     detachedAdjVertex.segmentToPoint(endCenter)
       .draw(secondaryStroke)
-    detachedOpsVertex.segmentToPoint(startCenter)
+    detachedOpsVertex.segmentToAngle(rootAngle.perpendicular(false), startArcRadius + endArcRadius)
       .draw(secondaryStroke);
     detachedHypVertex
       .segmentToAngle(cwAdjAngle, endArcRadius)
@@ -256,6 +256,13 @@ function draw() {
       .draw(secondaryStroke)
       .arcWithEnd(cwAdjAngle)
       .draw(secondaryStroke);
+
+    // Rest of drawing depends on valid angle
+    if (angleSine >= 1) {
+      endArc.radiusSegmentTowardsPoint(startCenter)
+        .draw(secondaryStroke);
+      return;
+    }
 
     // Cw Ops-adj reticules
     startCenter.segmentToAngle(cwOpsAngle, adj)

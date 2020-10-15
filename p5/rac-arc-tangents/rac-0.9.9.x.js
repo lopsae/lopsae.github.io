@@ -1387,6 +1387,11 @@ rac.Arc.prototype.radiusSegmentAtAngle = function(someAngle) {
   return this.center.segmentToAngle(angle, this.radius);
 }
 
+rac.Arc.prototype.radiusSegmentTowardsPoint = function(point) {
+  let angle = this.center.angleToPoint(point);
+  return this.center.segmentToAngle(angle, this.radius);
+}
+
 // Returns the equivalent to `someAngle` shifted to have `this.start` as
 // origin, in the orientation of the arc.
 // Useful to determine an angle inside the arc, where the arc is considered
