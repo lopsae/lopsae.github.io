@@ -257,13 +257,24 @@ function draw() {
       .arcWithEnd(cwAdjAngle)
       .draw(secondaryStroke);
 
-    startCenter.segmentToAngle(cwOpsAngle, hyp).draw(highlight);
+    startCenter.segmentToAngle(cwOpsAngle, adj).draw(secondaryStroke);
+
+    // TODO: replace with implemented function
     let cwStart = startArc.pointAtAngle(cwAdjAngle);
     let cwEnd = endArc.pointAtAngle(cwAdjAngle);
 
     startCenter.segmentToPoint(cwStart).draw()
       .nextSegmentToPoint(cwEnd).draw()
       .nextSegmentToPoint(endCenter).draw();
+
+    // Counter-clock-wise absolute angles
+    let ccOpsAngle = rootAngle.shift(opsAngle, false);
+    let ccAdjAngle = rootAngle.shift(adjAngle, false);
+    let ccStart = startArc.pointAtAngle(ccAdjAngle);
+    let ccEnd = endArc.pointAtAngle(ccAdjAngle);
+    startCenter.segmentToPoint(ccStart).draw(secondaryStroke)
+      .nextSegmentToPoint(ccEnd).draw(secondaryStroke)
+      .nextSegmentToPoint(endCenter).draw(secondaryStroke);
   });
 
 
