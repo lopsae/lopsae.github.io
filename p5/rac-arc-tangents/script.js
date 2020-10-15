@@ -257,7 +257,7 @@ function draw() {
       .arcWithEnd(cwAdjAngle)
       .draw(secondaryStroke);
 
-    // Ops-adj reticules
+    // Cw Ops-adj reticules
     startCenter.segmentToAngle(cwOpsAngle, adj)
       .draw(secondaryStroke);
     startArc.radiusSegmentAtAngle(cwAdjAngle)
@@ -265,20 +265,24 @@ function draw() {
     endArc.radiusSegmentAtAngle(cwAdjAngle)
       .draw(secondaryStroke);
 
-    // Implemented tangent funcition
+    // Cw Implemented tangent funcition
     startArc.segmentTangentToArc(endArc, true, true)
-      .draw(highlight);
+      .draw();
 
-    // TODO: replace with implemented function
-
-    // Counter-clock-wise absolute angles
+    // Cc Ops-adj reticules
     let ccOpsAngle = rootAngle.shift(opsAngle, false);
     let ccAdjAngle = rootAngle.shift(adjAngle, false);
-    let ccStart = startArc.pointAtAngle(ccAdjAngle);
-    let ccEnd = endArc.pointAtAngle(ccAdjAngle);
-    startCenter.segmentToPoint(ccStart).draw(secondaryStroke)
-      .nextSegmentToPoint(ccEnd).draw(secondaryStroke)
-      .nextSegmentToPoint(endCenter).draw(secondaryStroke);
+    startCenter.segmentToAngle(ccOpsAngle, adj)
+      .draw(secondaryStroke);
+    startArc.radiusSegmentAtAngle(ccAdjAngle)
+      .draw(secondaryStroke);
+    endArc.radiusSegmentAtAngle(ccAdjAngle)
+      .draw(secondaryStroke);
+
+    // Cc Implemented tangent funcition
+    startArc.segmentTangentToArc(endArc, false, false)
+      .draw(secondaryStroke);
+
   });
 
 
