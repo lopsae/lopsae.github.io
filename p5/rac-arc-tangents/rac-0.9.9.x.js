@@ -565,7 +565,7 @@ rac.Point = class RacPoint{
   // `arc` is considered as a complete circle.
   // Returns `null` if `this` is inside `arc` and thus no tangent segment
   // is possible.
-  segmentToArcTangent(arc, clockwise = true) {
+  segmentTangentToArc(arc, clockwise = true) {
     let hypotenuse = this.segmentToPoint(arc.center);
     let ops = arc.radius;
 

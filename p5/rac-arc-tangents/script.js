@@ -157,7 +157,7 @@ function draw() {
 
     // With implemented function
     let cwArcTangent = startCenter
-      .segmentToArcTangent(angleControl.anchor, true)
+      .segmentTangentToArc(angleControl.anchor, true)
       ?? cwEnd.segmentToPoint(cwEnd);
     cwArcTangent
       .translate(rac.Point.origin.pointToAngle(cwAbsAdjAngle, 20))
@@ -186,7 +186,7 @@ function draw() {
 
     // With implemented function
     let ccArcTangent = startCenter
-      .segmentToArcTangent(angleControl.anchor, false)
+      .segmentTangentToArc(angleControl.anchor, false)
       ?? ccEnd.segmentToPoint(ccEnd);
     ccArcTangent
       .translate(rac.Point.origin.pointToAngle(ccAbsAdjAngle, 20))
@@ -257,9 +257,12 @@ function draw() {
       .arcWithEnd(cwAdjAngle)
       .draw(secondaryStroke);
 
+    // Adj reticule
     startCenter.segmentToAngle(cwOpsAngle, adj).draw(secondaryStroke);
 
     // TODO: replace with implemented function
+    // startArc.tangentSegment
+
     let cwStart = startArc.pointAtAngle(cwAdjAngle);
     let cwEnd = endArc.pointAtAngle(cwAdjAngle);
 
