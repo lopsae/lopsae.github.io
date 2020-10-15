@@ -216,6 +216,8 @@ function draw() {
 
     let angleRadians = Math.asin(angleSine);
     let opsAngle = rac.Angle.fromRadians(angleRadians);
+    let adj = Math.cos(opsAngle.radians()) * hyp;
+    // adjAngle as the angle between hyp and ops, outside the triangle
     let adjAngle = opsAngle.perpendicular(true);
     let rootAngle = distanceSegment.angle();
 
@@ -224,21 +226,36 @@ function draw() {
     let cwAdjAngle = rootAngle.shift(adjAngle, true);
 
     // Detached triangle
-    let detachedEndCenter = endCenter
-      .pointToAngle(rootAngle.perpendicular(true), endArcRadius*2)
-      .arc(endArcRadius, rootAngle.perpendicular(false), cwAdjAngle)
-      .draw(secondaryStroke)
-      .endSegment()
-      .draw(secondaryStroke)
+    let detachedAdjVertex = endCenter
+      .segmentToAngle(rootAngle.perpendicular(true), startArcRadius + endArcRadius)
       .end;
-    detachedEndCenter.arc(startArcRadius, cwAdjAngle, rootAngle.perpendicular(false), false)
-      .draw(secondaryStroke);
-    detachedEndCenter.segmentToAngle(cwAdjAngle.inverse(), ops)
+    let detachedHypVertex = detachedAdjVertex
+      .segmentToAngle(cwAdjAngle, ops)
       .draw()
-      .nextSegmentToAngle(rootAngle.inverse(), hyp)
+      .end;
+    let detachedOpsVertex = detachedHypVertex
+      .segmentToAngle(cwOpsAngle.inverse(), adj)
       .draw()
-      .nextSegmentToPoint(detachedEndCenter)
+      .end;
+    detachedOpsVertex
+      .segmentToPoint(detachedAdjVertex)
       .draw();
+
+    // Detached reticule
+    detachedAdjVertex.segmentToPoint(endCenter)
+      .draw(secondaryStroke)
+    detachedOpsVertex.segmentToPoint(startCenter)
+      .draw(secondaryStroke);
+    detachedHypVertex
+      .segmentToAngle(cwAdjAngle, endArcRadius)
+      .draw(secondaryStroke)
+      .arcWithEnd(cwAdjAngle.inverse(), false)
+      .draw(secondaryStroke);
+    detachedAdjVertex
+      .segmentToAngle(cwAdjAngle.inverse(), endArcRadius - ops)
+      .draw(secondaryStroke)
+      .arcWithEnd(cwAdjAngle)
+      .draw(secondaryStroke);
 
     startCenter.segmentToAngle(cwOpsAngle, hyp).draw(highlight);
     let cwStart = startArc.pointAtAngle(cwAdjAngle);
