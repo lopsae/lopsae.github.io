@@ -257,18 +257,19 @@ function draw() {
       .arcWithEnd(cwAdjAngle)
       .draw(secondaryStroke);
 
-    // Adj reticule
-    startCenter.segmentToAngle(cwOpsAngle, adj).draw(secondaryStroke);
+    // Ops-adj reticules
+    startCenter.segmentToAngle(cwOpsAngle, adj)
+      .draw(secondaryStroke);
+    startArc.radiusSegmentAtAngle(cwAdjAngle)
+      .draw(secondaryStroke);
+    endArc.radiusSegmentAtAngle(cwAdjAngle)
+      .draw(secondaryStroke);
+
+    // Implemented tangent funcition
+    startArc.segmentTangentToArc(endArc, true, true)
+      .draw(highlight);
 
     // TODO: replace with implemented function
-    // startArc.tangentSegment
-
-    let cwStart = startArc.pointAtAngle(cwAdjAngle);
-    let cwEnd = endArc.pointAtAngle(cwAdjAngle);
-
-    startCenter.segmentToPoint(cwStart).draw()
-      .nextSegmentToPoint(cwEnd).draw()
-      .nextSegmentToPoint(endCenter).draw();
 
     // Counter-clock-wise absolute angles
     let ccOpsAngle = rootAngle.shift(opsAngle, false);

@@ -575,10 +575,10 @@ rac.Point = class RacPoint{
     }
 
     let angleRadians = Math.asin(angleSine);
-    let angle = rac.Angle.fromRadians(angleRadians);
-    let shiftedAngle = hypotenuse.angle().shift(angle, clockwise);
+    let opsAngle = rac.Angle.fromRadians(angleRadians);
+    let shiftedOpsAngle = hypotenuse.angle().shift(opsAngle, clockwise);
 
-    let end = arc.pointAtAngle(shiftedAngle.perpendicular(clockwise));
+    let end = arc.pointAtAngle(shiftedOpsAngle.perpendicular(clockwise));
     return this.segmentToPoint(end);
   }
 
@@ -1382,6 +1382,11 @@ rac.Arc.prototype.endSegment = function() {
   return new rac.Segment(this.endPoint(), this.center);
 };
 
+rac.Arc.prototype.radiusSegmentAtAngle = function(someAngle) {
+  let angle = rac.Angle.from(someAngle);
+  return this.center.segmentToAngle(angle, this.radius);
+}
+
 // Returns the equivalent to `someAngle` shifted to have `this.start` as
 // origin, in the orientation of the arc.
 // Useful to determine an angle inside the arc, where the arc is considered
@@ -1431,6 +1436,34 @@ rac.Arc.prototype.pointAtArcLengthRatio = function(arcLengthRatio) {
 rac.Arc.prototype.pointAtAngle = function(someAngle) {
   let angle = rac.Angle.from(someAngle);
   return this.center.segmentToAngle(angle, this.radius).end;
+};
+
+// Returns a segment that is tangent to both `this` and `otherArc`,
+// considering both as complete circles.
+// With a segment from `this.center` to `otherArc.center`: `startClockwise`
+// determines the starting side returned tangent segment, `endClocwise`
+// determines the end side.
+// Returns `null` if `this` is inside `otherArc` and thus no tangent segment
+// is possible.
+rac.Arc.prototype.segmentTangentToArc = function(otherArc, startClockwise = true, endClockwise = true) {
+  let hypSegment = this.center.segmentToPoint(otherArc.center);
+  let ops = otherArc.radius - this.radius;
+
+  // TODO: implement cross tangent
+
+  let angleSine = ops / hypSegment.length();
+  if (angleSine > 1) {
+    return null;
+  }
+
+  let angleRadians = Math.asin(angleSine);
+  let opsAngle = rac.Angle.fromRadians(angleRadians);
+  let shiftedOpsAngle = hypSegment.angle().shift(opsAngle, startClockwise);
+  let shiftedAdjAngle = shiftedOpsAngle.perpendicular(startClockwise);
+
+  let start = this.pointAtAngle(shiftedAdjAngle);
+  let end = otherArc.pointAtAngle(shiftedAdjAngle);
+  return start.segmentToPoint(end);
 };
 
 rac.Arc.prototype.divideToSegments = function(segmentCount) {
