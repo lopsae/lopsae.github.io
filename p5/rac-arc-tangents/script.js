@@ -348,6 +348,14 @@ function draw() {
     endCenter.segmentToAngle(cwAdjAngle, ops)
       .draw(secondaryStroke);
 
+      // Cc Ops-adj reticules
+    let ccOpsAngle = rootAngle.shift(opsAngle, false);
+    let ccAdjAngle = rootAngle.shift(adjAngle, false);
+    startCenter.segmentToAngle(ccOpsAngle, adj)
+      .draw(secondaryStroke).debug();
+    endCenter.segmentToAngle(ccAdjAngle, ops)
+      .draw(secondaryStroke).debug();
+
   });
 
 
