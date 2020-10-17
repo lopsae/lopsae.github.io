@@ -1031,7 +1031,10 @@ rac.Segment.prototype.nextSegmentToAngle = function(someAngle, distance) {
   return this.end.segmentToAngle(someAngle, distance);
 }
 
-rac.Segment.prototype.segmentPerpendicular = function(clockwise = true) {
+
+// Returns a new segment from `this.end`, with the same length, that is
+// perpendicular to `this` in the `clockwise` orientation.
+rac.Segment.prototype.nextSegmentPerpendicular = function(clockwise = true) {
   let offset = this.start.add(this.end.negative());
   let newEnd = this.end.add(offset.pointPerpendicular(clockwise));
   return this.end.segmentToPoint(newEnd);
@@ -1318,7 +1321,7 @@ rac.Arc.prototype.intersectionChord = function(other) {
 
   let rayToChord = this.center.segmentToPoint(other.center)
     .withLength(distanceToChord);
-  return rayToChord.segmentPerpendicular(this.clockwise)
+  return rayToChord.nextSegmentPerpendicular(this.clockwise)
     .withLength(chordLength/2)
     .reverse()
     .segmentWithRatioOfLength(2);

@@ -89,17 +89,11 @@ function draw() {
   let endArcRadius = 80;
 
   // Aesthetics
-  let overflow = 50;
+  let overflow = 50; // TODO: remove?
 
 
   // Center pont
   let center = new rac.Point(width/2, height/2);
-
-
-  // Distance control
-  distanceControl.anchor = center
-    .segmentToAngle(rac.Angle.w, distanceControl.length/2)
-    .reverse();
 
 
   let exampleAngle = angleControl.distance();
@@ -199,19 +193,31 @@ function draw() {
   // Circle to circle, external
   makeExampleContext(center, rac.Angle.ne, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
+    let distanceSegment = startCenter.segmentToPoint(endCenter)
+      .draw();
+
+    // Distance control
+    distanceControl.anchor = distanceSegment
+      .nextSegmentPerpendicular(true)
+      .withLength(endArcRadius + rac.Control.radius * 1.5)
+      .draw(highlight)
+      .nextSegmentPerpendicular(true);
+    distanceControl.center()
+      .segmentToPoint(startCenter)
+      .draw(secondaryStroke);
+
+    // Circles
     let startArc = startCenter.arc(startArcRadius)
       .draw();
     let endArc = endCenter.arc(endArcRadius)
       .draw();
 
-    let distanceSegment = startCenter.segmentToPoint(endCenter)
-      .draw();
-
+    // Calculations
     let hyp = distanceSegment.length();
     let ops = endArcRadius - startArcRadius;
 
-    // Sine over 1 is invalid
     let angleSine = ops / hyp;
+    // Sine over 1 is invalid
     angleSine = Math.min(angleSine, 1);
 
     let angleRadians = Math.asin(angleSine);
