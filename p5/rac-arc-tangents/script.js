@@ -311,17 +311,43 @@ function draw() {
   });
 
 
-  // Example 3
+  // // Circle to circle, cross
   makeExampleContext(center, rac.Angle.sw, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
-    endCenter.arc(endArcRadius)
+    let distanceSegment = startCenter.segmentToPoint(endCenter)
       .draw();
 
-    startCenter.arc(startArcRadius)
+    // Circles
+    let startArc = startCenter.arc(startArcRadius)
+      .draw();
+    let endArc = endCenter.arc(endArcRadius)
       .draw();
 
-    startCenter.segmentToPoint(endCenter)
-      .draw();
+    // Calculations
+    let hyp = distanceSegment.length();
+    let ops = endArcRadius + startArcRadius;
+
+    let angleSine = ops / hyp;
+    // Sine over 1 is invalid
+    angleSine = Math.min(angleSine, 1);
+
+    let angleRadians = Math.asin(angleSine);
+    let opsAngle = rac.Angle.fromRadians(angleRadians);
+    let adj = Math.cos(opsAngle.radians()) * hyp;
+    // adjAngle as the angle between hyp and ops, outside the triangle
+    let adjAngle = opsAngle.perpendicular(true);
+    let rootAngle = distanceSegment.angle();
+
+    // Clock-wise absolute angles
+    let cwOpsAngle = rootAngle.shift(opsAngle, true);
+    let cwAdjAngle = rootAngle.shift(adjAngle, true);
+
+    // Cw Ops-adj reticules
+    startCenter.segmentToAngle(cwOpsAngle, adj)
+      .draw(secondaryStroke);
+    endCenter.segmentToAngle(cwAdjAngle, ops)
+      .draw(secondaryStroke);
+
   });
 
 
