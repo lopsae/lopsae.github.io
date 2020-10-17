@@ -226,8 +226,9 @@ function draw() {
     let cwAdjAngle = rootAngle.shift(adjAngle, true);
 
     // Detached triangle
+    let toDetached = rootAngle.perpendicular(true);
     let detachedAdjVertex = endCenter
-      .segmentToAngle(rootAngle.perpendicular(true), startArcRadius + endArcRadius)
+      .segmentToAngle(toDetached, startArcRadius + endArcRadius)
       .end;
     let detachedHypVertex = detachedAdjVertex
       .segmentToAngle(cwAdjAngle, ops)
@@ -241,20 +242,31 @@ function draw() {
       .segmentToPoint(detachedAdjVertex)
       .draw();
 
-    // Detached reticule
+    // Attached to detached reticules
     detachedAdjVertex.segmentToPoint(endCenter)
       .draw(secondaryStroke)
-    detachedOpsVertex.segmentToAngle(rootAngle.perpendicular(false), startArcRadius + endArcRadius)
+    detachedOpsVertex.segmentToAngle(toDetached.inverse(), startArcRadius + endArcRadius)
       .draw(secondaryStroke);
+
+    // Detached End Circle reticules
     detachedAdjVertex
-      .segmentToAngle(cwAdjAngle.inverse(), endArcRadius)
-      .draw(secondaryStroke)
+      .segmentToAngle(toDetached.inverse(), endArcRadius)
       .arcWithEnd(cwAdjAngle, true)
       .draw(secondaryStroke)
-      .endPoint()
+      .endSegment()
+      .draw(secondaryStroke);
+
+    // Detached Start Circle reticules
+    detachedOpsVertex
+      .segmentToAngle(toDetached.inverse(), startArcRadius)
+      .arcWithEnd(cwOpsAngle, false)
+      .draw(secondaryStroke)
+      .endSegment()
+      .draw(secondaryStroke);
+    detachedOpsVertex
       .segmentToAngle(cwAdjAngle, startArcRadius)
       .draw(secondaryStroke)
-      .arcWithEnd(cwAdjAngle.inverse(), false)
+      .nextSegmentToAngle(cwOpsAngle, adj)
       .draw(secondaryStroke);
 
     // Rest of drawing depends on valid angle
