@@ -23,6 +23,7 @@ rac.Drawer = class RacDrawer {
   constructor() {
     this.routines = [];
     this.enabled = true;
+    this.debugStyle = null;
   }
 
   // Adds a routine for the given class. The `drawElement` function will be
@@ -95,9 +96,14 @@ rac.Drawer = class RacDrawer {
     }
   }
 
+  debugElement(element) {
+    this.drawElement(element, this.debugStyle);
+  }
+
 }
 
 rac.defaultDrawer = new rac.Drawer();
+
 
 
 // Container for prototype functions
@@ -105,6 +111,11 @@ rac.protoFunctions = {};
 
 rac.protoFunctions.draw = function(style = null){
   rac.defaultDrawer.drawElement(this, style);
+  return this;
+};
+
+rac.protoFunctions.debug = function(){
+  rac.defaultDrawer.debugElement(this);
   return this;
 };
 
@@ -194,6 +205,7 @@ rac.protoFunctions.attachTo = function(someComposite) {
 
 rac.setupProtoFunctions = function(classObj) {
   classObj.prototype.draw                = rac.protoFunctions.draw;
+  classObj.prototype.debug               = rac.protoFunctions.debug;
   classObj.prototype.push                = rac.protoFunctions.push;
   classObj.prototype.pop                 = rac.protoFunctions.pop;
   classObj.prototype.peek                = rac.protoFunctions.peek;

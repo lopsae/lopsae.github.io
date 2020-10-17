@@ -73,8 +73,8 @@ function draw() {
 
   let secondaryStroke = colorScheme.secondary.stroke(2);
 
-  // Testing highlight
-  let highlight = colorScheme.highlight.stroke(5);
+  // Debug highlight
+  rac.defaultDrawer.debugStyle = colorScheme.highlight.stroke(5);
 
   let controlStyle = colorScheme.stroke.stroke(3)
     .styleWithFill(colorScheme.controlFill.fill());
@@ -200,7 +200,7 @@ function draw() {
     distanceControl.anchor = distanceSegment
       .nextSegmentPerpendicular(true)
       .withLength(endArcRadius + rac.Control.radius * 1.5)
-      .draw(highlight)
+      .draw(secondaryStroke)
       .nextSegmentPerpendicular(true);
     distanceControl.center()
       .segmentToPoint(startCenter)
