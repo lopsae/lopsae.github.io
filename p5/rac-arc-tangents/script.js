@@ -246,15 +246,15 @@ function draw() {
       .draw(secondaryStroke)
     detachedOpsVertex.segmentToAngle(rootAngle.perpendicular(false), startArcRadius + endArcRadius)
       .draw(secondaryStroke);
-    detachedHypVertex
-      .segmentToAngle(cwAdjAngle, endArcRadius)
+    detachedAdjVertex
+      .segmentToAngle(cwAdjAngle.inverse(), endArcRadius)
+      .draw(secondaryStroke)
+      .arcWithEnd(cwAdjAngle, true)
+      .draw(secondaryStroke)
+      .endPoint()
+      .segmentToAngle(cwAdjAngle, startArcRadius)
       .draw(secondaryStroke)
       .arcWithEnd(cwAdjAngle.inverse(), false)
-      .draw(secondaryStroke);
-    detachedAdjVertex
-      .segmentToAngle(cwAdjAngle.inverse(), endArcRadius - ops)
-      .draw(secondaryStroke)
-      .arcWithEnd(cwAdjAngle)
       .draw(secondaryStroke);
 
     // Rest of drawing depends on valid angle
