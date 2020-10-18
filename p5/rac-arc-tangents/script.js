@@ -67,33 +67,19 @@ function draw() {
     purpleX11:   rac.Color.fromRgba(158, 34, 241)
   };
 
-  // TODO: remove when replaced
-  let colorScheme = {
-    background:  new rac.Color( .1,  .1,  .1), // blackish
-    stroke:      new rac.Color( .9,  .2,  .2,  .8), // red,
-    secondary:   new rac.Color( .7,  .3,  .3,  .3), // rose pink
-    fill:        new rac.Color( .8,  .8,  .8,  .7), // whiteish
-    controlFill: new rac.Color( .8,  .8,  .8, 1.0), // whiteish
-    pointer:     new rac.Color( .9,  .9,  .9,  .6), // whiteish
-    highlight:   new rac.Color(  0, 1.0, 1.0,  .8)// cyan
-  };
-
   // Root styles
   palette.richBlack.applyBackground();
   // Default style mostly used for reticules
-  palette.babyPowder.stroke(2).apply();
+  palette.babyPowder.withAlpha(.15).stroke(2).apply();
 
   // Debug style
   rac.defaultDrawer.debugStyle = palette.purpleX11.stroke(5);
 
   // Styles
-  let tangentStroke =          palette.roseMadder.stroke(3);
-  let tangentSecondaryStroke = palette.roseMadder.withAlpha(.5).stroke(3);
-  let triangleStroke =         palette.tiffanyBlue.stroke(3);
+  let tangentStroke =          palette.roseMadder.stroke(4);
+  let tangentSecondaryStroke = palette.roseMadder.withAlpha(.5).stroke(4);
+  let triangleStroke =         palette.tiffanyBlue.stroke(2);
   let circleStroke =          palette.orangePeel.stroke(2);
-
-  // TODO: secondary stroke to become default
-  let secondaryStroke = colorScheme.secondary.stroke(2);
 
 
   let controlStyle = circleStroke
@@ -127,11 +113,11 @@ function draw() {
 
     angleControl.center()
       .segmentToPoint(angleControl.anchor.center)
-      .draw(secondaryStroke);
+      .draw();
     angleControl.anchor.startSegment()
       .reverse()
       .segmentToBisector()
-      .draw(secondaryStroke);
+      .draw();
 
     let distanceSegment = startCenter.segmentToPoint(endCenter)
       .draw(triangleStroke);
@@ -170,9 +156,9 @@ function draw() {
     if (angleSine < 1) {
       endCenter
         .segmentToPoint(ccEnd)
-        .draw(secondaryStroke)
+        .draw()
         .nextSegmentToPoint(startCenter)
-        .draw(secondaryStroke);
+        .draw();
     }
 
     // With implemented functions
@@ -183,22 +169,22 @@ function draw() {
         .translate(rac.Point.origin.pointToAngle(cwAdjAngle, implementedOffset))
         .draw(tangentStroke);
       cwTangent.nextSegmentToPoint(cwEnd)
-        .draw(secondaryStroke);
+        .draw();
       cwTangent.start.segmentToPoint(startCenter)
-        .draw(secondaryStroke);
+        .draw();
 
       let ccTangent = startCenter
         .segmentTangentToArc(endArc, false)
         .translate(rac.Point.origin.pointToAngle(ccAdjAngle, implementedOffset))
         .draw(tangentSecondaryStroke);
       ccTangent.nextSegmentToPoint(ccEnd)
-        .draw(secondaryStroke);
+        .draw();
       ccTangent.start.segmentToPoint(startCenter)
-        .draw(secondaryStroke);
+        .draw();
     } else {
       endArc.radiusSegmentAtAngle(rootAngle.inverse())
         .withEndExtended(implementedOffset)
-        .draw(secondaryStroke)
+        .draw()
         .end
         .draw(tangentStroke);
     }
@@ -218,11 +204,11 @@ function draw() {
     distanceControl.anchor = distanceSegment
       .nextSegmentPerpendicular(true)
       .withLength(endArcRadius + rac.Control.radius * 1.5)
-      .draw(secondaryStroke)
+      .draw()
       .nextSegmentPerpendicular(true);
     distanceControl.center()
       .segmentToPoint(startCenter)
-      .draw(secondaryStroke);
+      .draw();
 
     // Circles
     let startArc = startCenter.arc(startArcRadius)
@@ -268,55 +254,55 @@ function draw() {
 
     // Attached to detached reticules
     detachedAdjVertex.segmentToPoint(endCenter)
-      .draw(secondaryStroke)
+      .draw()
     detachedOpsVertex.segmentToAngle(toDetached.inverse(), startArcRadius + endArcRadius)
-      .draw(secondaryStroke);
+      .draw();
 
     // Detached End Circle reticules
     detachedAdjVertex
       .segmentToAngle(toDetached.inverse(), endArcRadius)
       .arcWithEnd(cwAdjAngle, true)
-      .draw(secondaryStroke)
+      .draw()
       .endSegment()
-      .draw(secondaryStroke);
+      .draw();
 
     // Detached Start Circle reticules
     detachedOpsVertex
       .segmentToAngle(rootAngle, startArcRadius)
       .arcWithEnd(cwAdjAngle, false)
-      .draw(secondaryStroke)
+      .draw()
       .endSegment()
-      .draw(secondaryStroke);
+      .draw();
     detachedOpsVertex
       .segmentToAngle(cwAdjAngle, startArcRadius)
-      .draw(secondaryStroke)
+      .draw()
       .nextSegmentToAngle(cwOpsAngle, adj)
-      .draw(secondaryStroke);
+      .draw();
 
     // Rest of drawing depends on valid angle
     if (angleSine >= 1) {
       endArc.radiusSegmentTowardsPoint(startCenter)
-        .draw(secondaryStroke);
+        .draw();
       return;
     }
 
     // Cw Ops-adj reticules
     startCenter.segmentToAngle(cwOpsAngle, adj)
-      .draw(secondaryStroke);
+      .draw();
     startArc.radiusSegmentAtAngle(cwAdjAngle)
-      .draw(secondaryStroke);
+      .draw();
     endArc.radiusSegmentAtAngle(cwAdjAngle)
-      .draw(secondaryStroke);
+      .draw();
 
     // Cc Ops-adj reticules
     let ccOpsAngle = rootAngle.shift(opsAngle, false);
     let ccAdjAngle = rootAngle.shift(adjAngle, false);
     startCenter.segmentToAngle(ccOpsAngle, adj)
-      .draw(secondaryStroke);
+      .draw();
     startArc.radiusSegmentAtAngle(ccAdjAngle)
-      .draw(secondaryStroke);
+      .draw();
     endArc.radiusSegmentAtAngle(ccAdjAngle)
-      .draw(secondaryStroke);
+      .draw();
 
     // Implemented tangent funcition
     startArc.segmentTangentToArc(endArc, true, true)
@@ -377,55 +363,55 @@ function draw() {
 
     // Attached to detached reticules
     detachedAdjVertex.segmentToPoint(endCenter)
-      .draw(secondaryStroke)
+      .draw()
     detachedOpsVertex.segmentToAngle(toDetached.inverse(), startArcRadius + endArcRadius)
-      .draw(secondaryStroke);
+      .draw();
 
     // Detached End Circle reticules
     detachedAdjVertex
       .segmentToAngle(toDetached.inverse(), endArcRadius)
       .arcWithEnd(cwAdjAngle, true)
-      .draw(secondaryStroke)
+      .draw()
       .endSegment()
-      .draw(secondaryStroke);
+      .draw();
 
     // Detached Start Circle reticules
     detachedOpsVertex
       .segmentToAngle(cwAdjAngle.inverse(), startArcRadius)
       .arcWithEnd(cwOpsAngle, false)
-      .draw(secondaryStroke)
+      .draw()
       .endSegment()
-      .draw(secondaryStroke);
+      .draw();
     detachedOpsVertex
       .segmentToAngle(cwAdjAngle.inverse(), startArcRadius)
-      .draw(secondaryStroke)
+      .draw()
       .nextSegmentToAngle(cwOpsAngle, adj)
-      .draw(secondaryStroke);
+      .draw();
 
     // Rest of drawing depends on valid angle
     if (angleSine >= 1) {
       endCenter.segmentToAngle(rootAngle.inverse(), ops)
-        .draw(secondaryStroke);
+        .draw();
       return;
     }
 
     // Cw Ops-adj reticules
     startCenter.segmentToAngle(cwOpsAngle, adj)
-      .draw(secondaryStroke);
+      .draw();
     endCenter.segmentToAngle(cwAdjAngle, ops)
-      .draw(secondaryStroke);
+      .draw();
     startArc.radiusSegmentAtAngle(cwAdjAngle.inverse())
-      .draw(secondaryStroke);
+      .draw();
 
       // Cc Ops-adj reticules
     let ccOpsAngle = rootAngle.shift(opsAngle, false);
     let ccAdjAngle = rootAngle.shift(adjAngle, false);
     startCenter.segmentToAngle(ccOpsAngle, adj)
-      .draw(secondaryStroke);
+      .draw();
     endCenter.segmentToAngle(ccAdjAngle, ops)
-      .draw(secondaryStroke);
+      .draw();
     startArc.radiusSegmentAtAngle(ccAdjAngle.inverse())
-      .draw(secondaryStroke);
+      .draw();
 
     // Implemented tangent funcition
     startArc.segmentTangentToArc(endArc, false, true)
