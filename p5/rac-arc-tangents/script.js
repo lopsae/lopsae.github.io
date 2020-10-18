@@ -386,6 +386,13 @@ function draw() {
       .nextSegmentToAngle(cwOpsAngle, adj)
       .draw(secondaryStroke);
 
+    // Rest of drawing depends on valid angle
+    if (angleSine >= 1) {
+      endCenter.segmentToAngle(rootAngle.inverse(), ops)
+        .draw(secondaryStroke);
+      return;
+    }
+
     // Cw Ops-adj reticules
     startCenter.segmentToAngle(cwOpsAngle, adj)
       .draw(secondaryStroke);
