@@ -33,7 +33,7 @@ function mouseReleased(event) {
 
 
 let distanceControl = new rac.SegmentControl(0, 200)
-distanceControl.setValueWithLength(150);
+distanceControl.setValueWithLength(140);
 distanceControl.setLimitsWithLengthInsets(10, 0);
 rac.Control.controls.push(distanceControl);
 
@@ -342,15 +342,40 @@ function draw() {
     let cwOpsAngle = rootAngle.shift(opsAngle, true);
     let cwAdjAngle = rootAngle.shift(adjAngle, true);
 
+    // Detached triangle
+    let toDetached = rootAngle.perpendicular(true);
+    let detachedAdjVertex = endCenter
+      .segmentToAngle(toDetached, startArcRadius + endArcRadius)
+      .end;
+    let detachedHypVertex = detachedAdjVertex
+      .segmentToAngle(cwAdjAngle, ops)
+      .draw()
+      .end;
+    let detachedOpsVertex = detachedHypVertex
+      .segmentToAngle(cwOpsAngle.inverse(), adj)
+      .draw()
+      .end;
+    detachedOpsVertex
+      .segmentToPoint(detachedAdjVertex)
+      .draw();
+
+    // Attached to detached reticules
+    detachedAdjVertex.segmentToPoint(endCenter)
+      .draw(secondaryStroke)
+    detachedOpsVertex.segmentToAngle(toDetached.inverse(), startArcRadius + endArcRadius)
+      .draw(secondaryStroke);
+
     // Cw Ops-adj reticules
     startCenter.segmentToAngle(cwOpsAngle, adj)
       .draw(secondaryStroke);
     endCenter.segmentToAngle(cwAdjAngle, ops)
       .draw(secondaryStroke);
+    startArc.radiusSegmentAtAngle(cwAdjAngle.inverse())
+      .draw(secondaryStroke);
 
     // Cw Implemented tangent funcition
-    startArc.segmentTangentToArc(endArc, true, false)
-      .draw().debug();
+    startArc.segmentTangentToArc(endArc, false, true)
+      .draw();
 
       // Cc Ops-adj reticules
     let ccOpsAngle = rootAngle.shift(opsAngle, false);
@@ -359,9 +384,11 @@ function draw() {
       .draw(secondaryStroke);
     endCenter.segmentToAngle(ccAdjAngle, ops)
       .draw(secondaryStroke);
+    startArc.radiusSegmentAtAngle(ccAdjAngle.inverse())
+      .draw(secondaryStroke);
 
     // Cc Implemented tangent funcition
-    startArc.segmentTangentToArc(endArc, false, true)
+    startArc.segmentTangentToArc(endArc, true, false)
       .draw(secondaryStroke);
 
   });
