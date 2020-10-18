@@ -80,21 +80,27 @@ function draw() {
 
   // Root styles
   palette.richBlack.applyBackground();
+  // Default style mostly used for reticules
   palette.babyPowder.stroke(2).apply();
 
   // Debug style
   rac.defaultDrawer.debugStyle = palette.purpleX11.stroke(5);
 
   // Styles
+  let tangentStroke =          palette.roseMadder.stroke(3);
+  let tangentSecondaryStroke = palette.roseMadder.withAlpha(.5).stroke(3);
+  let triangleStroke =         palette.tiffanyBlue.stroke(3);
+  let circleStroke =          palette.orangePeel.stroke(2);
+
+  // TODO: secondary stroke to become default
   let secondaryStroke = colorScheme.secondary.stroke(2);
 
 
-  let controlStyle = colorScheme.stroke.stroke(3)
-    .styleWithFill(colorScheme.controlFill.fill());
+  let controlStyle = circleStroke
+    .styleWithFill(palette.babyPowder.fill());
 
   rac.Control.controls.forEach(item => item.style = controlStyle);
-
-  rac.Control.pointerStyle = colorScheme.pointer.stroke(3);
+  rac.Control.pointerStyle = palette.babyPowder.withAlpha(.5).stroke(2);
 
 
   // General measurements
@@ -128,7 +134,7 @@ function draw() {
       .draw(secondaryStroke);
 
     let distanceSegment = startCenter.segmentToPoint(endCenter)
-      .draw();
+      .draw(triangleStroke);
 
     let hyp = distanceSegment.length();
     let ops = endArc.radius
@@ -150,9 +156,9 @@ function draw() {
     if (angleSine < 1) {
       endCenter
         .segmentToPoint(cwEnd)
-        .draw()
+        .draw(triangleStroke)
         .nextSegmentToPoint(startCenter)
-        .draw();
+        .draw(triangleStroke);
     }
 
     // Counter-clockwise segments
@@ -172,25 +178,29 @@ function draw() {
     // With implemented functions
     let implementedOffset = 20;
     if (angleSine < 1) {
-      startCenter
+      let cwTangent = startCenter
         .segmentTangentToArc(endArc, true)
         .translate(rac.Point.origin.pointToAngle(cwAdjAngle, implementedOffset))
-        .draw()
-        .nextSegmentToPoint(cwEnd)
+        .draw(tangentStroke);
+      cwTangent.nextSegmentToPoint(cwEnd)
+        .draw(secondaryStroke);
+      cwTangent.start.segmentToPoint(startCenter)
         .draw(secondaryStroke);
 
-      startCenter
+      let ccTangent = startCenter
         .segmentTangentToArc(endArc, false)
         .translate(rac.Point.origin.pointToAngle(ccAdjAngle, implementedOffset))
-        .draw(secondaryStroke)
-        .nextSegmentToPoint(ccEnd)
+        .draw(tangentSecondaryStroke);
+      ccTangent.nextSegmentToPoint(ccEnd)
+        .draw(secondaryStroke);
+      ccTangent.start.segmentToPoint(startCenter)
         .draw(secondaryStroke);
     } else {
       endArc.radiusSegmentAtAngle(rootAngle.inverse())
         .withEndExtended(implementedOffset)
         .draw(secondaryStroke)
         .end
-        .draw();
+        .draw(tangentStroke);
     }
 
 
@@ -202,7 +212,7 @@ function draw() {
   makeExampleContext(center, rac.Angle.ne, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
     let distanceSegment = startCenter.segmentToPoint(endCenter)
-      .draw();
+      .draw(triangleStroke);
 
     // Distance control
     distanceControl.anchor = distanceSegment
@@ -216,9 +226,9 @@ function draw() {
 
     // Circles
     let startArc = startCenter.arc(startArcRadius)
-      .draw();
+      .draw(circleStroke);
     let endArc = endCenter.arc(endArcRadius)
-      .draw();
+      .draw(circleStroke);
 
     // Calculations
     let hyp = distanceSegment.length();
@@ -246,15 +256,15 @@ function draw() {
       .end;
     let detachedHypVertex = detachedAdjVertex
       .segmentToAngle(cwAdjAngle, ops)
-      .draw()
+      .draw(triangleStroke)
       .end;
     let detachedOpsVertex = detachedHypVertex
       .segmentToAngle(cwOpsAngle.inverse(), adj)
-      .draw()
+      .draw(triangleStroke)
       .end;
     detachedOpsVertex
       .segmentToPoint(detachedAdjVertex)
-      .draw();
+      .draw(triangleStroke);
 
     // Attached to detached reticules
     detachedAdjVertex.segmentToPoint(endCenter)
@@ -298,10 +308,6 @@ function draw() {
     endArc.radiusSegmentAtAngle(cwAdjAngle)
       .draw(secondaryStroke);
 
-    // Cw Implemented tangent funcition
-    startArc.segmentTangentToArc(endArc, true, true)
-      .draw();
-
     // Cc Ops-adj reticules
     let ccOpsAngle = rootAngle.shift(opsAngle, false);
     let ccAdjAngle = rootAngle.shift(adjAngle, false);
@@ -312,9 +318,11 @@ function draw() {
     endArc.radiusSegmentAtAngle(ccAdjAngle)
       .draw(secondaryStroke);
 
-    // Cc Implemented tangent funcition
+    // Implemented tangent funcition
+    startArc.segmentTangentToArc(endArc, true, true)
+      .draw(tangentStroke);
     startArc.segmentTangentToArc(endArc, false, false)
-      .draw(secondaryStroke);
+      .draw(tangentSecondaryStroke);
 
   });
 
@@ -323,13 +331,13 @@ function draw() {
   makeExampleContext(center, rac.Angle.sw, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
     let distanceSegment = startCenter.segmentToPoint(endCenter)
-      .draw();
+      .draw(triangleStroke);
 
     // Circles
     let startArc = startCenter.arc(startArcRadius)
-      .draw();
+      .draw(circleStroke);
     let endArc = endCenter.arc(endArcRadius)
-      .draw();
+      .draw(circleStroke);
 
     // Calculations
     let hyp = distanceSegment.length();
@@ -357,15 +365,15 @@ function draw() {
       .end;
     let detachedHypVertex = detachedAdjVertex
       .segmentToAngle(cwAdjAngle, ops)
-      .draw()
+      .draw(triangleStroke)
       .end;
     let detachedOpsVertex = detachedHypVertex
       .segmentToAngle(cwOpsAngle.inverse(), adj)
-      .draw()
+      .draw(triangleStroke)
       .end;
     detachedOpsVertex
       .segmentToPoint(detachedAdjVertex)
-      .draw();
+      .draw(triangleStroke);
 
     // Attached to detached reticules
     detachedAdjVertex.segmentToPoint(endCenter)
@@ -421,9 +429,9 @@ function draw() {
 
     // Implemented tangent funcition
     startArc.segmentTangentToArc(endArc, false, true)
-      .draw();
+      .draw(tangentStroke);
     startArc.segmentTangentToArc(endArc, true, false)
-      .draw(secondaryStroke).debug();
+      .draw(tangentSecondaryStroke);
 
   });
 
