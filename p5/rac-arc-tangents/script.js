@@ -70,19 +70,21 @@ function draw() {
   // Root styles
   palette.richBlack.applyBackground();
   // Default style mostly used for reticules
-  palette.babyPowder.withAlpha(.15).stroke(2).apply();
+  palette.babyPowder.withAlpha(.1).stroke(2).apply();
 
   // Debug style
   rac.defaultDrawer.debugStyle = palette.purpleX11.stroke(5);
 
   // Styles
-  let tangentStroke =          palette.roseMadder.stroke(4);
-  let tangentSecondaryStroke = palette.roseMadder.withAlpha(.5).stroke(4);
-  let triangleStroke =         palette.tiffanyBlue.stroke(2);
-  let circleStroke =          palette.orangePeel.stroke(2);
+  let tangentStroke =          palette.orangePeel.stroke(4);
+  let tangentSecondaryStroke = tangentStroke.withAlpha(.5);
+  let triangleTangentStroke =  palette.tiffanyBlue.stroke(3);
+  let triangleStroke =         palette.tiffanyBlue.stroke(2).withAlpha(.7);
+  let circleStroke =           palette.roseMadder.stroke(2);
 
 
   let controlStyle = circleStroke
+    .withWeight(3)
     .styleWithFill(palette.babyPowder.fill());
 
   rac.Control.controls.forEach(item => item.style = controlStyle);
@@ -144,7 +146,7 @@ function draw() {
         .segmentToPoint(cwEnd)
         .draw(triangleStroke)
         .nextSegmentToPoint(startCenter)
-        .draw(triangleStroke);
+        .draw(triangleTangentStroke);
     }
 
     // Counter-clockwise segments
@@ -246,7 +248,7 @@ function draw() {
       .end;
     let detachedOpsVertex = detachedHypVertex
       .segmentToAngle(cwOpsAngle.inverse(), adj)
-      .draw(triangleStroke)
+      .draw(triangleTangentStroke)
       .end;
     detachedOpsVertex
       .segmentToPoint(detachedAdjVertex)
@@ -355,7 +357,7 @@ function draw() {
       .end;
     let detachedOpsVertex = detachedHypVertex
       .segmentToAngle(cwOpsAngle.inverse(), adj)
-      .draw(triangleStroke)
+      .draw(triangleTangentStroke)
       .end;
     detachedOpsVertex
       .segmentToPoint(detachedAdjVertex)

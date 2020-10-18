@@ -314,9 +314,16 @@ rac.Stroke = class RacStroke {
   }
 
   withWeight(weight) {
-    let copy = this.copy();
-    copy.weight = weight;
-    return copy;
+    return new rac.Stroke(this.color, weight);
+  }
+
+  withAlpha(alpha) {
+    if (color === null) {
+      return new rac.Stroke(null, this.weight);
+    }
+
+    let newColor = this.color.withAlpha(alpha);
+    return new rac.Stroke(newColor, this.weight);
   }
 
   apply() {
