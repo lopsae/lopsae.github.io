@@ -1213,6 +1213,22 @@ rac.Arc = class RacArc {
       this.clockwise);
   }
 
+  withClockwise(newClockwise) {
+    return new rac.Arc(
+      this.center, this.radius,
+      this.start, this.end,
+      newClockwise);
+  }
+
+  withStartEndTowardsPoint(startPoint, endPoint) {
+    let newStart = this.center.angleToPoint(startPoint);
+    let newEnd = this.center.angleToPoint(endPoint);
+    return new rac.Arc(
+      this.center, this.radius,
+      newStart, newEnd,
+      this.clockwise);
+  }
+
   withEndTowardsPoint(point) {
     let newEnd = this.center.angleToPoint(point);
     return new rac.Arc(

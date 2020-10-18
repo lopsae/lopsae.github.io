@@ -427,14 +427,40 @@ function draw() {
   // Example 4
   makeExampleContext(center, rac.Angle.se, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
-    endCenter.arc(endArcRadius)
+    let startArc = startCenter.arc(startArcRadius)
       .draw();
-
-    startCenter.arc(startArcRadius)
+    let endArc = endCenter.arc(endArcRadius)
       .draw();
 
     startCenter.segmentToPoint(endCenter)
       .draw();
+
+    let sourceArc = endCenter.arc(startArcRadius)
+      .draw();
+
+    let startTangent = startArc
+      .segmentTangentToArc(sourceArc, false, false)
+      .draw(tangentStroke);
+
+    let middleTangent = startArc
+      .segmentTangentToArc(endArc, true, true)
+      .draw(tangentStroke);
+
+    let endTangent = startArc
+      .segmentTangentToArc(endArc, true, false)
+      .draw(tangentStroke);
+
+    startArc.withClockwise(false)
+      .withStartEndTowardsPoint(startTangent.start, middleTangent.start)
+      .draw(tangentStroke);
+
+    endArc.withClockwise(false)
+      .withStartEndTowardsPoint(middleTangent.end, endTangent.end)
+      .draw(tangentStroke);
+
+
+
+
   });
 
 
