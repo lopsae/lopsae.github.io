@@ -57,6 +57,16 @@ function makeExampleContext(center, exampleAngle, arcsAngle, arcsDistance, closu
 function draw() {
   clear();
 
+  // https://coolors.co/011627-fdfffc-2ec4b6-e71d36-ff9f1c
+  let palette = {
+    richBlack:   rac.Color.fromRgba(1, 22, 39),
+    babyPowder:  rac.Color.fromRgba(253, 255, 252),
+    tiffanyBlue: rac.Color.fromRgba(46, 196, 182),
+    roseMadder:  rac.Color.fromRgba(231, 29, 54),
+    orangePeel:  rac.Color.fromRgba(255, 159, 28)
+  };
+
+  // TODO: remove when replaced
   let colorScheme = {
     background:  new rac.Color( .1,  .1,  .1), // blackish
     stroke:      new rac.Color( .9,  .2,  .2,  .8), // red,
@@ -66,10 +76,10 @@ function draw() {
     pointer:     new rac.Color( .9,  .9,  .9,  .6), // whiteish
     highlight:   new rac.Color(  0, 1.0, 1.0,  .8)// cyan
   };
-  colorScheme.background.applyBackground();
 
-  let mainStroke = colorScheme.stroke.stroke(2);
-  mainStroke.apply();
+  // Root styles
+  palette.richBlack.applyBackground();
+  palette.babyPowder.stroke(2).apply();
 
   let secondaryStroke = colorScheme.secondary.stroke(2);
 
