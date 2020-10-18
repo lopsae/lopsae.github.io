@@ -88,9 +88,6 @@ function draw() {
   let startArcRadius = 30;
   let endArcRadius = 80;
 
-  // Aesthetics
-  let overflow = 50; // TODO: remove?
-
 
   // Center pont
   let center = new rac.Point(width/2, height/2);
@@ -103,10 +100,11 @@ function draw() {
   // Arc-tangent segment from point
   makeExampleContext(center, rac.Angle.nw, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
-    // Angle control
-    angleControl.anchor = endCenter
+    let endArc = endCenter
       .segmentToAngle(rac.Angle.w, rac.Control.radius * 4)
-      .arcWithEnd(1/4);
+      .arc();
+    // Angle control
+    angleControl.anchor = endArc;
 
     angleControl.center()
       .segmentToPoint(angleControl.anchor.center)
@@ -116,12 +114,11 @@ function draw() {
       .segmentToBisector()
       .draw(secondaryStroke);
 
-    // Example
     let distanceSegment = startCenter.segmentToPoint(endCenter)
       .draw();
 
     let hyp = distanceSegment.length();
-    let ops = angleControl.anchor.radius
+    let ops = endArc.radius
 
     // Sine over 1 is invalid
     let angleSine = ops / hyp;
@@ -129,64 +126,62 @@ function draw() {
 
     let angleRadians = Math.asin(angleSine);
     let opsAngle = rac.Angle.fromRadians(angleRadians);
+    let rootAngle = distanceSegment.angle();
 
     // Clockwise segments
-    let cwAbsOpsAngle = distanceSegment.angle()
+    let cwOpsAngle = rootAngle
       .shift(opsAngle, true);
-    let cwAbsAdjAngle = cwAbsOpsAngle.perpendicular(true);
-    let cwEnd = angleControl.anchor
-      .pointAtAngle(cwAbsAdjAngle);
+    let cwAdjAngle = cwOpsAngle.perpendicular(true);
+    let cwEnd = endArc.pointAtAngle(cwAdjAngle);
 
     if (angleSine < 1) {
-      angleControl.anchor.center
+      endCenter
         .segmentToPoint(cwEnd)
         .draw()
         .nextSegmentToPoint(startCenter)
-        .withStartExtended(overflow)
-        .draw();
-    } else {
-      cwEnd.segmentToAngle(cwAbsOpsAngle, overflow)
         .draw();
     }
 
-    // With implemented function
-    let cwArcTangent = startCenter
-      .segmentTangentToArc(angleControl.anchor, true)
-      ?? cwEnd.segmentToPoint(cwEnd);
-    cwArcTangent
-      .translate(rac.Point.origin.pointToAngle(cwAbsAdjAngle, 20))
-      .draw()
-      .nextSegmentToPoint(cwEnd)
-      .draw(secondaryStroke);
-
     // Counter-clockwise segments
-    let ccAbsOpsAngle = distanceSegment.angle()
+    let ccOpsAngle = rootAngle
       .shift(opsAngle, false);
-    let ccAbsAdjAngle = ccAbsOpsAngle.perpendicular(false);
-    let ccEnd = angleControl.anchor
-      .pointAtAngle(ccAbsAdjAngle);
+    let ccAdjAngle = ccOpsAngle.perpendicular(false);
+    let ccEnd = endArc.pointAtAngle(ccAdjAngle);
 
     if (angleSine < 1) {
-      angleControl.anchor.center
+      endCenter
         .segmentToPoint(ccEnd)
         .draw(secondaryStroke)
         .nextSegmentToPoint(startCenter)
-        .withStartExtended(overflow)
-        .draw(secondaryStroke);
-    } else {
-      ccEnd.segmentToAngle(ccAbsOpsAngle, overflow)
         .draw(secondaryStroke);
     }
 
-    // With implemented function
-    let ccArcTangent = startCenter
-      .segmentTangentToArc(angleControl.anchor, false)
-      ?? ccEnd.segmentToPoint(ccEnd);
-    ccArcTangent
-      .translate(rac.Point.origin.pointToAngle(ccAbsAdjAngle, 20))
-      .draw(secondaryStroke)
-      .nextSegmentToPoint(ccEnd)
-      .draw(secondaryStroke);
+    // With implemented functions
+    let implementedOffset = 20;
+    if (angleSine < 1) {
+      startCenter
+        .segmentTangentToArc(endArc, true)
+        .translate(rac.Point.origin.pointToAngle(cwAdjAngle, implementedOffset))
+        .draw()
+        .nextSegmentToPoint(cwEnd)
+        .draw(secondaryStroke);
+
+      startCenter
+        .segmentTangentToArc(endArc, false)
+        .translate(rac.Point.origin.pointToAngle(ccAdjAngle, implementedOffset))
+        .draw(secondaryStroke)
+        .nextSegmentToPoint(ccEnd)
+        .draw(secondaryStroke);
+    } else {
+      endArc.radiusSegmentAtAngle(rootAngle.inverse())
+        .withEndExtended(implementedOffset)
+        .draw(secondaryStroke)
+        .end
+        .draw();
+    }
+
+
+
   });
 
 
@@ -264,8 +259,8 @@ function draw() {
 
     // Detached Start Circle reticules
     detachedOpsVertex
-      .segmentToAngle(toDetached.inverse(), startArcRadius)
-      .arcWithEnd(cwOpsAngle, false)
+      .segmentToAngle(rootAngle, startArcRadius)
+      .arcWithEnd(cwAdjAngle, false)
       .draw(secondaryStroke)
       .endSegment()
       .draw(secondaryStroke);
@@ -365,7 +360,7 @@ function draw() {
     detachedOpsVertex.segmentToAngle(toDetached.inverse(), startArcRadius + endArcRadius)
       .draw(secondaryStroke);
 
-      // Detached End Circle reticules
+    // Detached End Circle reticules
     detachedAdjVertex
       .segmentToAngle(toDetached.inverse(), endArcRadius)
       .arcWithEnd(cwAdjAngle, true)
@@ -375,7 +370,7 @@ function draw() {
 
     // Detached Start Circle reticules
     detachedOpsVertex
-      .segmentToAngle(rootAngle, startArcRadius)
+      .segmentToAngle(cwAdjAngle.inverse(), startArcRadius)
       .arcWithEnd(cwOpsAngle, false)
       .draw(secondaryStroke)
       .endSegment()
