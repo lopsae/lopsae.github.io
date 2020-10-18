@@ -365,6 +365,27 @@ function draw() {
     detachedOpsVertex.segmentToAngle(toDetached.inverse(), startArcRadius + endArcRadius)
       .draw(secondaryStroke);
 
+      // Detached End Circle reticules
+    detachedAdjVertex
+      .segmentToAngle(toDetached.inverse(), endArcRadius)
+      .arcWithEnd(cwAdjAngle, true)
+      .draw(secondaryStroke)
+      .endSegment()
+      .draw(secondaryStroke);
+
+    // Detached Start Circle reticules
+    detachedOpsVertex
+      .segmentToAngle(rootAngle, startArcRadius)
+      .arcWithEnd(cwOpsAngle, false)
+      .draw(secondaryStroke)
+      .endSegment()
+      .draw(secondaryStroke);
+    detachedOpsVertex
+      .segmentToAngle(cwAdjAngle.inverse(), startArcRadius)
+      .draw(secondaryStroke)
+      .nextSegmentToAngle(cwOpsAngle, adj)
+      .draw(secondaryStroke);
+
     // Cw Ops-adj reticules
     startCenter.segmentToAngle(cwOpsAngle, adj)
       .draw(secondaryStroke);
