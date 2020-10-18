@@ -348,13 +348,21 @@ function draw() {
     endCenter.segmentToAngle(cwAdjAngle, ops)
       .draw(secondaryStroke);
 
+    // Cw Implemented tangent funcition
+    startArc.segmentTangentToArc(endArc, true, false)
+      .draw().debug();
+
       // Cc Ops-adj reticules
     let ccOpsAngle = rootAngle.shift(opsAngle, false);
     let ccAdjAngle = rootAngle.shift(adjAngle, false);
     startCenter.segmentToAngle(ccOpsAngle, adj)
-      .draw(secondaryStroke).debug();
+      .draw(secondaryStroke);
     endCenter.segmentToAngle(ccAdjAngle, ops)
-      .draw(secondaryStroke).debug();
+      .draw(secondaryStroke);
+
+    // Cc Implemented tangent funcition
+    startArc.segmentTangentToArc(endArc, false, true)
+      .draw(secondaryStroke);
 
   });
 

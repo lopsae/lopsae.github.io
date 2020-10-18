@@ -1467,9 +1467,9 @@ rac.Arc.prototype.pointAtAngle = function(someAngle) {
 // is possible.
 rac.Arc.prototype.segmentTangentToArc = function(otherArc, startClockwise = true, endClockwise = true) {
   let hypSegment = this.center.segmentToPoint(otherArc.center);
-  let ops = otherArc.radius - this.radius;
-
-  // TODO: implement cross tangent
+  let ops = startClockwise === endClockwise
+    ? otherArc.radius - this.radius
+    : otherArc.radius + this.radius;
 
   let angleSine = ops / hypSegment.length();
   if (angleSine > 1) {
@@ -1478,10 +1478,17 @@ rac.Arc.prototype.segmentTangentToArc = function(otherArc, startClockwise = true
 
   let angleRadians = Math.asin(angleSine);
   let opsAngle = rac.Angle.fromRadians(angleRadians);
-  let shiftedOpsAngle = hypSegment.angle().shift(opsAngle, startClockwise);
-  let shiftedAdjAngle = shiftedOpsAngle.perpendicular(startClockwise);
 
-  let start = this.pointAtAngle(shiftedAdjAngle);
+  let adjOrientation = startClockwise === endClockwise
+    ? startClockwise
+    : !startClockwise;
+  let shiftedOpsAngle = hypSegment.angle().shift(opsAngle, adjOrientation);
+  let shiftedAdjAngle = shiftedOpsAngle.perpendicular(adjOrientation);
+
+  let startAngle = startClockwise === endClockwise
+    ? shiftedAdjAngle
+    : shiftedAdjAngle.inverse()
+  let start = this.pointAtAngle(startAngle);
   let end = otherArc.pointAtAngle(shiftedAdjAngle);
   return start.segmentToPoint(end);
 };
