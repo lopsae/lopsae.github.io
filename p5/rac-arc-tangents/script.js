@@ -57,13 +57,14 @@ function makeExampleContext(center, exampleAngle, arcsAngle, arcsDistance, closu
 function draw() {
   clear();
 
-  // https://coolors.co/011627-fdfffc-2ec4b6-e71d36-ff9f1c
+  // https://coolors.co/011627-fdfffc-2ec4b6-e71d36-ff9f1c-9e22f1
   let palette = {
     richBlack:   rac.Color.fromRgba(1, 22, 39),
     babyPowder:  rac.Color.fromRgba(253, 255, 252),
     tiffanyBlue: rac.Color.fromRgba(46, 196, 182),
     roseMadder:  rac.Color.fromRgba(231, 29, 54),
-    orangePeel:  rac.Color.fromRgba(255, 159, 28)
+    orangePeel:  rac.Color.fromRgba(255, 159, 28),
+    purpleX11:   rac.Color.fromRgba(158, 34, 241)
   };
 
   // TODO: remove when replaced
@@ -81,10 +82,12 @@ function draw() {
   palette.richBlack.applyBackground();
   palette.babyPowder.stroke(2).apply();
 
+  // Debug style
+  rac.defaultDrawer.debugStyle = palette.purpleX11.stroke(5);
+
+  // Styles
   let secondaryStroke = colorScheme.secondary.stroke(2);
 
-  // Debug highlight
-  rac.defaultDrawer.debugStyle = colorScheme.highlight.stroke(5);
 
   let controlStyle = colorScheme.stroke.stroke(3)
     .styleWithFill(colorScheme.controlFill.fill());
@@ -406,10 +409,6 @@ function draw() {
     startArc.radiusSegmentAtAngle(cwAdjAngle.inverse())
       .draw(secondaryStroke);
 
-    // Cw Implemented tangent funcition
-    startArc.segmentTangentToArc(endArc, false, true)
-      .draw();
-
       // Cc Ops-adj reticules
     let ccOpsAngle = rootAngle.shift(opsAngle, false);
     let ccAdjAngle = rootAngle.shift(adjAngle, false);
@@ -420,9 +419,11 @@ function draw() {
     startArc.radiusSegmentAtAngle(ccAdjAngle.inverse())
       .draw(secondaryStroke);
 
-    // Cc Implemented tangent funcition
+    // Implemented tangent funcition
+    startArc.segmentTangentToArc(endArc, false, true)
+      .draw();
     startArc.segmentTangentToArc(endArc, true, false)
-      .draw(secondaryStroke);
+      .draw(secondaryStroke).debug();
 
   });
 
