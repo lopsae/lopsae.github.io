@@ -172,31 +172,23 @@ function draw() {
       .draw();
 
     // Rest of drawing depends on valid angle
-    let implementedOffset = 20;
     if (angleSine >= 1) {
       endArc.radiusSegmentAtAngle(rootAngle.inverse())
-        .draw().debug()
-        .end
-        .draw(tangentStroke).debug();
+        .draw();
       return;
     }
 
     endCenter
       .segmentToPoint(cwEnd)
       .draw();
-      // .nextSegmentToPoint(startCenter)
-      // .draw(triangleTangentStroke).debug();
 
     endCenter
       .segmentToPoint(ccEnd)
       .draw();
-      // .nextSegmentToPoint(startCenter)
-      // .draw();
 
     // With implemented functions
     let cwTangent = startCenter
       .segmentTangentToArc(endArc, true)
-      // .translate(rac.Point.origin.pointToAngle(cwAdjAngle, implementedOffset))
       .draw(tangentStroke);
     cwTangent.nextSegmentToPoint(cwEnd)
       .draw();
@@ -205,7 +197,6 @@ function draw() {
 
     let ccTangent = startCenter
       .segmentTangentToArc(endArc, false)
-      // .translate(rac.Point.origin.pointToAngle(ccAdjAngle, implementedOffset))
       .draw(tangentSecondaryStroke);
     ccTangent.nextSegmentToPoint(ccEnd)
       .draw();
