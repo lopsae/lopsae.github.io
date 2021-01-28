@@ -104,7 +104,7 @@ function draw() {
   let exampleDistance = distanceControl.distance();
 
 
-  // Arc-tangent segment from point
+  // Example 1 - Arc-tangent segment from point
   makeExampleContext(center, rac.Angle.nw, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
     let endArc = endCenter
@@ -209,12 +209,10 @@ function draw() {
     ccTangent.start.segmentToPoint(startCenter)
       .draw();
 
-
-
   });
 
 
-  // Circle to circle, external
+  // Example 2 - Circle to circle, external
   makeExampleContext(center, rac.Angle.ne, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
     let distanceSegment = startCenter.segmentToPoint(endCenter)
@@ -333,7 +331,7 @@ function draw() {
   });
 
 
-  // // Circle to circle, cross
+  // Example 3 - Circle to circle, cross
   makeExampleContext(center, rac.Angle.sw, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
     let distanceSegment = startCenter.segmentToPoint(endCenter)
@@ -442,31 +440,31 @@ function draw() {
   });
 
 
-  // Example 4
+  // Example 4 - Construction
   makeExampleContext(center, rac.Angle.se, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
-    let startArc = startCenter.arc(startArcRadius)
+    // Arcs and reticules
+    let sourceArc = endCenter.arc(startArcRadius)
+      .draw();
+    let middleArc = startCenter.arc(startArcRadius)
       .draw();
     let endArc = endCenter.arc(endArcRadius)
       .draw();
-
     startCenter.segmentToPoint(endCenter)
       .draw();
 
-    let sourceArc = endCenter.arc(startArcRadius)
-      .draw();
 
-    let startTangent = startArc
-      .segmentTangentToArc(sourceArc, false, false)
+    let startTangent = sourceArc
+      .segmentTangentToArc(middleArc, true, true)
       .draw(tangentStroke);
 
-    let middleTangent = startArc.segmentTangentToArc(endArc, true, true);
+    let middleTangent = middleArc.segmentTangentToArc(endArc, true, true);
 
-    let endTangent = startArc.segmentTangentToArc(endArc, true, false);
+    let endTangent = endArc.segmentTangentToArc(middleArc, true, false);
 
     if (middleTangent !== null) {
-      startArc.withClockwise(false)
-        .withStartEndTowardsPoint(startTangent.start, middleTangent.start)
+      middleArc.withClockwise(false)
+        .withStartEndTowardsPoint(startTangent.end, middleTangent.start)
         .draw(tangentStroke);
 
       middleTangent.draw(tangentStroke);
@@ -474,7 +472,7 @@ function draw() {
 
     if (endTangent !== null) {
       endArc.withClockwise(false)
-        .withStartEndTowardsPoint(middleTangent.end, endTangent.end)
+        .withStartEndTowardsPoint(middleTangent.end, endTangent.start)
         .draw(tangentStroke);
 
       endTangent.draw(tangentStroke);
