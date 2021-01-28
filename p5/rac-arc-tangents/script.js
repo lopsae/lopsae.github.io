@@ -108,7 +108,7 @@ function draw() {
   makeExampleContext(center, rac.Angle.nw, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
     let endArc = endCenter
-      .segmentToAngle(rac.Angle.w, rac.Control.radius * 4)
+      .segmentToAngle(rac.Angle.w, endArcRadius)
       .arc();
     // Angle control
     angleControl.anchor = endArc;
@@ -169,6 +169,12 @@ function draw() {
     detachedAdjVertex.segmentToPoint(endCenter)
       .draw()
     detachedOpsVertex.segmentToAngle(toDetached.inverse(), startArcRadius + endArcRadius)
+      .draw();
+
+    // Detached End Circle reticules
+    detachedAdjVertex
+      .segmentToAngle(toDetached.inverse(), endArcRadius)
+      .arcWithEnd(cwAdjAngle, true)
       .draw();
 
     // Rest of drawing depends on valid angle
