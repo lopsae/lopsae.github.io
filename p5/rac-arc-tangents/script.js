@@ -175,10 +175,9 @@ function draw() {
     let implementedOffset = 20;
     if (angleSine >= 1) {
       endArc.radiusSegmentAtAngle(rootAngle.inverse())
-        .withEndExtended(implementedOffset)
-        .draw()
+        .draw().debug()
         .end
-        .draw(tangentStroke);
+        .draw(tangentStroke).debug();
       return;
     }
 
@@ -197,7 +196,7 @@ function draw() {
     // With implemented functions
     let cwTangent = startCenter
       .segmentTangentToArc(endArc, true)
-      .translate(rac.Point.origin.pointToAngle(cwAdjAngle, implementedOffset))
+      // .translate(rac.Point.origin.pointToAngle(cwAdjAngle, implementedOffset))
       .draw(tangentStroke);
     cwTangent.nextSegmentToPoint(cwEnd)
       .draw();
@@ -206,7 +205,7 @@ function draw() {
 
     let ccTangent = startCenter
       .segmentTangentToArc(endArc, false)
-      .translate(rac.Point.origin.pointToAngle(ccAdjAngle, implementedOffset))
+      // .translate(rac.Point.origin.pointToAngle(ccAdjAngle, implementedOffset))
       .draw(tangentSecondaryStroke);
     ccTangent.nextSegmentToPoint(ccEnd)
       .draw();
@@ -464,24 +463,25 @@ function draw() {
       .segmentTangentToArc(sourceArc, false, false)
       .draw(tangentStroke);
 
-    let middleTangent = startArc
-      .segmentTangentToArc(endArc, true, true)
-      .draw(tangentStroke);
+    let middleTangent = startArc.segmentTangentToArc(endArc, true, true);
 
-    let endTangent = startArc
-      .segmentTangentToArc(endArc, true, false)
-      .draw(tangentStroke);
+    let endTangent = startArc.segmentTangentToArc(endArc, true, false);
 
-    startArc.withClockwise(false)
-      .withStartEndTowardsPoint(startTangent.start, middleTangent.start)
-      .draw(tangentStroke);
+    if (middleTangent !== null) {
+      startArc.withClockwise(false)
+        .withStartEndTowardsPoint(startTangent.start, middleTangent.start)
+        .draw(tangentStroke);
 
-    endArc.withClockwise(false)
-      .withStartEndTowardsPoint(middleTangent.end, endTangent.end)
-      .draw(tangentStroke);
+      middleTangent.draw(tangentStroke);
+    }
 
+    if (endTangent !== null) {
+      endArc.withClockwise(false)
+        .withStartEndTowardsPoint(middleTangent.end, endTangent.end)
+        .draw(tangentStroke);
 
-
+      endTangent.draw(tangentStroke);
+    }
 
   });
 
