@@ -134,6 +134,7 @@ function draw() {
     let angleRadians = Math.asin(angleSine);
     let opsAngle = rac.Angle.fromRadians(angleRadians);
     let rootAngle = distanceSegment.angle();
+    let adj = Math.cos(opsAngle.radians()) * hyp;
 
     // Clockwise segments
     let cwOpsAngle = rootAngle
@@ -141,55 +142,76 @@ function draw() {
     let cwAdjAngle = cwOpsAngle.perpendicular(true);
     let cwEnd = endArc.pointAtAngle(cwAdjAngle);
 
-    if (angleSine < 1) {
-      endCenter
-        .segmentToPoint(cwEnd)
-        .draw(triangleStroke)
-        .nextSegmentToPoint(startCenter)
-        .draw(triangleTangentStroke);
-    }
-
     // Counter-clockwise segments
     let ccOpsAngle = rootAngle
       .shift(opsAngle, false);
     let ccAdjAngle = ccOpsAngle.perpendicular(false);
     let ccEnd = endArc.pointAtAngle(ccAdjAngle);
 
-    if (angleSine < 1) {
-      endCenter
-        .segmentToPoint(ccEnd)
-        .draw()
-        .nextSegmentToPoint(startCenter)
-        .draw();
-    }
+    // Detached triangle
+    let toDetached = rootAngle.perpendicular(true);
+    let detachedAdjVertex = endCenter
+      .segmentToAngle(toDetached, startArcRadius + endArcRadius)
+      .end;
+    let detachedHypVertex = detachedAdjVertex
+      .segmentToAngle(cwAdjAngle, ops)
+      .draw(triangleStroke)
+      .end;
+    let detachedOpsVertex = detachedHypVertex
+      .segmentToAngle(cwOpsAngle.inverse(), adj)
+      .draw(triangleTangentStroke)
+      .end;
+    detachedOpsVertex
+      .segmentToPoint(detachedAdjVertex)
+      .draw(triangleStroke);
 
-    // With implemented functions
+    // Attached to detached reticules
+    detachedAdjVertex.segmentToPoint(endCenter)
+      .draw()
+    detachedOpsVertex.segmentToAngle(toDetached.inverse(), startArcRadius + endArcRadius)
+      .draw();
+
+    // Rest of drawing depends on valid angle
     let implementedOffset = 20;
-    if (angleSine < 1) {
-      let cwTangent = startCenter
-        .segmentTangentToArc(endArc, true)
-        .translate(rac.Point.origin.pointToAngle(cwAdjAngle, implementedOffset))
-        .draw(tangentStroke);
-      cwTangent.nextSegmentToPoint(cwEnd)
-        .draw();
-      cwTangent.start.segmentToPoint(startCenter)
-        .draw();
-
-      let ccTangent = startCenter
-        .segmentTangentToArc(endArc, false)
-        .translate(rac.Point.origin.pointToAngle(ccAdjAngle, implementedOffset))
-        .draw(tangentSecondaryStroke);
-      ccTangent.nextSegmentToPoint(ccEnd)
-        .draw();
-      ccTangent.start.segmentToPoint(startCenter)
-        .draw();
-    } else {
+    if (angleSine >= 1) {
       endArc.radiusSegmentAtAngle(rootAngle.inverse())
         .withEndExtended(implementedOffset)
         .draw()
         .end
         .draw(tangentStroke);
+      return;
     }
+
+    endCenter
+      .segmentToPoint(cwEnd)
+      .draw();
+      // .nextSegmentToPoint(startCenter)
+      // .draw(triangleTangentStroke).debug();
+
+    endCenter
+      .segmentToPoint(ccEnd)
+      .draw();
+      // .nextSegmentToPoint(startCenter)
+      // .draw();
+
+    // With implemented functions
+    let cwTangent = startCenter
+      .segmentTangentToArc(endArc, true)
+      .translate(rac.Point.origin.pointToAngle(cwAdjAngle, implementedOffset))
+      .draw(tangentStroke);
+    cwTangent.nextSegmentToPoint(cwEnd)
+      .draw();
+    cwTangent.start.segmentToPoint(startCenter)
+      .draw();
+
+    let ccTangent = startCenter
+      .segmentTangentToArc(endArc, false)
+      .translate(rac.Point.origin.pointToAngle(ccAdjAngle, implementedOffset))
+      .draw(tangentSecondaryStroke);
+    ccTangent.nextSegmentToPoint(ccEnd)
+      .draw();
+    ccTangent.start.segmentToPoint(startCenter)
+      .draw();
 
 
 
