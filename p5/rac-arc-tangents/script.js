@@ -444,38 +444,51 @@ function draw() {
   makeExampleContext(center, rac.Angle.se, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
     // Arcs and reticules
-    let sourceArc = endCenter.arc(startArcRadius)
+    let sourceRadius = startArcRadius;
+    let baseSourceArc = endCenter.arc(sourceRadius)
       .draw();
-    let middleArc = startCenter.arc(startArcRadius)
+    let middleRadius = startArcRadius;
+    let baseMiddleArc = startCenter.arc(middleRadius)
       .draw();
-    let endArc = endCenter.arc(endArcRadius)
+    let endRadius = endArcRadius;
+    let baseEndArc = endCenter.arc(endRadius)
       .draw();
     startCenter.segmentToPoint(endCenter)
       .draw();
 
+    let delta = 10;
+    let steps = 3;
 
-    let startTangent = sourceArc
-      .segmentTangentToArc(middleArc, true, true)
-      .draw(tangentStroke);
+    for (let index = 0; index < steps; index++) {
+      let totalDelta = delta * index;
+      let sourceArc = baseSourceArc.withRadius(sourceRadius - totalDelta);
+      let middleArc = baseMiddleArc.withRadius(middleRadius - totalDelta);
+      let endArc = baseEndArc.withRadius(endRadius - totalDelta)
 
-    let middleTangent = middleArc.segmentTangentToArc(endArc, true, true);
-
-    let endTangent = endArc.segmentTangentToArc(middleArc, true, false);
-
-    if (middleTangent !== null) {
-      middleArc.withClockwise(false)
-        .withStartEndTowardsPoint(startTangent.end, middleTangent.start)
+      let startTangent = sourceArc
+        .segmentTangentToArc(middleArc, true, true)
         .draw(tangentStroke);
 
-      middleTangent.draw(tangentStroke);
-    }
+      let middleTangent = middleArc
+        .segmentTangentToArc(endArc, true, true);
 
-    if (endTangent !== null) {
-      endArc.withClockwise(false)
-        .withStartEndTowardsPoint(middleTangent.end, endTangent.start)
-        .draw(tangentStroke);
+      let endTangent = endArc.segmentTangentToArc(middleArc, true, false);
 
-      endTangent.draw(tangentStroke);
+      if (middleTangent !== null) {
+        middleArc.withClockwise(false)
+          .withStartEndTowardsPoint(startTangent.end, middleTangent.start)
+          .draw(tangentStroke);
+
+        middleTangent.draw(tangentStroke);
+      }
+
+      if (endTangent !== null) {
+        endArc.withClockwise(false)
+          .withStartEndTowardsPoint(middleTangent.end, endTangent.start)
+          .draw(tangentStroke);
+
+        endTangent.draw(tangentStroke);
+      }
     }
 
   });
