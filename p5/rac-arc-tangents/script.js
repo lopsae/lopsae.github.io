@@ -474,6 +474,8 @@ function draw() {
         .segmentTangentToArc(endArc, true, false);
       let cutoffTangent = baseSourceArc
         .segmentTangentToArc(baseFirstArc, true, true);
+      // cutoffTangent = cutoffTangent
+        // .translateToStart(cutoffTangent.start.pointToAngle(cutoffTangent.angle().perpendicular(), 8));
 
       // Drawing!
       sourceArc.withStartEndTowardsPoint(startCenter, startTangent.start)
@@ -490,10 +492,20 @@ function draw() {
 
       if (endTangent !== null) {
         secondArc = secondArc
-          .withStartEndTowardsPoint(middleTangent.end, endTangent.start)
-          .draw(tangentStroke);
+          .withStartEndTowardsPoint(middleTangent.end, endTangent.start);
 
-        endTangent.draw(tangentStroke);
+        let chord = secondArc.intersectionChordWithSegment(cutoffTangent);
+        if (secondArc.containsProjectedPoint(chord.end)) {
+          // cut the arc
+          secondArc.withEndTowardsPoint(chord.end)
+            .draw(tangentStroke);
+        } else {
+          secondArc.draw(tangentStroke);
+          // cut the tangent
+          endTangent.segmentToIntersectionWithSegment(cutoffTangent)
+            .draw(tangentStroke);
+        }
+
       }
     }
 

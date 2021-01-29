@@ -219,11 +219,16 @@ rac.setupProtoFunctions = function(classObj) {
 
 
 // Used to determine equality between measures for some operations, like
-// calculating the slope of a segment. Calues too close can result in odd
-// calculations. When checking for equality:
-// x is not equal to x+equalityThreshold
-// x is equal to x+equalityThreshold/2
+// calculating the slope of a segment. Values too close can result in odd
+// calculations.
+// When checking for equality x is equal to non-inclusive
+// (x-equalityThreshold, x+equalityThreshold):
+// + x is not equal to x±equalityThreshold
+// + x is equal to x±equalityThreshold/2
 rac.equalityThreshold = 0.001;
+
+// Length for elements that need an arbitrary value.
+rac.arbitraryLength = 100;
 
 
 rac.Error = {
@@ -463,8 +468,11 @@ rac.Angle.prototype.sub = function(someAngle) {
   return this.substract(someAngle);
 };
 
-// Returns the equivalent to `someAngle` when `this` is considered the
+// Returns the equivalent to `someAngle` shifted to have `this` as the
 // origin, in the `clockwise` orientation.
+//
+// For angle at `0.1`, `shift(0.5)` will return a `0.6` angle.
+// For a clockwise orientation, equivalent to `this + someAngle`.
 rac.Angle.prototype.shift = function(someAngle, clockwise = true) {
   let angle = rac.Angle.from(someAngle);
   return clockwise
@@ -839,6 +847,16 @@ rac.Segment = class RacSegment {
     return new rac.Segment(this.start, newEnd);
   }
 
+  withStartExtended(length) {
+    let newStart = this.reverse().nextSegmentWithLength(length).end;
+    return new rac.Segment(newStart, this.end);
+  }
+
+  withEndExtended(length) {
+    let newEnd = this.nextSegmentWithLength(length).end;
+    return new rac.Segment(this.start, newEnd);
+  }
+
   // Returns `value` clamped to the given insets from zero and the length
   // of the segment.
   // TODO: invalid range could return a value centered in the insets! more visually congruent
@@ -854,7 +872,7 @@ rac.Segment = class RacSegment {
 
   projectedPoint(point) {
     let perpendicular = this.angle().perpendicular();
-    return point.segmentToAngle(perpendicular, this.length())
+    return point.segmentToAngle(perpendicular, rac.arbitraryLength)
       .pointAtIntersectionWithSegment(this);
   }
 
@@ -877,14 +895,14 @@ rac.Segment = class RacSegment {
     }
   }
 
-  withStartExtended(length) {
-    let newStart = this.reverse().nextSegmentWithLength(length).end;
-    return new rac.Segment(newStart, this.end);
-  }
-
-  withEndExtended(length) {
-    let newEnd = this.nextSegmentWithLength(length).end;
-    return new rac.Segment(this.start, newEnd);
+  // Returns `true` if the given point is located clockwise of the segment,
+  // or `false` if located counter-clockwise.
+  pointOrientation(point) {
+    let angle = this.start.angleToPoint(point);
+    let arcLength = angle.substract(this.angle());
+    // [0 to 0.5) is considered clockwise
+    // [0.5, 1) is considered counter-clockwise
+    return arcLength.turn < 0.5;
   }
 
 }
@@ -1328,8 +1346,16 @@ rac.Arc.prototype.containsAngle = function(someAngle) {
   }
 };
 
+// Returns `true` if the projection of `point` in the arc is positioned
+// between `start` and `end` in the `clockwise` orientation. For complete
+// circle arcs `true` is always returned.
+rac.Arc.prototype.containsProjectedPoint = function(point) {
+  if (this.isCircle()) { return true; }
+  return this.containsAngle(this.center.angleToPoint(point));
+}
+
 // Returns a segment for the chord formed by the intersection of `this` and
-// `other`, or `null` if there is no intersection.
+// `other`; or return `null` if there is no intersection.
 // Both arcs are considered complete circles for the calculation of the
 // chord, thus the endpoints of the returned segment may not lay inside the
 // actual arcs.
@@ -1338,7 +1364,11 @@ rac.Arc.prototype.intersectionChord = function(other) {
   // R=this, r=other
 
   let distance = this.center.distanceToPoint(other.center);
-  if (distance == 0) { return null; }
+
+  if (distance <= rac.equalityThreshold) {
+    // Distance of zero or too close considered as same center
+    return null;
+  }
 
   // distanceToChord = (d^2 - r^2 + R^2) / (d*2)
   let distanceToChord = (
@@ -1398,6 +1428,32 @@ rac.Arc.prototype.intersectingPointsWithArc = function(other) {
   return intersections;
 };
 
+// Returns a segment for the chord formed by the intersection of `this` and
+// `segment`; or return `null` if there is no intersection.
+// `this` is considered a complete circle, and `segment` is considered a
+// line without endpoints. The returned segment will have the same angle
+// as `segment`.
+rac.Arc.prototype.intersectionChordWithSegment = function(segment) {
+  // First check intersection
+  let projectedCenter = segment.projectedPoint(this.center);
+  let bisector = this.center.segmentToPoint(projectedCenter);
+  let distance = bisector.length();
+  if (distance > this.radius - rac.equalityThreshold) {
+    // projectedCenter outside or too close to arc edge
+    return null;
+  }
+
+  // TODO: are there special considerations if segment is too close to center?
+
+  let radians = Math.acos(distance/this.radius);
+  let angle = rac.Angle.fromRadians(radians);
+
+  let centerOrientation = segment.pointOrientation(this.center);
+  let start = this.pointAtAngle(bisector.angle().shift(angle, !centerOrientation));
+  let end = this.pointAtAngle(bisector.angle().shift(angle, centerOrientation));
+  return new rac.Segment(start, end);
+};
+
 // Returns an Angle that represents the distance between `this.start` and
 // `this.end`, in the orientation of the arc.
 rac.Arc.prototype.arcLength = function() {
@@ -1453,7 +1509,7 @@ rac.Arc.prototype.distanceFromStart = function(someAngle) {
 }
 
 // Returns the Angle at the given arc length from `start`. Equivalent to
-// `shiftAngle()`.
+// `shiftAngle(someAngle)`.
 rac.Arc.prototype.angleAtArcLength = function(someAngle) {
   return this.shiftAngle(someAngle);
 }
