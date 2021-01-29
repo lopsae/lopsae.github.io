@@ -444,38 +444,39 @@ function draw() {
   makeExampleContext(center, rac.Angle.se, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
     // Arcs and reticules
-    let sourceRadius = startArcRadius;
+    let sourceRadius = 40;
     let baseSourceArc = endCenter.arc(sourceRadius)
       .draw();
-    let middleRadius = startArcRadius;
-    let baseMiddleArc = startCenter.arc(middleRadius)
+    let firstRadius = 40;
+    let baseFirstArc = startCenter.arc(firstRadius)
       .draw();
-    let endRadius = endArcRadius;
-    let baseEndArc = endCenter.arc(endRadius)
+    let secondRadius = 80;
+    let baseSecondArc = endCenter.arc(secondRadius)
       .draw();
     startCenter.segmentToPoint(endCenter)
       .draw();
 
     let delta = 10;
-    let steps = 3;
+    let steps = 4;
 
     for (let index = 0; index < steps; index++) {
       let totalDelta = delta * index;
       let sourceArc = baseSourceArc.withRadius(sourceRadius - totalDelta);
-      let middleArc = baseMiddleArc.withRadius(middleRadius - totalDelta);
-      let endArc = baseEndArc.withRadius(endRadius - totalDelta)
+      let firstArc = baseFirstArc.withRadius(firstRadius - totalDelta);
+      let secondArc = baseSecondArc.withRadius(secondRadius - totalDelta)
+      let endArc = baseFirstArc.withRadius(firstRadius + totalDelta)
 
       let startTangent = sourceArc
-        .segmentTangentToArc(middleArc, true, true)
+        .segmentTangentToArc(firstArc, true, true)
         .draw(tangentStroke);
 
-      let middleTangent = middleArc
-        .segmentTangentToArc(endArc, true, true);
+      let middleTangent = firstArc
+        .segmentTangentToArc(secondArc, true, true);
 
-      let endTangent = endArc.segmentTangentToArc(middleArc, true, false);
+      let endTangent = secondArc.segmentTangentToArc(endArc, true, false);
 
       if (middleTangent !== null) {
-        middleArc.withClockwise(false)
+        firstArc.withClockwise(false)
           .withStartEndTowardsPoint(startTangent.end, middleTangent.start)
           .draw(tangentStroke);
 
@@ -483,7 +484,7 @@ function draw() {
       }
 
       if (endTangent !== null) {
-        endArc.withClockwise(false)
+        secondArc.withClockwise(false)
           .withStartEndTowardsPoint(middleTangent.end, endTangent.start)
           .draw(tangentStroke);
 
