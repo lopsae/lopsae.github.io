@@ -1216,6 +1216,22 @@ rac.Arc = class RacArc {
       this.clockwise);
   }
 
+  withStart(newStart) {
+    let newStartAngle = rac.Angle.from(newStart);
+    return new rac.Arc(
+      this.center, this.radius,
+      newStartAngle, this.end,
+      this.clockwise);
+  }
+
+  withEnd(newEnd) {
+    let newEndAngle = rac.Angle.from(newEnd);
+    return new rac.Arc(
+      this.center, this.radius,
+      this.start, newEndAngle,
+      this.clockwise);
+  }
+
   withRadius(newRadius) {
     return new rac.Arc(
       this.center, newRadius,
@@ -1238,12 +1254,11 @@ rac.Arc = class RacArc {
       newClockwise);
   }
 
-  withStartEndTowardsPoint(startPoint, endPoint) {
-    let newStart = this.center.angleToPoint(startPoint);
-    let newEnd = this.center.angleToPoint(endPoint);
+  withStartTowardsPoint(point) {
+    let newStart = this.center.angleToPoint(point);
     return new rac.Arc(
       this.center, this.radius,
-      newStart, newEnd,
+      newStart, this.end,
       this.clockwise);
   }
 
@@ -1252,6 +1267,15 @@ rac.Arc = class RacArc {
     return new rac.Arc(
       this.center, this.radius,
       this.start, newEnd,
+      this.clockwise);
+  }
+
+  withStartEndTowardsPoint(startPoint, endPoint) {
+    let newStart = this.center.angleToPoint(startPoint);
+    let newEnd = this.center.angleToPoint(endPoint);
+    return new rac.Arc(
+      this.center, this.radius,
+      newStart, newEnd,
       this.clockwise);
   }
 
