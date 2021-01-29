@@ -472,10 +472,6 @@ function draw() {
         .segmentTangentToArc(secondArc, true, true);
       let endTangent = secondArc
         .segmentTangentToArc(endArc, true, false);
-      let cutoffTangent = baseSourceArc
-        .segmentTangentToArc(baseFirstArc, true, true);
-      cutoffTangent = cutoffTangent
-        .translateToStart(cutoffTangent.start.pointToAngle(cutoffTangent.angle().perpendicular(), 10));
 
       // Drawing!
       sourceArc.withStartEndTowardsPoint(startCenter, startTangent.start)
@@ -484,11 +480,28 @@ function draw() {
 
       // Early exit if no tangents are available
       if (middleTangent === null && endTangent === null) {
-        let angleToStartCenter = endCenter.angleToPoint(startCenter);
-        firstArc
-          .withStartTowardsPoint(startTangent.end)
-          .withEnd(angleToStartCenter)
-          .draw(tangentStroke);
+        let earlyCutoff = endCenter.segmentToPoint(startCenter);
+        earlyCutoff = earlyCutoff
+        // MAICTODO: translatePerpendicular
+          .translateToAngle(earlyCutoff.angle().perpendicular(), delta);
+
+          // MAICTODO: chordEndOrProjection
+        let chord = firstArc.intersectionChordWithSegment(earlyCutoff);
+        let firstArcEnd;
+        if (chord === null) {
+          // No chord, defaults to point closest to earlyCutoff
+          firstArcEnd = firstArc
+            .pointAtAngle(earlyCutoff.angle().perpendicular());
+        } else {
+          // With chord, arc extends to end of chord
+          firstArcEnd = chord.end;
+        }
+
+        firstArc = firstArc
+          .withStartEndTowardsPoint(startTangent.end, firstArcEnd);
+        if (!firstArc.isCircle()) {
+          firstArc.draw(tangentStroke);
+        }
         continue;
       }
 
@@ -501,6 +514,11 @@ function draw() {
       }
 
       // Define cutoff for second arc
+      let cutoffTangent = baseSourceArc
+        .segmentTangentToArc(baseFirstArc, true, true);
+      cutoffTangent = cutoffTangent
+        .translateToAngle(cutoffTangent.angle().perpendicular(), delta);
+
       let chord = secondArc.intersectionChordWithSegment(cutoffTangent);
       let secondArcEnd;
       if (chord === null) {

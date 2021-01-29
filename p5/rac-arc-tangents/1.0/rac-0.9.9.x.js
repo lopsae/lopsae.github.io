@@ -731,7 +731,8 @@ rac.Point.prototype.arc = function(radius, start = rac.Angle.zero, end = start, 
 };
 
 
-rac.Point.origin = new rac.Point(0, 0);
+rac.Point.zero = new rac.Point(0, 0);
+rac.Point.origin = rac.Point.zero;
 
 
 
@@ -984,11 +985,6 @@ rac.Segment.prototype.reverse = function() {
   return new rac.Segment(this.end, this.start);
 };
 
-rac.Segment.prototype.translateToStart = function(newStart) {
-  let offset = newStart.substract(this.start);
-  return new rac.Segment(this.start.add(offset), this.end.add(offset));
-};
-
 // Translates the segment by the entire `point`, or by the given `x` and
 // `y` components.
 rac.Segment.prototype.translate = function(point, y = undefined) {
@@ -1008,6 +1004,17 @@ rac.Segment.prototype.translate = function(point, y = undefined) {
   console.trace(`Invalid parameter combination - point-type:${rac.typeName(point)} y-type:${rac.typeName(y)}`);
   throw rac.Error.invalidParameterCombination;
 }
+
+rac.Segment.prototype.translateToStart = function(newStart) {
+  let offset = newStart.substract(this.start);
+  return new rac.Segment(this.start.add(offset), this.end.add(offset));
+};
+
+rac.Segment.prototype.translateToAngle = function(someAngle, distance) {
+  let angle = rac.Angle.from(someAngle);
+  let offset = rac.Point.zero.pointToAngle(angle, distance);
+  return new rac.Segment(this.start.add(offset), this.end.add(offset));
+};
 
 // Returns the intersecting point of `this` and `other`. Both segments are
 // considered lines without endpoints.
