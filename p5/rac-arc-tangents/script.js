@@ -490,7 +490,14 @@ function draw() {
         middleTangent.draw(tangentStroke);
       }
 
-      if (endTangent !== null) {
+      if (endTangent === null) {
+        if (middleTangent !== null) {
+          let chord = secondArc.intersectionChordWithSegment(cutoffTangent);
+          secondArc
+            .withStartEndTowardsPoint(middleTangent.end, chord.end)
+            .draw(tangentStroke);
+        }
+      } else {
         secondArc = secondArc
           .withStartEndTowardsPoint(middleTangent.end, endTangent.start);
 
