@@ -501,6 +501,23 @@ function draw() {
           if (!firstArc.isCircle()) {
             firstArc.draw(tangentStroke);
           }
+
+          // Fade in secondArc
+          let colorRatio = (possibleSecondArcRadius - sourceRadius) / delta;
+          let fadeTangentStroke = tangentStroke.withAlpha(colorRatio);
+
+          let possibleSecondArc = secondArc
+            .withRadius(endToEndDistance + firstArc.radius);
+          let secondArcStart = possibleSecondArc
+            .chordEndOrProjectionWithSegment(earlySecondArcCutoff);
+
+          let firstArcBit = firstArc
+            .withStartEndTowardsPoint(firstArcEnd, secondArcStart)
+            .draw(fadeTangentStroke);
+          let earlySecondArcEnd = possibleSecondArc.chordEndOrProjectionWithSegment(cutoffTangent);
+          possibleSecondArc
+            .withStartEndTowardsPoint(secondArcStart, earlySecondArcEnd)
+            .draw(fadeTangentStroke);
         } else {
           // Possible second arc
           let possibleSecondArc = secondArc
@@ -510,9 +527,9 @@ function draw() {
           firstArc
             .withStartEndTowardsPoint(startTangent.end, secondArcStart)
             .draw(tangentStroke);
-          let easlySecondArcEnd = possibleSecondArc.chordEndOrProjectionWithSegment(cutoffTangent);
+          let earlySecondArcEnd = possibleSecondArc.chordEndOrProjectionWithSegment(cutoffTangent);
           possibleSecondArc
-            .withStartEndTowardsPoint(secondArcStart, easlySecondArcEnd)
+            .withStartEndTowardsPoint(secondArcStart, earlySecondArcEnd)
             .draw(tangentStroke);
         }
 
