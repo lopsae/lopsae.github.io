@@ -480,10 +480,8 @@ function draw() {
 
       // Early exit if no tangents are available
       if (middleTangent === null && endTangent === null) {
-        let earlyCutoff = endCenter.segmentToPoint(startCenter);
-        earlyCutoff = earlyCutoff
-        // MAICTODO: translatePerpendicular
-          .translateToAngle(earlyCutoff.angle().perpendicular(), delta);
+        let earlyCutoff = endCenter.segmentToPoint(startCenter)
+          .translatePerpendicular(delta);
 
           // MAICTODO: chordEndOrProjection
         let chord = firstArc.intersectionChordWithSegment(earlyCutoff);
@@ -515,9 +513,8 @@ function draw() {
 
       // Define cutoff for second arc
       let cutoffTangent = baseSourceArc
-        .segmentTangentToArc(baseFirstArc, true, true);
-      cutoffTangent = cutoffTangent
-        .translateToAngle(cutoffTangent.angle().perpendicular(), delta);
+        .segmentTangentToArc(baseFirstArc, true, true)
+        .translatePerpendicular(delta);
 
       let chord = secondArc.intersectionChordWithSegment(cutoffTangent);
       let secondArcEnd;

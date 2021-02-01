@@ -1016,6 +1016,11 @@ rac.Segment.prototype.translateToAngle = function(someAngle, distance) {
   return new rac.Segment(this.start.add(offset), this.end.add(offset));
 };
 
+rac.Segment.prototype.translatePerpendicular = function(distance, clockwise = true) {
+  let perpendicular = this.angle().perpendicular(clockwise);
+  return this.translateToAngle(perpendicular, distance);
+};
+
 // Returns the intersecting point of `this` and `other`. Both segments are
 // considered lines without endpoints.
 rac.Segment.prototype.pointAtIntersectionWithSegment = function(other) {
