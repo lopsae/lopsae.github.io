@@ -482,18 +482,7 @@ function draw() {
       if (middleTangent === null && endTangent === null) {
         let earlyCutoff = endCenter.segmentToPoint(startCenter)
           .translatePerpendicular(delta);
-
-          // MAICTODO: chordEndOrProjection
-        let chord = firstArc.intersectionChordWithSegment(earlyCutoff);
-        let firstArcEnd;
-        if (chord === null) {
-          // No chord, defaults to point closest to earlyCutoff
-          firstArcEnd = firstArc
-            .pointAtAngle(earlyCutoff.angle().perpendicular());
-        } else {
-          // With chord, arc extends to end of chord
-          firstArcEnd = chord.end;
-        }
+        let firstArcEnd = firstArc.chordEndOrProjectionWithSegment(earlyCutoff);
 
         firstArc = firstArc
           .withStartEndTowardsPoint(startTangent.end, firstArcEnd);
@@ -515,17 +504,7 @@ function draw() {
       let cutoffTangent = baseSourceArc
         .segmentTangentToArc(baseFirstArc, true, true)
         .translatePerpendicular(delta);
-
-      let chord = secondArc.intersectionChordWithSegment(cutoffTangent);
-      let secondArcEnd;
-      if (chord === null) {
-        // No chord, defaults to point closest to cutoffTangent
-        secondArcEnd = secondArc
-          .pointAtAngle(cutoffTangent.angle().perpendicular());
-      } else {
-        // With chord, arc extends to end of chord
-        secondArcEnd = chord.end;
-      }
+      let secondArcEnd = secondArc.chordEndOrProjectionWithSegment(cutoffTangent);
 
       // Wrap around second arc if circles are too close
       if (endTangent === null) {

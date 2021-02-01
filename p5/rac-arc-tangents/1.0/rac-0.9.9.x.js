@@ -1465,10 +1465,11 @@ rac.Arc.prototype.intersectingPointsWithArc = function(other) {
 };
 
 // Returns a segment for the chord formed by the intersection of `this` and
-// `segment`; or return `null` if there is no intersection.
-// `this` is considered a complete circle, and `segment` is considered a
-// line without endpoints. The returned segment will have the same angle
-// as `segment`.
+// `segment`; or return `null` if there is no intersection. The returned
+// segment will have the same angle as `segment`.
+//
+// For this function `this` is considered a complete circle, and `segment`
+// is considered a line without endpoints.
 rac.Arc.prototype.intersectionChordWithSegment = function(segment) {
   // First check intersection
   let projectedCenter = segment.projectedPoint(this.center);
@@ -1488,6 +1489,23 @@ rac.Arc.prototype.intersectionChordWithSegment = function(segment) {
   let start = this.pointAtAngle(bisector.angle().shift(angle, !centerOrientation));
   let end = this.pointAtAngle(bisector.angle().shift(angle, centerOrientation));
   return new rac.Segment(start, end);
+};
+
+// Returns the `end` point of `intersectionChordWithSegment` for `segment`.
+// If `segment` does not intersect with `self`, returns the point in the
+// arc closest to `segment`.
+//
+// For this function `this` is considered a complete circle, and `segment`
+// is considered a line without endpoints.
+rac.Arc.prototype.chordEndOrProjectionWithSegment = function(segment) {
+  let chord = this.intersectionChordWithSegment(segment);
+  if (chord !== null) {
+    return chord.end;
+  }
+
+  let centerOrientation = segment.pointOrientation(this.center);
+  let perpendicular = segment.angle().perpendicular(!centerOrientation);
+  return this.pointAtAngle(perpendicular);
 };
 
 // Returns an Angle that represents the distance between `this.start` and
