@@ -32,9 +32,9 @@ function mouseReleased(event) {
 }
 
 
-let distanceControl = new rac.SegmentControl(0, 200)
+let distanceControl = new rac.SegmentControl(0, 300)
 distanceControl.setValueWithLength(140);
-distanceControl.setLimitsWithLengthInsets(10, 0);
+distanceControl.setLimitsWithLengthInsets(1, 0);
 rac.Control.controls.push(distanceControl);
 
 let angleControl = new rac.ArcControl(1/4, 1);
@@ -445,19 +445,20 @@ function draw() {
     (startCenter, endCenter) => {
     // Arcs and reticules
     let sourceRadius = 40;
+    let firstRadius = 40;
+    let secondRadius = 80;
+
+    let delta = 10;
+    let steps = 4;
+
     let baseSourceArc = endCenter.arc(sourceRadius).withClockwise(false)
       .draw();
-    let firstRadius = 40;
     let baseFirstArc = startCenter.arc(firstRadius).withClockwise(false)
       .draw();
-    let secondRadius = 80;
     let baseSecondArc = endCenter.arc(secondRadius).withClockwise(false)
       .draw();
     startCenter.segmentToPoint(endCenter)
       .draw();
-
-    let delta = 10;
-    let steps = 4;
 
     for (let index = 0; index < steps; index++) {
       let totalDelta = delta * index;
