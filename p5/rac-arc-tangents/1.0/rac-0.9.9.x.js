@@ -496,6 +496,7 @@ rac.Angle.prototype.multOne = function(factor) {
   return new rac.Angle(this.turnOne() * factor);
 };
 
+// Returns `this` adding half a turn.
 rac.Angle.prototype.inverse = function() {
   return this.add(rac.Angle.inverse);
 };
@@ -1480,7 +1481,13 @@ rac.Arc.prototype.intersectionChordWithSegment = function(segment) {
     return null;
   }
 
-  // TODO: are there special considerations if segment is too close to center?
+  // Segment too close to center, consine calculations may be incorrect
+  if (distance < rac.equalityThreshold) {
+    let segmentAngle = segment.angle();
+    let start = this.pointAtAngle(segmentAngle.inverse());
+    let end = this.pointAtAngle(segmentAngle);
+    return new rac.Segment(start, end);
+  }
 
   let radians = Math.acos(distance/this.radius);
   let angle = rac.Angle.fromRadians(radians);
