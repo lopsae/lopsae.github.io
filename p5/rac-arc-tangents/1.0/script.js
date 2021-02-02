@@ -34,7 +34,7 @@ function mouseReleased(event) {
 
 let distanceControl = new rac.SegmentControl(0, 300)
 distanceControl.setValueWithLength(140);
-distanceControl.setLimitsWithLengthInsets(1, 0);
+distanceControl.setLimitsWithLengthInsets(0.1, 0);
 rac.Control.controls.push(distanceControl);
 
 let angleControl = new rac.ArcControl(1/4, 1);

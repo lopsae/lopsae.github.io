@@ -947,11 +947,16 @@ rac.Segment.prototype.angle = function() {
 // vertical line.
 rac.Segment.prototype.slope = function() {
   let dx = this.end.x - this.start.x;
+  let dy = this.end.y - this.start.y;
   if (Math.abs(dx) < rac.equalityThreshold) {
+    if(Math.abs(dy) < rac.equalityThreshold) {
+      // Segment with equal end and start returns a default angle of 0
+      // Equivalent slope is 0
+      return 0;
+    }
     return null;
   }
 
-  let dy = this.end.y - this.start.y;
   return dy / dx;
 };
 
