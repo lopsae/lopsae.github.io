@@ -1,7 +1,7 @@
 "use strict";
 
 
-// Ruler and Compass - 0.9.9.x
+// Ruler and Compass - 0.9.9.anim
 let rac;
 rac = rac ?? {};
 
@@ -2636,4 +2636,131 @@ rac.Control.drawControls = function() {
   rac.Control.selection.drawSelection(pointerCenter);
 };
 
+
+// Animation objects
+
+
+rac.Animator = class RacAnimator {
+
+  constructor() {
+    this.steps = [];
+    this.stepIndex = null;
+    this.startValue = null;
+    this.startTime = null;
+    this.isLoop = false;
+  }
+
+  totalDuration() {
+    let duration = 0;
+    this.steps.forEach(item => duration += item.duration);
+    return duration;
+  }
+
+  // Animate with the current time. Time is expected in milliseconds.
+  // Returns `true` if there is still animations to perform, otherwise
+  // returns `false`.
+  animate(currentTime) {
+    // TODO: delete logs
+    if (this.stepIndex === null) {
+      // first animate is no-op, time is recorded
+      this.stepIndex = 0;
+      this.startTime = currentTime;
+      let currentStep = this.steps[this.stepIndex];
+      this.startValue = currentStep.currentValue();
+      return true;
+    }
+
+    if (this.stepIndex >= this.steps.length) {
+      // All steps have been animated
+      return false;
+    }
+
+    let currentStep = this.steps[this.stepIndex];
+    let timeDelta = currentTime - this.startTime;
+
+    while (true) {
+      // Apply animations for current time
+      this.applyStep(currentStep, timeDelta, this.startValue);
+
+      if (timeDelta < currentStep.duration) {
+        // Still in current step
+        return true;
+      }
+
+      // Move to next step, loop around
+      this.stepIndex += 1;
+      if (this.isLoop) {
+        this.stepIndex %= this.steps.length;
+      }
+      if (this.stepIndex >= this.steps.length) {
+        // All steps have been animated
+        return false;
+      }
+
+      // Update start time for next step
+      let overTime = timeDelta - currentStep.duration;
+      this.startTime = currentTime - overTime;
+
+      // Update start value for next step
+      currentStep = this.steps[this.stepIndex];
+      timeDelta = currentTime - this.startTime;
+      this.startValue = currentStep.currentValue();
+    }
+  }
+
+  // step - current step being animated
+  // timeDelta - time elapsed since start of step
+  // startValue - initial value for the control in the step
+  applyStep(step, timeDelta, startValue) {
+    if (step.control === null) {
+      return;
+    }
+
+    // Over duration only applies end value
+    if (timeDelta >= step.duration) {
+      step.control.value = step.endValue;
+      return;
+    }
+
+    let durationRatio = timeDelta / step.duration;
+    let valueTotalDelta = step.endValue - this.startValue;
+    // https://math.stackexchange.com/questions/121720/ease-in-out-function/121755#121755
+    // f(x) = (t^a)/(t^a+(1-t)^a)
+    let a = 2;
+    let t = durationRatio;
+    let easeRatio = Math.pow(t,a) / (Math.pow(t,a) + Math.pow(1-t,a));
+    let newValue = startValue + (easeRatio * valueTotalDelta);
+    step.control.value = newValue;
+  }
+
+  addControlStep(duration, control, value) {
+    let newStep = new rac.AnimatorStep(duration, control, value);
+    this.steps.push(newStep);
+  }
+
+  addPauseStep(duration) {
+    let newStep = new rac.AnimatorStep(duration);
+    this.steps.push(newStep);
+  }
+
+}
+
+
+rac.AnimatorStep = class RacAnimatorStep {
+
+  constructor(duration, control = null, endValue = null) {
+    this.duration = duration;
+    this.control = control;
+    this.endValue = endValue;
+  }
+
+
+  currentValue() {
+    if (this.control === null) {
+      return null;
+    }
+    return this.control.value;
+  }
+
+}
 
