@@ -1,6 +1,11 @@
 "use strict";
 
+// Animation toggles
 let animScale = 2;
+let loopAnimation = true;
+
+// When recording, looping is always disabled
+let recordAnimation = false;
 
 // Ruler and Compass
 let rac;
@@ -1464,7 +1469,13 @@ animator.addPauseStep(200);
 animator.addControlStep(1500, radiusControl, radiusStart);
 animator.addPauseStep(200);
 animator.addControlStep(1500, concentricControl, concentricStart); // back to original
-animator.isLoop = false;
+
+if (recordAnimation) {
+  animator.isLoop = false;
+} else {
+  animator.isLoop = loopAnimation;
+}
+
 
 let animFramerate = 20;
 
@@ -1472,17 +1483,20 @@ function setup() {
   // createCanvas(windowWidth, windowHeight);
   let canvasSide = 800/animScale;
   createCanvas(canvasSide, canvasSide);
-  // TODO: looping for animation
-  // noLoop();
+
   frameRate(animFramerate);
   noStroke();
   noFill();
   console.log(`Total animation duration: ${animator.totalDuration()}`);
-  createLoop({
-    duration: animator.totalDuration()/1000,
-    gif:{
-      download: true
-    }});
+
+  if (recordAnimation) {
+    createLoop({
+      duration: animator.totalDuration()/1000,
+      gif:{
+        download: true
+      }});
+  }
+
 }
 
 
@@ -1490,7 +1504,7 @@ function draw() {
   clear();
 
   let millisByFramerate = frameCount*1000/animFramerate;
-  console.log(`millisByFramerate:${millisByFramerate}`);
+  console.log(`frameCount:${frameCount} millisByFramerate:${millisByFramerate}`);
   let hasMoreAnimations = animator.animate(millisByFramerate);
   if (!hasMoreAnimations) {
     console.log(`Animations done!`);
@@ -1751,5 +1765,5 @@ function draw() {
 
   rac.drawControls();
 
-  console.log(`👑 ~finis coronat opus ${frameCount},${millis()}`);
+  console.log(`👑 ~finis coronat opus~ frame:${frameCount} millis:${millis().toFixed(3)}`);
 }
