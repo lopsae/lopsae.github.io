@@ -1,7 +1,7 @@
 "use strict";
 
 // Animation toggles
-let animScale = 1;
+let animationScale = 2;
 let animFramerate = 20;
 let loopAnimation = true;
 
@@ -42,8 +42,8 @@ function mouseReleased(event) {
 }
 
 
-let distanceControl = new rac.SegmentControl(0, 300)
-distanceControl.setValueWithLength(140);
+let distanceControl = new rac.SegmentControl(0, 300/animationScale)
+distanceControl.setValueWithLength(140/animationScale);
 distanceControl.setLimitsWithLengthInsets(0.1, 0);
 rac.Control.controls.push(distanceControl);
 
@@ -54,15 +54,15 @@ rac.Control.controls.push(angleControl);
 
 
 let animator = new rac.Animator();
-animator.addControlStep(1500, distanceControl, 1/distanceControl.length/animScale);
+animator.addControlStep(1500, distanceControl, 1/distanceControl.length/animationScale);
 animator.addPauseStep(200);
-animator.addControlStep(1500, distanceControl, 300/distanceControl.length/animScale);
+animator.addControlStep(1500, distanceControl, 300/distanceControl.length/animationScale);
 animator.addPauseStep(200);
-animator.addControlStep(1500, distanceControl, 140/distanceControl.length/animScale); // back to original
+animator.addControlStep(1500, distanceControl, 140/distanceControl.length/animationScale); // back to original
 
 
 function makeExampleContext(center, exampleAngle, arcsAngle, arcsDistance, closure) {
-  let distanceToExample = 220;
+  let distanceToExample = 220/animationScale;
   let endCenter = center.pointToAngle(exampleAngle, distanceToExample);
   let startCenter = endCenter.pointToAngle(arcsAngle, arcsDistance);
 
@@ -117,8 +117,8 @@ function draw() {
 
 
   // General measurements
-  let startArcRadius = 30;
-  let endArcRadius = 80;
+  let startArcRadius = 30/animationScale;
+  let endArcRadius = 80/animationScale;
 
 
   // Center pont
@@ -469,11 +469,11 @@ function draw() {
   makeExampleContext(center, rac.Angle.se, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
     // Arcs and reticules
-    let sourceRadius = 40;
-    let firstRadius = 40;
-    let secondRadius = 80;
+    let sourceRadius = 40/animationScale;
+    let firstRadius = 40/animationScale;
+    let secondRadius = 80/animationScale;
 
-    let delta = 10;
+    let delta = 10/animationScale;
     let steps = 4;
 
     let baseSourceArc = endCenter.arc(sourceRadius).withClockwise(false)
