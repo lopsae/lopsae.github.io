@@ -2132,6 +2132,10 @@ rac.Control = class RacControl {
 }
 
 
+// TODO: check comment:
+// An additional `length` is stored in SegmentControl as to have a valid
+// state for the control even without an anchor. This way the control defines
+// the length of the displayed anchor.
 // Control that uses a Segment as anchor.
 rac.SegmentControl = class RacSegmentControl extends rac.Control {
 
@@ -2726,6 +2730,7 @@ rac.Animator = class RacAnimator {
     let valueTotalDelta = step.endValue - this.startValue;
     // https://math.stackexchange.com/questions/121720/ease-in-out-function/121755#121755
     // f(x) = (t^a)/(t^a+(1-t)^a)
+    // TODO: use EaseFunction instead?
     let a = 2;
     let t = durationRatio;
     let easeRatio = Math.pow(t,a) / (Math.pow(t,a) + Math.pow(1-t,a));

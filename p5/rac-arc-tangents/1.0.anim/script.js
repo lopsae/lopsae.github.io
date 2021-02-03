@@ -54,11 +54,11 @@ rac.Control.controls.push(angleControl);
 
 
 let animator = new rac.Animator();
-animator.addControlStep(1500, distanceControl, 1/animScale);
+animator.addControlStep(1500, distanceControl, 1/distanceControl.length/animScale);
 animator.addPauseStep(200);
-animator.addControlStep(1500, distanceControl, 300/animScale);
+animator.addControlStep(1500, distanceControl, 300/distanceControl.length/animScale);
 animator.addPauseStep(200);
-animator.addControlStep(1500, distanceControl, 140/animScale); // back to original
+animator.addControlStep(1500, distanceControl, 140/distanceControl.length/animScale); // back to original
 
 
 function makeExampleContext(center, exampleAngle, arcsAngle, arcsDistance, closure) {
