@@ -1,17 +1,25 @@
 "use strict";
 
+// Animation toggles
+let animScale = 1;
+let animFramerate = 20;
+let loopAnimation = true;
+
+// When recording, looping is always disabled
+let recordAnimation = false;
+
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  noLoop();
+  frameRate(animFramerate);
   noStroke();
   noFill();
 }
 
 
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-}
+// function windowResized() {
+//   resizeCanvas(windowWidth, windowHeight);
+// }
 
 
 function mousePressed(event) {
@@ -29,6 +37,8 @@ function mouseDragged(event) {
 function mouseReleased(event) {
   rac.Control.pointerReleased(rac.Point.mouse());
   redraw();
+  // Stop automatic animation
+  noLoop();
 }
 
 
@@ -43,6 +53,13 @@ angleControl.addMarkerAtCurrentValue();
 rac.Control.controls.push(angleControl);
 
 
+let animator = new rac.Animator();
+animator.addControlStep(1500, distanceControl, 1/animScale);
+animator.addPauseStep(200);
+animator.addControlStep(1500, distanceControl, 300/animScale);
+animator.addPauseStep(200);
+animator.addControlStep(1500, distanceControl, 140/animScale); // back to original
+
 
 function makeExampleContext(center, exampleAngle, arcsAngle, arcsDistance, closure) {
   let distanceToExample = 220;
@@ -56,6 +73,14 @@ function makeExampleContext(center, exampleAngle, arcsAngle, arcsDistance, closu
 
 function draw() {
   clear();
+
+  let millisByFramerate = frameCount*1000/animFramerate;
+  console.log(`frameCount:${frameCount} millisByFramerate:${millisByFramerate}`);
+  let hasMoreAnimations = animator.animate(millisByFramerate);
+  if (!hasMoreAnimations) {
+    console.log(`🛑 Animations done!`);
+    noLoop();
+  }
 
   // https://coolors.co/011627-fdfffc-2ec4b6-e71d36-ff9f1c-9e22f1
   let palette = {
@@ -580,6 +605,6 @@ function draw() {
   rac.Control.drawControls();
 
 
-  console.log(`👑 ~finis coronat opus ${Date.now()}`);
+  console.log(`👑 ~finis coronat opus~ frame:${frameCount} millis:${millis().toFixed(3)}`);
 }
 
