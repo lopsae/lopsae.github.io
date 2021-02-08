@@ -49,7 +49,7 @@ distanceControl.setLimitsWithLengthInsets(0.1, 0);
 rac.Control.controls.push(distanceControl);
 
 let angleControl = new rac.ArcControl(1/4, 1);
-angleControl.setValueWithArcLength(1/8);
+angleControl.setValueWithArcLength(1/2);
 angleControl.addMarkerAtCurrentValue();
 rac.Control.controls.push(angleControl);
 
@@ -62,9 +62,9 @@ animator.addPauseStep(200);
 animator.addControlStep(1500, distanceControl, 140/distanceControl.length/animationScale); // back to original
 
 
-function makeExampleContext(center, exampleAngle, arcsAngle, arcsDistance, closure) {
-  let distanceToExample = 220/animationScale;
-  let endCenter = center.pointToAngle(exampleAngle, distanceToExample);
+function makeExampleContext(center, distance, exampleAngle, arcsAngle, arcsDistance, closure) {
+  let contextDistance = distance/animationScale;
+  let endCenter = center.pointToAngle(exampleAngle, contextDistance);
   let startCenter = endCenter.pointToAngle(arcsAngle, arcsDistance);
 
   closure(startCenter, endCenter);
@@ -128,10 +128,11 @@ function draw() {
 
   let exampleAngle = angleControl.distance();
   let exampleDistance = distanceControl.distance();
+  let contextDistance = 220;
 
 
   // Example 1 - Arc-tangent segment from point
-  makeExampleContext(center, rac.Angle.nw, exampleAngle, exampleDistance,
+  makeExampleContext(center, contextDistance, rac.Angle.nw, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
     let endArc = endCenter
       .segmentToAngle(rac.Angle.w, endArcRadius)
@@ -239,7 +240,7 @@ function draw() {
 
 
   // Example 2 - Circle to circle, external
-  makeExampleContext(center, rac.Angle.ne, exampleAngle, exampleDistance,
+  makeExampleContext(center, contextDistance, rac.Angle.ne, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
     let distanceSegment = startCenter.segmentToPoint(endCenter)
       .draw(triangleStroke);
@@ -358,7 +359,7 @@ function draw() {
 
 
   // Example 3 - Circle to circle, cross
-  makeExampleContext(center, rac.Angle.sw, exampleAngle, exampleDistance,
+  makeExampleContext(center, contextDistance, rac.Angle.sw, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
     let distanceSegment = startCenter.segmentToPoint(endCenter)
       .draw(triangleStroke);
@@ -467,15 +468,19 @@ function draw() {
 
 
   // Example 4 - Construction
-  makeExampleContext(center, rac.Angle.se, exampleAngle, exampleDistance,
+  makeExampleContext(center, 0, rac.Angle.se, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
     // Arcs and reticules
-    let sourceRadius = 40/animationScale;
-    let firstRadius = 40/animationScale;
-    let secondRadius = 80/animationScale;
+    let sourceRadius = 80/animationScale;
+    let firstRadius = 80/animationScale;
+    let secondRadius = 160/animationScale;
 
-    let delta = 10/animationScale;
+    let delta = 20/animationScale;
     let steps = 4;
+
+    // Modified style
+    palette.babyPowder.withAlpha(.1).stroke(4).apply();
+    let tangentStroke = palette.orangePeel.stroke(5);
 
     let baseSourceArc = endCenter.arc(sourceRadius).withClockwise(false)
       .draw();
