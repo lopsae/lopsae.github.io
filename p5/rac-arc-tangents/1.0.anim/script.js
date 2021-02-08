@@ -10,7 +10,8 @@ let recordAnimation = false;
 
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  let canvasSide = 800/animationScale;
+  createCanvas(canvasSide, canvasSide);
   frameRate(animFramerate);
   noStroke();
   noFill();
