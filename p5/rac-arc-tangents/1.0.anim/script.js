@@ -44,8 +44,8 @@ function mouseReleased(event) {
 
 
 let distanceControl = new rac.SegmentControl(0, 300/animationScale)
-distanceControl.setValueWithLength(140/animationScale);
 distanceControl.setLimitsWithLengthInsets(0.1, 0);
+distanceControl.setValueWithLength(1/animationScale);
 rac.Control.controls.push(distanceControl);
 
 let angleControl = new rac.ArcControl(1/4, 1);
@@ -55,11 +55,15 @@ rac.Control.controls.push(angleControl);
 
 
 let animator = new rac.Animator();
-animator.addControlStep(1500, distanceControl, 1/distanceControl.length/animationScale);
+animator.addControlStep(1200, distanceControl, 70/distanceControl.length/animationScale);
 animator.addPauseStep(200);
-animator.addControlStep(1500, distanceControl, 300/distanceControl.length/animationScale);
+animator.addControlStep(1200, angleControl, 3/8+1);
 animator.addPauseStep(200);
-animator.addControlStep(1500, distanceControl, 140/distanceControl.length/animationScale); // back to original
+animator.addControlStep(1200, distanceControl, 280/distanceControl.length/animationScale);
+animator.addPauseStep(200);
+animator.addControlStep(500, distanceControl, 70/distanceControl.length/animationScale);
+animator.addControlStep(800, angleControl, 1/2+2);
+animator.addControlStep(500, distanceControl, 1/distanceControl.length/animationScale);
 
 
 function makeExampleContext(center, distance, exampleAngle, arcsAngle, arcsDistance, closure) {
@@ -471,12 +475,12 @@ function draw() {
   makeExampleContext(center, 0, rac.Angle.se, exampleAngle, exampleDistance,
     (startCenter, endCenter) => {
     // Arcs and reticules
-    let sourceRadius = 80/animationScale;
-    let firstRadius = 80/animationScale;
-    let secondRadius = 160/animationScale;
+    let sourceRadius = 70/animationScale;
+    let firstRadius = 70/animationScale;
+    let secondRadius = sourceRadius + firstRadius;
 
-    let delta = 20/animationScale;
     let steps = 4;
+    let delta = sourceRadius/steps;
 
     // Modified style
     palette.babyPowder.withAlpha(.1).stroke(4).apply();
