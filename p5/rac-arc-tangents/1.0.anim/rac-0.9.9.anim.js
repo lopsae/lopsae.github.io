@@ -1958,6 +1958,17 @@ rac.EaseFunction = class RacEaseFunction {
     return easeOut;
   }
 
+
+  // Makes an easeFunction preconfigured to an ease in-out motion.
+  static makeEaseInOut() {
+    let easeOut = new rac.EaseFunction()
+    easeOut.ratioOffset = 0;
+    easeOut.ratioFactor = 1;
+    easeOut.easeOffset = 0;
+    easeOut.easeFactor = 1;
+    return easeOut;
+  }
+
 }
 
 
@@ -2664,7 +2675,6 @@ rac.Animator = class RacAnimator {
   // Returns `true` if there is still animations to perform, otherwise
   // returns `false`.
   animate(currentTime) {
-    // TODO: delete logs
     if (this.stepIndex === null) {
       // first animate is no-op, time is recorded
       this.stepIndex = 0;
@@ -2728,13 +2738,11 @@ rac.Animator = class RacAnimator {
 
     let durationRatio = timeDelta / step.duration;
     let valueTotalDelta = step.endValue - this.startValue;
-    // https://math.stackexchange.com/questions/121720/ease-in-out-function/121755#121755
-    // f(x) = (t^a)/(t^a+(1-t)^a)
-    // TODO: use EaseFunction instead?
-    let a = 2;
-    let t = durationRatio;
-    let easeRatio = Math.pow(t,a) / (Math.pow(t,a) + Math.pow(1-t,a));
-    let newValue = startValue + (easeRatio * valueTotalDelta);
+    // TODO: make it possible to configure easing
+    let ease = rac.EaseFunction.makeEaseInOut();
+    ease.a = 3;
+    let easedRatio = ease.easeRatio(durationRatio);
+    let newValue = startValue + (easedRatio * valueTotalDelta);
     step.control.value = newValue;
   }
 
