@@ -1,7 +1,42 @@
 "use strict";
 
+console.log(`❎ Running`);
+
+if (typeof requirejs === "function") {
+  requirejs(['./rac-0.9.9.x.js'], rac => {
+    console.log(`📚 Loaded RAC:${rac.version}`);
+    window.rac = rac;
+    requirejs(['https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.min.js'], p5 => {
+      console.log(`📚 Loaded p5:${typeof p5}`);
+    });
+  });
+}
+
+
+// d3.require("p5@1.0.0").then(p5 => {
+//   console.log(`loaded p5`);
+//   d3.require("./rac-0.9.9.x.js").then(rac => {
+//     window.rac = rac;
+//     console.log(`loaded rac`);
+//   });
+// });
+
+
+let distanceControl = null;
+let angleControl = null;
+
 
 function setup() {
+  distanceControl = new rac.SegmentControl(0, 300)
+  distanceControl.setValueWithLength(140);
+  distanceControl.setLimitsWithLengthInsets(0.1, 0);
+  rac.Control.controls.push(distanceControl);
+
+  angleControl = new rac.ArcControl(1/4, 1);
+  angleControl.setValueWithArcLength(1/8);
+  angleControl.addMarkerAtCurrentValue();
+  rac.Control.controls.push(angleControl);
+
   createCanvas(windowWidth, windowHeight);
   noLoop();
   noStroke();
@@ -30,18 +65,6 @@ function mouseReleased(event) {
   rac.Control.pointerReleased(rac.Point.mouse());
   redraw();
 }
-
-
-let distanceControl = new rac.SegmentControl(0, 300)
-distanceControl.setValueWithLength(140);
-distanceControl.setLimitsWithLengthInsets(0.1, 0);
-rac.Control.controls.push(distanceControl);
-
-let angleControl = new rac.ArcControl(1/4, 1);
-angleControl.setValueWithArcLength(1/8);
-angleControl.addMarkerAtCurrentValue();
-rac.Control.controls.push(angleControl);
-
 
 
 function makeExampleContext(center, exampleAngle, arcsAngle, arcsDistance, closure) {

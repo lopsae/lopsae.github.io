@@ -3,7 +3,9 @@
 
 // Ruler and Compass - 0.9.9.x
 let rac;
-rac = rac ?? {};
+rac = rac ?? {
+  version: '0.9.9.x'
+};
 
 
 // Draws using p5js canvas
@@ -2635,5 +2637,13 @@ rac.Control.drawControls = function() {
 
   rac.Control.selection.drawSelection(pointerCenter);
 };
+
+
+
+if (typeof define === "function" && define.amd) {
+  define(() => {
+    return rac;
+  });
+}
 
 
