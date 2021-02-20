@@ -2,12 +2,12 @@
 
 console.log(`❎ Running`);
 
-let rac = null;
+let makeRac = null;
 
 if (typeof requirejs === "function") {
-  requirejs(['./rac-0.9.9.x.js'], racObj => {
-    console.log(`📚 Loaded RAC:${racObj.version}`);
-    rac = racObj;
+  requirejs(['./rac-0.9.9.x.js'], makeRacFunc => {
+    console.log(`📚 Loaded RAC:${makeRacFunc.version}`);
+    makeRac = makeRacFunc;
     requirejs(['https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.min.js'], p5Func => {
       console.log(`📚 Loaded p5:${typeof p5Func}`);
       new p5Func(buildSketch);
@@ -27,11 +27,13 @@ if (typeof requirejs === "function") {
 
 function buildSketch(sketch) {
 
+  let rac = null;
+
   let distanceControl = null;
   let angleControl = null;
 
   sketch.setup = function() {
-    rac.p5 = sketch;
+    rac = makeRac(sketch);
 
     distanceControl = new rac.SegmentControl(0, 300)
     distanceControl.setValueWithLength(140);
