@@ -22,7 +22,31 @@
 
   // Ruler and Compass - 0.9.9.x
   let rac = {
-    version: '0.9.9.x'
+    version: '0.9.9.x',
+
+    // TODO: temporary holder for P5, figure out if an abstraction is needed
+    p5: null,
+
+    // Used to determine equality between measures for some operations, like
+    // calculating the slope of a segment. Values too close can result in odd
+    // calculations.
+    // When checking for equality x is equal to non-inclusive
+    // (x-equalityThreshold, x+equalityThreshold):
+    // + x is not equal to x±equalityThreshold
+    // + x is equal to x±equalityThreshold/2
+    equalityThreshold: 0.001,
+
+    // Length for elements that need an arbitrary value.
+    arbitraryLength: 100,
+
+    // Error identifiers
+    Error: {
+      abstractFunctionCalled: "Abstract function called",
+      invalidParameterCombination: "Invalid parameter combination",
+      invalidObjectConfiguration: "Invalid object configuration",
+      invalidObjectToConvert: "Invalid object to convert",
+      invalidObjectToDraw: "Invalid object to draw"},
+
   };
 
 
@@ -101,7 +125,7 @@
         || style !== null
         || routine.style !== null)
       {
-        push();
+        rac.p5.push();
         if (routine.style !== null) {
           routine.style.apply();
         }
@@ -109,7 +133,7 @@
           style.apply();
         }
         routine.drawElement.call(element);
-        pop();
+        rac.p5.pop();
       } else {
         // No push-pull
         routine.drawElement.call(element);
@@ -238,28 +262,6 @@
   }
 
 
-  // Used to determine equality between measures for some operations, like
-  // calculating the slope of a segment. Values too close can result in odd
-  // calculations.
-  // When checking for equality x is equal to non-inclusive
-  // (x-equalityThreshold, x+equalityThreshold):
-  // + x is not equal to x±equalityThreshold
-  // + x is equal to x±equalityThreshold/2
-  rac.equalityThreshold = 0.001;
-
-  // Length for elements that need an arbitrary value.
-  rac.arbitraryLength = 100;
-
-
-  rac.Error = {
-    abstractFunctionCalled: "Abstract function called",
-    invalidParameterCombination: "Invalid parameter combination",
-    invalidObjectConfiguration: "Invalid object configuration",
-    invalidObjectToConvert: "Invalid object to convert",
-    invalidObjectToDraw: "Invalid object to draw"
-  };
-
-
   // Returns the constructor name of `obj`, or its type name.
   rac.typeName = function(obj) {
     return obj.constructor.name ?? typeof obj
@@ -292,11 +294,11 @@
     }
 
     applyBackground() {
-      background(this.r * 255, this.g * 255, this.b * 255);
+      rac.p5.background(this.r * 255, this.g * 255, this.b * 255);
     }
 
     applyFill = function() {
-      fill(this.r * 255, this.g * 255, this.b * 255, this.alpha * 255);
+      rac.p5.fill(this.r * 255, this.g * 255, this.b * 255, this.alpha * 255);
     }
 
     withAlpha(alpha) {
@@ -343,7 +345,7 @@
     }
 
     withAlpha(alpha) {
-      if (color === null) {
+      if (this.color === null) {
         return new rac.Stroke(null, this.weight);
       }
 
@@ -353,16 +355,16 @@
 
     apply() {
       if (this.color === null) {
-        noStroke();
+        rac.p5.noStroke();
         return;
       }
 
-      stroke(
+      rac.p5.stroke(
         this.color.r * 255,
         this.color.g * 255,
         this.color.b * 255,
         this.color.alpha * 255);
-      strokeWeight(this.weight);
+      rac.p5.strokeWeight(this.weight);
     }
 
     styleWithFill(fill) {
@@ -382,7 +384,7 @@
 
     apply() {
       if (this.color === null) {
-        noFill();
+        rac.p5.noFill();
         return;
       }
 
@@ -449,7 +451,7 @@
   }
 
   rac.Angle.fromRadians = function(radians) {
-    return new rac.Angle(radians / TWO_PI);
+    return new rac.Angle(radians / rac.p5.TWO_PI);
   };
 
   rac.Angle.fromPoint = function(point) {
@@ -540,7 +542,7 @@
   };
 
   rac.Angle.prototype.radians = function() {
-    return this.turn * TWO_PI;
+    return this.turn * rac.p5.TWO_PI;
   };
 
   rac.Angle.prototype.degrees = function() {
@@ -591,7 +593,7 @@
     }
 
     vertex() {
-      vertex(this.x, this.y);
+      rac.p5.vertex(this.x, this.y);
       return this;
     }
 
@@ -633,14 +635,14 @@
 
 
     static mouse() {
-      return new rac.Point(mouseX, mouseY);
+      return new rac.Point(rac.p5.mouseX, rac.p5.mouseY);
     }
 
   }
 
 
   rac.defaultDrawer.setDrawFunction(rac.Point, function() {
-    point(this.x, this.y);
+    rac.p5.point(this.x, this.y);
   });
 
   rac.setupProtoFunctions(rac.Point);
@@ -839,7 +841,7 @@
 
   rac.defaultDrawer.setDrawFunction(rac.Text, function() {
     this.format.apply(this.point);
-    text(this.string, 0, 0);
+    rac.p5.text(this.string, 0, 0);
   });
   rac.defaultDrawer.setDrawOptions(rac.Text, {requiresPushPop: true});
 
@@ -930,8 +932,9 @@
   }
 
   rac.defaultDrawer.setDrawFunction(rac.Segment, function() {
-    line(this.start.x, this.start.y,
-         this.end.x,   this.end.y);
+    rac.p5.line(
+      this.start.x, this.start.y,
+      this.end.x,   this.end.y);
   });
 
   rac.setupProtoFunctions(rac.Segment);
@@ -1369,7 +1372,8 @@
   rac.defaultDrawer.setDrawFunction(rac.Arc, function() {
     if (this.isCircle()) {
       let startRad = this.start.radians();
-      arc(this.center.x, this.center.y,
+      rac.p5.arc(
+        this.center.x, this.center.y,
         this.radius * 2, this.radius * 2,
         startRad, startRad);
       return;
@@ -1382,9 +1386,10 @@
       end = this.start;
     }
 
-    arc(this.center.x, this.center.y,
-        this.radius * 2, this.radius * 2,
-        start.radians(), end.radians());
+    rac.p5.arc(
+      this.center.x, this.center.y,
+      this.radius * 2, this.radius * 2,
+      start.radians(), end.radians());
   });
 
   rac.setupProtoFunctions(rac.Arc);
@@ -1692,7 +1697,7 @@
     // length of tangent:
     // https://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%C3%A9zier-curves
     let parsPerTurn = 1 / partTurn;
-    let tangent = this.radius * (4/3) * Math.tan(PI/(parsPerTurn*2));
+    let tangent = this.radius * (4/3) * Math.tan(rac.p5.PI/(parsPerTurn*2));
 
     let beziers = [];
     let segments = this.divideToSegments(bezierCount);
@@ -1724,7 +1729,7 @@
   };
 
   rac.defaultDrawer.setDrawFunction(rac.Bezier, function() {
-    bezier(
+    rac.p5.bezier(
       this.start.x, this.start.y,
       this.startAnchor.x, this.startAnchor.y,
       this.endAnchor.x, this.endAnchor.y,
@@ -1745,7 +1750,7 @@
 
   rac.Bezier.prototype.vertex = function() {
     this.start.vertex()
-    bezierVertex(
+    rac.p5.bezierVertex(
       this.startAnchor.x, this.startAnchor.y,
       this.endAnchor.x, this.endAnchor.y,
       this.end.x, this.end.y);
@@ -1798,15 +1803,15 @@
   }
 
   rac.defaultDrawer.setDrawFunction(rac.Shape, function () {
-    beginShape();
+    rac.p5.beginShape();
     this.outline.vertex();
 
     if (this.contour.isNotEmpty()) {
-      beginContour();
+      rac.p5.beginContour();
       this.contour.vertex();
-      endContour();
+      rac.p5.endContour();
     }
-    endShape();
+    rac.p5.endShape();
   });
 
   rac.setupProtoFunctions(rac.Shape);
@@ -2637,7 +2642,7 @@
 
     // Pointer pressed
     let pointerCenter = rac.Point.mouse();
-    if (mouseIsPressed) {
+    if (rac.p5.mouseIsPressed) {
       if (rac.Control.selection === null) {
         pointerCenter.arc(10).draw(pointerStyle);
       } else {
