@@ -8,7 +8,7 @@ if (typeof requirejs === "function") {
   requirejs(['./rac-0.9.9.x.js'], makeRacFunc => {
     console.log(`📚 Loaded RAC:${makeRacFunc.version}`);
     makeRac = makeRacFunc;
-    requirejs(['https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.min.js'], p5Func => {
+    requirejs(['https://cdn.jsdelivr.net/npm/p5@1.2.0/lib/p5.min.js'], p5Func => {
       console.log(`📚 Loaded p5:${typeof p5Func}`);
       new p5Func(buildSketch);
     });

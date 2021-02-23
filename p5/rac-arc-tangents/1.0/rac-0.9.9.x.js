@@ -1380,10 +1380,11 @@
     rac.defaultDrawer.setDrawFunction(rac.Arc, function() {
       if (this.isCircle()) {
         let startRad = this.start.radians();
+        let endRad = startRad + (Math.PI * 2);
         rac.p5.arc(
           this.center.x, this.center.y,
           this.radius * 2, this.radius * 2,
-          startRad, startRad);
+          startRad, endRad);
         return;
       }
 
