@@ -3,6 +3,7 @@
 // https://github.com/umdjs/umd/blob/master/templates/returnExports.js
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
+    // https://github.com/amdjs/amdjs-api/blob/master/AMD.md
     // AMD. Register as an anonymous module.
     console.log(`Loading RAC with define:${typeof define}`);
     define([], factory);

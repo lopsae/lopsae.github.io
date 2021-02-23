@@ -53,7 +53,7 @@ function buildSketch(sketch) {
 
 
   sketch.windowResized = function() {
-    sketch.resizeCanvas(windowWidth, windowHeight);
+    sketch.resizeCanvas(sketch.windowWidth, sketch.windowHeight);
   };
 
 
