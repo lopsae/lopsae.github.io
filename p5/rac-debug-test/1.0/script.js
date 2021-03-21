@@ -95,10 +95,10 @@ function buildSketch(sketch) {
 
   function makeExampleContext(center, exampleAngle, arcsAngle, arcsDistance, closure) {
     let distanceToExample = 250;
-    let endCenter = center.pointToAngle(exampleAngle, distanceToExample);
-    let startCenter = endCenter.pointToAngle(arcsAngle, arcsDistance);
+    let egCenter = center.pointToAngle(exampleAngle, distanceToExample);
+    let movingCenter = egCenter.pointToAngle(arcsAngle, arcsDistance);
 
-    closure(startCenter, endCenter);
+    closure(egCenter, movingCenter);
   }
 
 
@@ -160,7 +160,7 @@ function buildSketch(sketch) {
 
     // Controls
     angleControl.anchor = center
-      .segmentToAngle(rac.Angle.e, endArcRadius)
+      .segmentToAngle(rac.Angle.w, endArcRadius)
       .arc();
     angleControl.center()
       .segmentToPoint(angleControl.anchor.center)
@@ -171,7 +171,7 @@ function buildSketch(sketch) {
       .draw();
 
     distanceControl.anchor = center
-      .segmentToAngle(angleControl.distance().inverse(), 100);
+      .segmentToAngle(angleControl.distance(), 100);
 
     let exampleAngle = angleControl.distance();
     let exampleDistance = distanceControl.distance();
@@ -179,7 +179,7 @@ function buildSketch(sketch) {
 
     // Example 1 - Arc-tangent segment from point
     makeExampleContext(center, rac.Angle.nw, exampleAngle, exampleDistance,
-      (startCenter, endCenter) => {
+      (endCenter, startCenter) => {
       let endArc = endCenter
         .segmentToAngle(rac.Angle.w, endArcRadius)
         .arc();
@@ -298,7 +298,7 @@ function buildSketch(sketch) {
 
     // Example 2 - Circle to circle, external
     makeExampleContext(center, rac.Angle.ne, exampleAngle, exampleDistance,
-      (startCenter, endCenter) => {
+      (endCenter, startCenter) => {
       let distanceSegment = startCenter.segmentToPoint(endCenter)
         .draw(triangleStroke);
 
@@ -413,7 +413,7 @@ function buildSketch(sketch) {
 
     // Example 3 - Circle to circle, cross
     makeExampleContext(center, rac.Angle.sw, exampleAngle, exampleDistance,
-      (startCenter, endCenter) => {
+      (endCenter, startCenter) => {
       let distanceSegment = startCenter.segmentToPoint(endCenter)
         .draw(triangleStroke);
 
@@ -529,7 +529,9 @@ function buildSketch(sketch) {
 
     // Example 4
     makeExampleContext(center, rac.Angle.se, exampleAngle, exampleDistance,
-      (startCenter, endCenter) => {
+      (egCenter, movingCenter) => {
+      egCenter.debug();
+      movingCenter.debug(verbose);
 
     }); // Example 4
 
