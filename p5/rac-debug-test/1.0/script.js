@@ -94,7 +94,7 @@ function buildSketch(sketch) {
 
 
   function makeExampleContext(center, exampleAngle, arcsAngle, arcsDistance, closure) {
-    let distanceToExample = 220;
+    let distanceToExample = 250;
     let endCenter = center.pointToAngle(exampleAngle, distanceToExample);
     let startCenter = endCenter.pointToAngle(arcsAngle, arcsDistance);
 
@@ -103,6 +103,7 @@ function buildSketch(sketch) {
 
 
   let verbose = true;
+
   sketch.draw = function() {
     sketch.clear();
 
@@ -126,7 +127,7 @@ function buildSketch(sketch) {
       .styleWithFill(palette.tiffanyBlue)
       .applyToClass(rac.Text);
 
-    // g style
+    // debug style
     rac.drawer.debugStyle = palette.purpleX11.stroke(2);
     rac.drawer.debugTextStyle = palette
       .richBlack.withAlpha(0.5).stroke(2)
@@ -157,6 +158,18 @@ function buildSketch(sketch) {
     let center = new rac.Point.canvasCenter();
 
 
+    // Controls
+    angleControl.anchor = center
+      .segmentToAngle(rac.Angle.w, endArcRadius)
+      .arc();
+    angleControl.center()
+      .segmentToPoint(angleControl.anchor.center)
+      .draw();
+    angleControl.anchor.startSegment()
+      .reverse()
+      .segmentToBisector()
+      .draw();
+
     let exampleAngle = angleControl.distance();
     let exampleDistance = distanceControl.distance();
 
@@ -167,22 +180,11 @@ function buildSketch(sketch) {
       let endArc = endCenter
         .segmentToAngle(rac.Angle.w, endArcRadius)
         .arc();
-      // Angle control
-      angleControl.anchor = endArc;
 
-      angleControl.anchor.center.arc(120, rac.Angle.ne, exampleAngle.add(1/10)).draw().debug(verbose);
-      angleControl.anchor.center.addX(-200).debugAngle(exampleAngle, verbose);
+      endArc.center.arc(120, rac.Angle.ne, exampleAngle.add(1/10)).draw().debug(verbose);
+      endArc.center.addX(-200).debugAngle(exampleAngle, verbose);
       exampleAngle.negative().debug(
         angleControl.anchor.center.addY(-200));
-
-      angleControl.center()
-        .segmentToPoint(angleControl.anchor.center)
-        .draw();
-
-      angleControl.anchor.startSegment()
-        .reverse()
-        .segmentToBisector()
-        .draw();
 
       let distanceSegment = startCenter.segmentToPoint(endCenter)
         .draw(triangleStroke);
