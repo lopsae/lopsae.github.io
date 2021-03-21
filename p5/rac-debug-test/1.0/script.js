@@ -170,6 +170,9 @@ function buildSketch(sketch) {
       .segmentToBisector()
       .draw();
 
+    distanceControl.anchor = center
+      .segmentToAngle(angleControl.distance(), 100);
+
     let exampleAngle = angleControl.distance();
     let exampleDistance = distanceControl.distance();
 
@@ -298,16 +301,6 @@ function buildSketch(sketch) {
       (startCenter, endCenter) => {
       let distanceSegment = startCenter.segmentToPoint(endCenter)
         .draw(triangleStroke);
-
-      // Distance control
-      distanceControl.anchor = distanceSegment
-        .nextSegmentPerpendicular(true)
-        .withLength(endArcRadius + rac.Control.radius * 1.5)
-        .draw()
-        .nextSegmentPerpendicular(true);
-      distanceControl.center()
-        .segmentToPoint(startCenter)
-        .draw();
 
       // Circles
       let startArc = startCenter.arc(startArcRadius)
