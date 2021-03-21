@@ -45,7 +45,7 @@ function buildSketch(sketch) {
     rac.Control.controls.push(distanceControl);
 
     angleControl = new rac.ArcControl(1/4, 1);
-    angleControl.setValueWithAngleDistance(1/8);
+    angleControl.setValueWithAngleDistance(1/4);
     angleControl.addMarkerAtCurrentValue();
     rac.Control.controls.push(angleControl);
 
@@ -160,7 +160,7 @@ function buildSketch(sketch) {
 
     // Controls
     angleControl.anchor = center
-      .segmentToAngle(rac.Angle.w, endArcRadius)
+      .segmentToAngle(rac.Angle.e, endArcRadius)
       .arc();
     angleControl.center()
       .segmentToPoint(angleControl.anchor.center)
@@ -171,7 +171,7 @@ function buildSketch(sketch) {
       .draw();
 
     distanceControl.anchor = center
-      .segmentToAngle(angleControl.distance(), 100);
+      .segmentToAngle(angleControl.distance().inverse(), 100);
 
     let exampleAngle = angleControl.distance();
     let exampleDistance = distanceControl.distance();
@@ -293,7 +293,7 @@ function buildSketch(sketch) {
 
       startCenter.draw().debug().addX(100).debug(verbose);
 
-    });
+    }); // Example 1
 
 
     // Example 2 - Circle to circle, external
@@ -408,7 +408,7 @@ function buildSketch(sketch) {
       detachedAdjVertex.arc(10, rac.Angle.w, rac.Angle.n).draw().debug();
       detachedOpsVertex.arc(1, rac.Angle.w, rac.Angle.n).draw().debug();
 
-    });
+    }); // Example 2
 
 
     // Example 3 - Circle to circle, cross
@@ -524,143 +524,14 @@ function buildSketch(sketch) {
       // detachedAdjVertex.arc(22* 2/3, rac.Angle.w, rac.Angle.n).draw().debug();
       // detachedOpsVertex.arc(22* 2/3, rac.Angle.n, rac.Angle.n).draw().debug();
 
-    });
+    }); // Example 3
 
 
-    // Example 4 - Construction
+    // Example 4
     makeExampleContext(center, rac.Angle.se, exampleAngle, exampleDistance,
       (startCenter, endCenter) => {
-      // Arcs and reticules
-      let sourceRadius = 40;
-      let firstRadius = 40;
-      let secondRadius = 80;
 
-      let delta = 10;
-      let steps = 4;
-
-      let baseSourceArc = endCenter.arc(sourceRadius).withClockwise(false)
-        .draw();
-      let baseFirstArc = startCenter.arc(firstRadius).withClockwise(false)
-        .draw();
-      let baseSecondArc = endCenter.arc(secondRadius).withClockwise(false)
-        .draw();
-      startCenter.segmentToPoint(endCenter)
-        .draw();
-
-      for (let index = 0; index < steps; index++) {
-        let totalDelta = delta * index;
-        let sourceArc = baseSourceArc.withRadius(sourceRadius - totalDelta);
-        let firstArc = baseFirstArc.withRadius(firstRadius - totalDelta);
-        let secondArc = baseSecondArc.withRadius(secondRadius - totalDelta)
-        let endArc = baseFirstArc.withRadius(firstRadius + totalDelta)
-
-        let startTangent = sourceArc
-          .segmentTangentToArc(firstArc, true, true);
-        let middleTangent = firstArc
-          .segmentTangentToArc(secondArc, true, true);
-        let endTangent = secondArc
-          .segmentTangentToArc(endArc, true, false);
-
-        // Define cutoff for second arc
-        let cutoffTangent = baseSourceArc
-          .segmentTangentToArc(baseFirstArc, true, true)
-          .translatePerpendicular(delta);
-        let secondArcEnd = secondArc.chordEndOrProjectionWithSegment(cutoffTangent);
-
-        // Drawing!
-        sourceArc.withStartEndTowardsPoint(startCenter, startTangent.start)
-          .draw(tangentStroke);
-        startTangent.draw(tangentStroke);
-
-        // Early exit if no tangents are available
-        if (middleTangent === null && endTangent === null) {
-          let earlySecondArcCutoff = endCenter.segmentToPoint(startCenter);
-          let earlyFirstArcCutoff = earlySecondArcCutoff
-            .translatePerpendicular(delta);
-
-          let endToEndDistance = endCenter.distanceToPoint(startCenter);
-          let possibleSecondArcRadius = endToEndDistance + firstArc.radius;
-
-          if (possibleSecondArcRadius < sourceRadius + delta) {
-            // No possible second arc, first arc drawn with early cuttoff
-            let firstArcEnd = firstArc.chordEndOrProjectionWithSegment(earlyFirstArcCutoff);
-            firstArc = firstArc
-              .withStartEndTowardsPoint(startTangent.end, firstArcEnd);
-            if (!firstArc.isCircle()) {
-              firstArc.draw(tangentStroke);
-            }
-
-            // Fade in secondArc
-            let colorRatio = (possibleSecondArcRadius - sourceRadius) / delta;
-            let fadeTangentStroke = tangentStroke.withAlpha(colorRatio);
-
-            let possibleSecondArc = secondArc
-              .withRadius(endToEndDistance + firstArc.radius);
-            let secondArcStart = possibleSecondArc
-              .chordEndOrProjectionWithSegment(earlySecondArcCutoff);
-
-            let firstArcBit = firstArc
-              .withStartEndTowardsPoint(firstArcEnd, secondArcStart)
-              .draw(fadeTangentStroke);
-            let earlySecondArcEnd = possibleSecondArc.chordEndOrProjectionWithSegment(cutoffTangent);
-            possibleSecondArc
-              .withStartEndTowardsPoint(secondArcStart, earlySecondArcEnd)
-              .draw(fadeTangentStroke);
-          } else {
-            // Possible second arc
-            let possibleSecondArc = secondArc
-              .withRadius(endToEndDistance + firstArc.radius);
-            let secondArcStart = possibleSecondArc
-              .chordEndOrProjectionWithSegment(earlySecondArcCutoff);
-            firstArc
-              .withStartEndTowardsPoint(startTangent.end, secondArcStart)
-              .draw(tangentStroke);
-            let earlySecondArcEnd = possibleSecondArc.chordEndOrProjectionWithSegment(cutoffTangent);
-            possibleSecondArc
-              .withStartEndTowardsPoint(secondArcStart, earlySecondArcEnd)
-              .draw(tangentStroke);
-          }
-
-          continue;
-        }
-
-        if (middleTangent !== null) {
-          firstArc
-            .withStartEndTowardsPoint(startTangent.end, middleTangent.start)
-            .draw(tangentStroke);
-
-          middleTangent.draw(tangentStroke);
-        }
-
-        // Wrap around second arc if circles are too close
-        if (endTangent === null) {
-          if (middleTangent !== null) {
-            secondArc
-              .withStartEndTowardsPoint(middleTangent.end, secondArcEnd)
-              .draw(tangentStroke);
-            continue;
-          }
-        }
-
-        // Draw second arc and tangent, up to cutoff
-        secondArc = secondArc
-          .withStartEndTowardsPoint(middleTangent.end, endTangent.start);
-
-        if (secondArc.containsProjectedPoint(secondArcEnd)) {
-          // Cut the arc
-          secondArc.withEndTowardsPoint(secondArcEnd)
-            .draw(tangentStroke);
-        } else {
-          secondArc.draw(tangentStroke);
-          // Cut the tangent
-          endTangent.segmentToIntersectionWithSegment(cutoffTangent)
-            .draw(tangentStroke);
-        }
-
-
-      }
-
-    });
+    }); // Example 4
 
 
     // Controls draw on top
