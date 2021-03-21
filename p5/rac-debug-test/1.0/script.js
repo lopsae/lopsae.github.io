@@ -173,131 +173,35 @@ function buildSketch(sketch) {
     distanceControl.anchor = center
       .segmentToAngle(angleControl.distance(), 100);
 
-    let exampleAngle = angleControl.distance();
-    let exampleDistance = distanceControl.distance();
+    let controlAngle = angleControl.distance();
+    let controlDistance = distanceControl.distance();
+
+    // TODO: delete
+    let exampleAngle = controlAngle;
+    let exampleDistance = controlDistance;
 
 
     // Example 1 - Arc-tangent segment from point
-    makeExampleContext(center, rac.Angle.nw, exampleAngle, exampleDistance,
-      (endCenter, startCenter) => {
-      let endArc = endCenter
-        .segmentToAngle(rac.Angle.w, endArcRadius)
-        .arc();
+    makeExampleContext(center, rac.Angle.nw, controlAngle, controlDistance,
+      (egCenter, movingCenter) => {
 
-      endArc.center.arc(120, rac.Angle.ne, exampleAngle.add(1/10)).draw().debug(verbose);
-      endArc.center.addX(-200).debugAngle(exampleAngle, verbose);
-      exampleAngle.negative().debug(
-        angleControl.anchor.center.addY(-200));
+      egCenter.arc(120, rac.Angle.ne, controlAngle.add(1/10)).draw().debug(verbose);
+      egCenter
+        .addX(-150).debugAngle(controlAngle, verbose)
+        .addY(-100).push();
+      controlAngle.negative().debug(rac.stack.pop());
 
-      let distanceSegment = startCenter.segmentToPoint(endCenter)
-        .draw(triangleStroke);
-
-      let hyp = distanceSegment.length();
-      let ops = endArc.radius
-
-      // Sine over 1 is invalid
-      let angleSine = ops / hyp;
-      angleSine = Math.min(angleSine, 1);
-
-      let angleRadians = Math.asin(angleSine);
-      let opsAngle = rac.Angle.fromRadians(angleRadians);
-      let rootAngle = distanceSegment.angle();
-      let adj = Math.cos(opsAngle.radians()) * hyp;
-
-      // Clockwise segments
-      let cwOpsAngle = rootAngle
-        .shift(opsAngle, true);
-      let cwAdjAngle = cwOpsAngle.perpendicular(true);
-      let cwEnd = endArc.pointAtAngle(cwAdjAngle);
-
-      // Counter-clockwise segments
-      let ccOpsAngle = rootAngle
-        .shift(opsAngle, false);
-      let ccAdjAngle = ccOpsAngle.perpendicular(false);
-      let ccEnd = endArc.pointAtAngle(ccAdjAngle);
-
-      // Detached triangle
-      let toDetached = rootAngle.perpendicular(true);
-      let detachedAdjVertex = endCenter
-        .segmentToAngle(toDetached, startArcRadius + endArcRadius)
-        .end;
-      let detachedHypVertex = detachedAdjVertex
-        .segmentToAngle(cwAdjAngle, ops)
-        .draw(triangleStroke)
-        .end;
-      let detachedOpsVertex = detachedHypVertex
-        .segmentToAngle(cwOpsAngle.inverse(), adj)
-        .draw(triangleTangentStroke)
-        .end;
-      detachedOpsVertex
-        .segmentToPoint(detachedAdjVertex)
-        .draw(triangleStroke)
+      egCenter.addY(-150)
+        .segmentToAngle(controlAngle, controlDistance)
         .debug()
         .translatePerpendicular(100)
         .draw()
         .debug(verbose);
-
-      // Attached to detached reticules
-      detachedAdjVertex.segmentToPoint(endCenter)
-        .draw()
-      detachedOpsVertex.segmentToAngle(toDetached.inverse(), startArcRadius + endArcRadius)
-        .draw();
-
-      // Detached End Circle reticules
-      detachedAdjVertex
-        .segmentToAngle(toDetached.inverse(), endArcRadius)
-        .arcWithEnd(cwAdjAngle, true)
-        .draw();
-
-      // Rest of drawing depends on valid angle
-      if (angleSine >= 1) {
-        endArc.radiusSegmentAtAngle(rootAngle.inverse())
-          .draw();
-        return;
-      }
-
-      endCenter
-        .segmentToPoint(cwEnd)
-        .draw();
-
-      endCenter
-        .segmentToPoint(ccEnd)
-        .draw();
-
-      // With implemented functions
-      let cwTangent = startCenter
-        .segmentTangentToArc(endArc, true)
-        .draw(tangentStroke);
-      cwTangent.nextSegmentToPoint(cwEnd)
-        .draw();
-      cwTangent.start.segmentToPoint(startCenter)
-        .draw();
-
-      let ccTangent = startCenter
-        .segmentTangentToArc(endArc, false)
-        .draw(tangentSecondaryStroke);
-      ccTangent.nextSegmentToPoint(ccEnd)
-        .draw();
-      ccTangent.start.segmentToPoint(startCenter)
-        .draw();
-
-      let angleTextFormat = new rac.Text.Format(
-        rac.Text.Format.horizontal.left,
-        rac.Text.Format.vertical.center,
-        "Spot Mono",
-        rac.Angle.e);
-      endCenter
-        .pointToAngle(rac.Angle.e, 4)
-        .text(`${angleControl.value.toFixed(3)}`, angleTextFormat)
-        .draw();
-
-      startCenter.draw().debug().addX(100).debug(verbose);
-
     }); // Example 1
 
 
     // Example 2 - Circle to circle, external
-    makeExampleContext(center, rac.Angle.ne, exampleAngle, exampleDistance,
+    makeExampleContext(center, rac.Angle.ne, controlAngle, controlDistance,
       (endCenter, startCenter) => {
       let distanceSegment = startCenter.segmentToPoint(endCenter)
         .draw(triangleStroke);
@@ -412,7 +316,7 @@ function buildSketch(sketch) {
 
 
     // Example 3 - Circle to circle, cross
-    makeExampleContext(center, rac.Angle.sw, exampleAngle, exampleDistance,
+    makeExampleContext(center, rac.Angle.sw, controlAngle, controlDistance,
       (endCenter, startCenter) => {
       let distanceSegment = startCenter.segmentToPoint(endCenter)
         .draw(triangleStroke);
@@ -528,7 +432,7 @@ function buildSketch(sketch) {
 
 
     // Example 4
-    makeExampleContext(center, rac.Angle.se, exampleAngle, exampleDistance,
+    makeExampleContext(center, rac.Angle.se, controlAngle, controlDistance,
       (egCenter, movingCenter) => {
       egCenter.debug();
       movingCenter.debug(verbose);
