@@ -41,10 +41,9 @@ function buildSketch(sketch) {
 
     distanceControl = new rac.SegmentControl(0, 300);
     distanceControl.setValueWithLength(140);
-    distanceControl.setLimitsWithLengthInsets(0.1, 0);
     rac.Control.controls.push(distanceControl);
 
-    angleControl = new rac.ArcControl(1/4, 1);
+    angleControl = new rac.ArcControl(0, 1);
     angleControl.setValueWithAngleDistance(1/4);
     angleControl.addMarkerAtCurrentValue();
     rac.Control.controls.push(angleControl);
@@ -187,12 +186,7 @@ function buildSketch(sketch) {
         .addY(-100).push();
       controlAngle.negative().debug(rac.stack.pop());
 
-      egCenter.addY(-150)
-        .segmentToAngle(controlAngle, controlDistance)
-        .debug()
-        .translatePerpendicular(100)
-        .draw()
-        .debug(verbose);
+
     }); // Example 1
 
 
@@ -200,19 +194,12 @@ function buildSketch(sketch) {
     makeExampleContext(center, rac.Angle.ne, controlAngle, controlDistance,
       (egCenter, movingCenter) => {
 
-      egCenter.arc(10).draw().debug();
-      movingCenter.arc(1).draw().debug();
-
-      let translatedSegment = egCenter
-        .segmentToAngle(controlAngle, controlDistance)
-        .draw()
-        .translatePerpendicular(100)
-        .draw();
-
-      translatedSegment.start
-        .arc(10, rac.Angle.w, rac.Angle.n).draw().debug();
-      translatedSegment.end
-        .arc(1, rac.Angle.w, rac.Angle.n).draw().debug();
+      // Segment
+      egCenter.segmentToPoint(movingCenter)
+        .draw().debug()
+      // Segment verbose
+        .translatePerpendicular(100, true)
+        .draw().debug(verbose);
 
     }); // Example 2
 
@@ -243,8 +230,35 @@ function buildSketch(sketch) {
     // Example 4 - D
     makeExampleContext(center, rac.Angle.se, controlAngle, controlDistance,
       (egCenter, movingCenter) => {
+
+      // Point
       egCenter.debug();
+      // Point verbose
       movingCenter.debug(verbose);
+
+      let translatedSegment = egCenter
+        .segmentToPoint(movingCenter)
+        .translatePerpendicular(100, true)
+        .draw();
+
+      // Small complete-circle arc
+      translatedSegment.start
+        .arc(10).draw().debug();
+      // Tiny complete-circle arc
+      translatedSegment.end
+        .arc(1, rac.Angle.w, rac.Angle.w, false).draw().debug();
+
+      translatedSegment = egCenter
+        .segmentToPoint(movingCenter)
+        .translatePerpendicular(100, false)
+        .draw();
+
+      // Small arc
+      translatedSegment.start
+        .arc(10, rac.Angle.w, rac.Angle.n).draw().debug();
+      // Tiny arc
+      translatedSegment.end
+        .arc(1, rac.Angle.w, rac.Angle.n, false).draw().debug();
 
     }); // Example 4
 
