@@ -176,12 +176,8 @@ function buildSketch(sketch) {
     let controlAngle = angleControl.distance();
     let controlDistance = distanceControl.distance();
 
-    // TODO: delete
-    let exampleAngle = controlAngle;
-    let exampleDistance = controlDistance;
 
-
-    // Example 1 - Arc-tangent segment from point
+    // Example 1 - A
     makeExampleContext(center, rac.Angle.nw, controlAngle, controlDistance,
       (egCenter, movingCenter) => {
 
@@ -200,7 +196,7 @@ function buildSketch(sketch) {
     }); // Example 1
 
 
-    // Example 2 - Circle to circle, external
+    // Example 2 - B
     makeExampleContext(center, rac.Angle.ne, controlAngle, controlDistance,
       (egCenter, movingCenter) => {
 
@@ -221,123 +217,30 @@ function buildSketch(sketch) {
     }); // Example 2
 
 
-    // Example 3 - Circle to circle, cross
+    // Example 3 - C
     makeExampleContext(center, rac.Angle.sw, controlAngle, controlDistance,
-      (endCenter, startCenter) => {
-      let distanceSegment = startCenter.segmentToPoint(endCenter)
-        .draw(triangleStroke);
+      (egCenter, movingCenter) => {
 
-      // Circles
-      let startArc = startCenter.arc(startArcRadius)
-        .draw(circleStroke);
-      let endArc = endCenter.arc(endArcRadius)
-        .draw(circleStroke);
+      egCenter.arc(100, rac.Angle.se, controlAngle.inverse(), false)
+        .draw().debug(verbose);
 
-      // Calculations
-      let hyp = distanceSegment.length();
-      let ops = endArcRadius + startArcRadius;
-
-      let angleSine = ops / hyp;
-      // Sine over 1 is invalid
-      angleSine = Math.min(angleSine, 1);
-
-      let angleRadians = Math.asin(angleSine);
-      let opsAngle = rac.Angle.fromRadians(angleRadians);
-      let adj = Math.cos(opsAngle.radians()) * hyp;
-      // adjAngle as the angle between hyp and ops, outside the triangle
-      let adjAngle = opsAngle.perpendicular(true);
-      let rootAngle = distanceSegment.angle();
-
-      // Clock-wise absolute angles
-      let cwOpsAngle = rootAngle.shift(opsAngle, true);
-      let cwAdjAngle = rootAngle.shift(adjAngle, true);
-
-      // Detached triangle
-      let toDetached = rootAngle.perpendicular(true);
-      let detachedAdjVertex = endCenter
-        .segmentToAngle(toDetached, startArcRadius + endArcRadius)
-        .end;
-      let detachedHypVertex = detachedAdjVertex
-        .segmentToAngle(cwAdjAngle, ops)
-        .draw(triangleStroke)
-        .end;
-      let detachedOpsVertex = detachedHypVertex
-        .segmentToAngle(cwOpsAngle.inverse(), adj)
-        .draw(triangleTangentStroke)
-        .end;
-      detachedOpsVertex
-        .segmentToPoint(detachedAdjVertex)
-        .draw(triangleStroke);
-
-      // Attached to detached reticules
-      detachedAdjVertex.segmentToPoint(endCenter)
+      let translatedSegment = egCenter
+        .segmentToAngle(controlAngle, controlDistance)
         .draw()
-      detachedOpsVertex.segmentToAngle(toDetached.inverse(), startArcRadius + endArcRadius)
+        .translatePerpendicular(100, false)
         .draw();
 
-      // Detached End Circle reticules
-      detachedAdjVertex
-        .segmentToAngle(toDetached.inverse(), endArcRadius)
-        .arcWithEnd(cwAdjAngle, true)
-        .draw()
-        .endSegment()
-        .draw();
-
-      // Detached Start Circle reticules
-      detachedOpsVertex
-        .segmentToAngle(cwAdjAngle.inverse(), startArcRadius)
-        .arcWithEnd(cwOpsAngle, false)
-        .draw()
-        .endSegment()
-        .draw();
-      detachedOpsVertex
-        .segmentToAngle(cwAdjAngle.inverse(), startArcRadius)
-        .draw()
-        .nextSegmentToAngle(cwOpsAngle, adj)
-        .draw();
-
-      // Rest of drawing depends on valid angle
-      if (angleSine >= 1) {
-        endCenter.segmentToAngle(rootAngle.inverse(), ops)
-          .draw();
-        return;
-      }
-
-      // Cw Ops-adj reticules
-      startCenter.segmentToAngle(cwOpsAngle, adj)
-        .draw();
-      endCenter.segmentToAngle(cwAdjAngle, ops)
-        .draw();
-      startArc.radiusSegmentAtAngle(cwAdjAngle.inverse())
-        .draw();
-
-        // Cc Ops-adj reticules
-      let ccOpsAngle = rootAngle.shift(opsAngle, false);
-      let ccAdjAngle = rootAngle.shift(adjAngle, false);
-      startCenter.segmentToAngle(ccOpsAngle, adj)
-        .draw();
-      endCenter.segmentToAngle(ccAdjAngle, ops)
-        .draw();
-      startArc.radiusSegmentAtAngle(ccAdjAngle.inverse())
-        .draw();
-
-      // Implemented tangent funcition
-      startArc.segmentTangentToArc(endArc, false, true)
-        .draw(tangentStroke);
-      startArc.segmentTangentToArc(endArc, true, false)
-        .draw(tangentSecondaryStroke);
-
-      endCenter.arc(100, rac.Angle.se, exampleAngle.inverse(), false).draw().debug(verbose);
-
-      detachedAdjVertex.arc(21, rac.Angle.w, rac.Angle.n).draw().debug();
-      detachedOpsVertex.arc(21, rac.Angle.n, rac.Angle.n).draw().debug();
-      // detachedAdjVertex.arc(22* 2/3, rac.Angle.w, rac.Angle.n).draw().debug();
-      // detachedOpsVertex.arc(22* 2/3, rac.Angle.n, rac.Angle.n).draw().debug();
+      translatedSegment.start
+        .arc(21, rac.Angle.w, rac.Angle.n).draw().debug();
+      translatedSegment.end
+        .arc(21, rac.Angle.n, rac.Angle.n).draw().debug();
+      // translatedSegment.start.arc(22* 2/3, rac.Angle.w, rac.Angle.n).draw().debug();
+      // translatedSegment.end.arc(22* 2/3, rac.Angle.n, rac.Angle.n).draw().debug();
 
     }); // Example 3
 
 
-    // Example 4
+    // Example 4 - D
     makeExampleContext(center, rac.Angle.se, controlAngle, controlDistance,
       (egCenter, movingCenter) => {
       egCenter.debug();
