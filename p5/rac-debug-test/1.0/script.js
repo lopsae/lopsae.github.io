@@ -180,12 +180,9 @@ function buildSketch(sketch) {
     makeExampleContext(center, rac.Angle.nw, controlAngle, controlDistance,
       (egCenter, movingCenter) => {
 
-      egCenter.arc(120, rac.Angle.ne, controlAngle.add(1/10)).draw().debug(verbose);
-      egCenter
-        .addX(-150).debugAngle(controlAngle, verbose)
-        .addY(-100).push();
-      controlAngle.negative().debug(rac.stack.pop());
-
+      // Variable radius arc, clockwise
+      egCenter.arc(controlDistance, rac.Angle.sw, controlAngle)
+        .draw().debug(verbose);
 
     }); // Example 1
 
@@ -194,12 +191,20 @@ function buildSketch(sketch) {
     makeExampleContext(center, rac.Angle.ne, controlAngle, controlDistance,
       (egCenter, movingCenter) => {
 
-      // Segment
+
       egCenter.segmentToPoint(movingCenter)
+        // Segment
         .draw().debug()
-      // Segment verbose
-        .translatePerpendicular(100, true)
+        // Segment verbose
+        .translatePerpendicular(70, true)
         .draw().debug(verbose);
+
+      egCenter
+        // Angle through point
+        .addX(100).debugAngle(controlAngle, verbose)
+        .addY(-100).push();
+      // Angle through angle
+      controlAngle.negative().debug(rac.stack.pop());
 
     }); // Example 2
 
@@ -208,21 +213,9 @@ function buildSketch(sketch) {
     makeExampleContext(center, rac.Angle.sw, controlAngle, controlDistance,
       (egCenter, movingCenter) => {
 
-      egCenter.arc(100, rac.Angle.se, controlAngle.inverse(), false)
+      // Variable radius arc, counter-clockwise
+      egCenter.arc(controlDistance, rac.Angle.sw, controlAngle, false)
         .draw().debug(verbose);
-
-      let translatedSegment = egCenter
-        .segmentToAngle(controlAngle, controlDistance)
-        .draw()
-        .translatePerpendicular(100, false)
-        .draw();
-
-      translatedSegment.start
-        .arc(21, rac.Angle.w, rac.Angle.n).draw().debug();
-      translatedSegment.end
-        .arc(21, rac.Angle.n, rac.Angle.n).draw().debug();
-      // translatedSegment.start.arc(22* 2/3, rac.Angle.w, rac.Angle.n).draw().debug();
-      // translatedSegment.end.arc(22* 2/3, rac.Angle.n, rac.Angle.n).draw().debug();
 
     }); // Example 3
 
