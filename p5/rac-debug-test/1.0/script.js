@@ -102,19 +102,21 @@ function buildSketch(sketch) {
   }
 
 
-  let verbose = false;
+  // Debug verbose
+  let verbose = true;
+
 
   sketch.draw = function() {
     sketch.clear();
 
     // https://coolors.co/011627-fdfffc-2ec4b6-e71d36-ff9f1c-9e22f1
     let palette = {
-      richBlack:   Rac.Color.fromRgba(rac, 1, 22, 39),
-      babyPowder:  Rac.Color.fromRgba(rac, 253, 255, 252),
-      tiffanyBlue: Rac.Color.fromRgba(rac, 46, 196, 182),
-      roseMadder:  Rac.Color.fromRgba(rac, 231, 29, 54),
-      orangePeel:  Rac.Color.fromRgba(rac, 255, 159, 28),
-      purpleX11:   Rac.Color.fromRgba(rac, 158, 34, 241)
+      richBlack:   rac.Color.fromRgba(1, 22, 39),
+      babyPowder:  rac.Color.fromRgba(253, 255, 252),
+      tiffanyBlue: rac.Color.fromRgba(46, 196, 182),
+      roseMadder:  rac.Color.fromRgba(231, 29, 54),
+      orangePeel:  rac.Color.fromRgba(255, 159, 28),
+      purpleX11:   rac.Color.fromRgba(158, 34, 241)
     };
 
     // Root styles
@@ -176,6 +178,15 @@ function buildSketch(sketch) {
     let controlAngle = angleControl.distance();
     let controlDistance = distanceControl.distance();
 
+
+    rac.Segment.canvasTop().draw(tangentStroke);
+    rac.Segment.canvasLeft().draw(tangentStroke);
+    rac.Segment.canvasBottom().draw(tangentStroke);
+    rac.Segment.canvasRight().draw(tangentStroke);
+
+    rac.Ray(rac.Point(center.x, 200), controlAngle.add(rac.Angle.se)).draw(tangentStroke);
+    rac.Ray(rac.Point(center.x, 200), controlAngle.add(rac.Angle.ses)).draw();
+    rac.Ray(rac.Point(center.x, 200), controlAngle.add(rac.Angle.see)).draw(tangentSecondaryStroke);
 
     // Example 1 - A
     makeExampleContext(center, rac.Angle.nw, controlAngle, controlDistance,
