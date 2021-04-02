@@ -247,10 +247,10 @@ function buildSketch(sketch) {
         .draw();
 
       // Small complete-circle arc
-      translatedSegment.start
+      translatedSegment.startPoint()
         .arc(10).draw().debug();
       // Tiny complete-circle arc
-      translatedSegment.end
+      translatedSegment.endPoint()
         .arc(1, rac.Angle.w, rac.Angle.w, false).draw().debug();
 
       translatedSegment = egCenter
@@ -259,10 +259,10 @@ function buildSketch(sketch) {
         .draw();
 
       // Small arc
-      translatedSegment.start
+      translatedSegment.startPoint()
         .arc(10, rac.Angle.w, rac.Angle.n).draw().debug();
       // Tiny arc
-      translatedSegment.end
+      translatedSegment.endPoint()
         .arc(1, rac.Angle.w, rac.Angle.n, false).draw().debug();
 
     }); // Example 4
