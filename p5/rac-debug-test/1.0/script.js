@@ -203,8 +203,7 @@ function buildSketch(sketch) {
     makeExampleContext(center, rac.Angle.ne, controlAngle, controlDistance,
       (egCenter, movingCenter) => {
 
-
-      egCenter.segmentToPoint(movingCenter)
+      egCenter.segmentToPoint(movingCenter, controlAngle)
         // Segment
         .draw().debug()
         // Segment verbose
@@ -242,7 +241,7 @@ function buildSketch(sketch) {
       movingCenter.debug(verbose);
 
       let translatedSegment = egCenter
-        .segmentToPoint(movingCenter)
+        .segmentToPoint(movingCenter, controlAngle)
         .translatePerpendicular(100, true)
         .draw();
 
@@ -254,7 +253,7 @@ function buildSketch(sketch) {
         .arc(1, rac.Angle.w, rac.Angle.w, false).draw().debug();
 
       translatedSegment = egCenter
-        .segmentToPoint(movingCenter)
+        .segmentToPoint(movingCenter, controlAngle)
         .translatePerpendicular(100, false)
         .draw();
 
