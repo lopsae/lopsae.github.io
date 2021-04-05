@@ -184,9 +184,9 @@ function buildSketch(sketch) {
     rac.Segment.canvasBottom().draw(tangentStroke);
     rac.Segment.canvasRight().draw(tangentStroke);
 
-    rac.Ray(rac.Point(center.x, 200), controlAngle.add(rac.Angle.se)).draw(tangentStroke);
-    rac.Ray(rac.Point(center.x, 200), controlAngle.add(rac.Angle.ses)).draw();
-    rac.Ray(rac.Point(center.x, 200), controlAngle.add(rac.Angle.see)).draw(tangentSecondaryStroke);
+    rac.Ray(center.x, 200, controlAngle.add(rac.Angle.se)).draw(tangentStroke);
+    rac.Ray(center.x, 200, controlAngle.add(rac.Angle.ses)).draw();
+    rac.Ray(center.x, 200, controlAngle.add(rac.Angle.see)).draw(tangentSecondaryStroke);
 
     // Example 1 - A
     makeExampleContext(center, rac.Angle.nw, controlAngle, controlDistance,
