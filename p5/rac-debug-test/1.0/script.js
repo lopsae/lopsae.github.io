@@ -4,10 +4,12 @@ console.log(`❎ Running`);
 
 let Rac = null;
 
-let racLocation = 'http://localhost:9001/rac.js';
-// let racLocation = 'https://cdn.jsdelivr.net/gh/lopsae/rac@develop/src/rac.js';
+const racLocation = window.location.hostname == 'localhost'
+  ? 'http://localhost:9001/rac.js'
+  : 'https://cdn.jsdelivr.net/gh/lopsae/rac@instanceMode/dist/rac.js';
 
 if (typeof requirejs === "function") {
+  console.log(`📚 Requesting rac from: ${racLocation}`);
   requirejs([racLocation], racConstructor => {
     console.log(`📚 Loaded RAC:${racConstructor.version}`);
     Rac = racConstructor;
