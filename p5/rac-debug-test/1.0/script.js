@@ -181,14 +181,16 @@ function buildSketch(sketch) {
     let controlDistance = distanceControl.distance();
 
 
-    rac.Segment.canvasTop().draw(tangentStroke);
-    rac.Segment.canvasLeft().draw(tangentStroke);
-    rac.Segment.canvasBottom().draw(tangentStroke);
-    rac.Segment.canvasRight().draw(tangentStroke);
+    let circle = rac.Arc(center.x, 170, 150).draw();
+    let circleTop = circle.pointAtAngle(rac.Angle.up);
 
-    rac.Ray(center.x, 200, controlAngle.add(rac.Angle.se)).draw(tangentStroke);
-    rac.Ray(center.x, 200, controlAngle.add(rac.Angle.ses)).draw();
-    rac.Ray(center.x, 200, controlAngle.add(rac.Angle.see)).draw(tangentSecondaryStroke);
+    circle.radiusSegmentAtAngle(rac.Angle.left).draw();
+    circle.radiusSegmentAtAngle(rac.Angle.nw).draw();
+    circle.radiusSegmentAtAngle(rac.Angle.n).draw();
+
+    circleTop.ray(rac.Angle.left).draw();
+    circleTop.ray(3/8).draw();
+    circleTop.ray(7/16).draw();
 
     // Example 1 - A
     makeExampleContext(center, rac.Angle.nw, controlAngle, controlDistance,
