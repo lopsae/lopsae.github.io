@@ -1,8 +1,8 @@
 "use strict";
 
+
 console.log(`❎ Running`);
 
-let Rac = null;
 
 const racLocation = window.location.hostname == 'localhost'
   ? 'http://localhost:9001/rac.js'
@@ -12,10 +12,10 @@ if (typeof requirejs === "function") {
   console.log(`📚 Requesting rac from: ${racLocation}`);
   requirejs([racLocation], racConstructor => {
     console.log(`📚 Loaded RAC:${racConstructor.version}`);
-    Rac = racConstructor;
+    const Rac = racConstructor;
     requirejs(['https://cdn.jsdelivr.net/npm/p5@1.2.0/lib/p5.min.js'], p5Func => {
       console.log(`📚 Loaded p5:${typeof p5Func}`);
-      new p5Func(buildSketch);
+      new p5Func(sketch => buildSketch(sketch, Rac));
     });
   });
 }
@@ -30,7 +30,7 @@ if (typeof requirejs === "function") {
 // });
 
 
-function buildSketch(sketch) {
+function buildSketch(sketch, Rac) {
 
   let rac = null;
 
