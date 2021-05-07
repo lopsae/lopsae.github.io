@@ -180,13 +180,14 @@ function buildSketch(sketch, Rac) {
     let controlAngle = angleControl.distance();
     let controlDistance = distanceControl.distance();
 
-
+    // Tests for divideToSegments
     let circle = rac.Arc(center.x, 170, 150).draw();
     let circleTop = circle.pointAtAngle(rac.Angle.up);
 
-    circle.radiusSegmentAtAngle(rac.Angle.left).draw();
-    circle.radiusSegmentAtAngle(rac.Angle.nw).draw();
-    circle.radiusSegmentAtAngle(rac.Angle.n).draw();
+    circle.radiusSegmentAtAngle(rac.Angle.left).draw(rac.Stroke(5, palette.tiffanyBlue));
+    circle.radiusSegmentAtAngle(rac.Angle.nw).draw(rac.Stroke(null, palette.orangePeel));
+    circle.radiusSegmentAtAngle(rac.Angle.n).draw(rac.Stroke(15));
+    circle.radiusSegmentAtAngle(rac.Angle.se).draw(rac.Stroke.none);
 
     circleTop.ray(rac.Angle.left).draw();
     circleTop.ray(3/8).draw();
