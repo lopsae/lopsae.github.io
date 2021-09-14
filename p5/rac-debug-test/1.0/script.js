@@ -5,13 +5,15 @@ console.log(`❎ Running`);
 
 
 const racLocation = window.location.hostname == 'localhost'
-  ? 'http://localhost:9001/rac.js'
-  : 'https://cdn.jsdelivr.net/gh/lopsae/rac@instanceMode/dist/rac.js';
+  ? 'http://localhost:9001/rac.dev.js'
+  // ? 'http://localhost:9001/rac.js'
+  // ? 'http://localhost:9001/rac.min.js'
+  : 'https://cdn.jsdelivr.net/gh/lopsae/rac@develop/dist/rac.js';
 
 if (typeof requirejs === "function") {
   console.log(`📚 Requesting rac from: ${racLocation}`);
   requirejs([racLocation], racConstructor => {
-    console.log(`📚 Loaded RAC:${racConstructor.version}`);
+    console.log(`📚 Loaded RAC:${racConstructor.version}(${racConstructor.build})`);
     const Rac = racConstructor;
     requirejs(['https://cdn.jsdelivr.net/npm/p5@1.2.0/lib/p5.min.js'], p5Func => {
       console.log(`📚 Loaded p5:${typeof p5Func}`);
@@ -113,29 +115,31 @@ function buildSketch(sketch, Rac) {
 
     // https://coolors.co/011627-fdfffc-2ec4b6-e71d36-ff9f1c-9e22f1
     let palette = {
-      richBlack:   rac.Color.fromRgba(1, 22, 39),
-      babyPowder:  rac.Color.fromRgba(253, 255, 252),
-      tiffanyBlue: rac.Color.fromRgba(46, 196, 182),
-      roseMadder:  rac.Color.fromRgba(231, 29, 54),
-      orangePeel:  rac.Color.fromRgba(255, 159, 28),
-      purpleX11:   rac.Color.fromRgba(158, 34, 241)
+      richBlack:   rac.Color.fromHex("011627"),//(1, 22, 39),
+      babyPowder:  rac.Color.fromHex("fdfffc"),//(253, 255, 252),
+      tiffanyBlue: rac.Color.fromHex("2ec4b6"),//(46, 196, 182),
+      roseMadder:  rac.Color.fromHex("#e71d36"),//(231, 29, 54),
+      orangePeel:  rac.Color.fromHex("#ff9f1c"),//(255, 159, 28),
+      purpleX11:   rac.Color.fromHex("#9e22f1")//(158, 34, 241)
     };
 
     // Root styles
     palette.richBlack.applyBackground();
     // Default style mostly used for reticules
-    palette.babyPowder.withAlpha(.5).stroke(2).apply();
+    palette.babyPowder.withAlpha(.5).stroke(2)
+      .apply();
 
     // Text style
-    palette.richBlack.withAlpha(.6).stroke(3)
-      .styleWithFill(palette.tiffanyBlue)
+    let textStroke = palette.richBlack.withAlpha(0.6).stroke(3);
+    palette.orangePeel.fill()
+      .containerWithStroke(textStroke)
       .applyToClass(Rac.Text);
 
     // debug style
     rac.drawer.debugStyle = palette.purpleX11.stroke(2);
     rac.drawer.debugTextStyle = palette
       .richBlack.withAlpha(0.5).stroke(2)
-      .styleWithFill(palette.purpleX11);
+      .containerWithFill(palette.purpleX11);
 
     // Styles
     let tangentStroke =          palette.orangePeel.stroke(4);
@@ -145,12 +149,12 @@ function buildSketch(sketch, Rac) {
     let circleStroke =           palette.roseMadder.stroke(2);
 
 
-    let controlStyle = circleStroke
-      .withWeight(3)
-      .styleWithFill(palette.babyPowder.fill());
+    let controlStyle = circleStroke.withWeight(3)
+      .containerWithFill(palette.babyPowder);
 
     rac.controller.controls.forEach(item => item.style = controlStyle);
-    rac.controller.pointerStyle = palette.babyPowder.withAlpha(.5).stroke(2);
+    rac.controller.pointerStyle = palette.orangePeel.withAlpha(.5).stroke(2);
+    // rac.controller.pointerStyle = null;
 
 
     // General measurements
@@ -163,6 +167,9 @@ function buildSketch(sketch, Rac) {
 
 
     // Controls
+    let controlAngle = angleControl.distance();
+    let controlDistance = distanceControl.distance();
+
     angleControl.anchor = center
       .segmentToAngle(rac.Angle.w, endArcRadius)
       .arc();
@@ -175,23 +182,47 @@ function buildSketch(sketch, Rac) {
       .draw();
 
     distanceControl.anchor = center
-      .segmentToAngle(angleControl.distance(), 100);
+      .segmentToAngle(controlAngle, 300);
 
-    let controlAngle = angleControl.distance();
-    let controlDistance = distanceControl.distance();
+    let distanceTextFormat = rac.Text.Format.topRight
+      .withAngle(controlAngle);
+    distanceControl.anchor.endPoint()
+      .text(`${controlDistance.toFixed(3)}`, distanceTextFormat).draw();
+
 
     // Tests for divideToSegments
-    let circle = rac.Arc(center.x, 170, 150).draw();
+    let circle = center.addY(-250).arc(150).draw();
     let circleTop = circle.pointAtAngle(rac.Angle.up);
 
     circle.radiusSegmentAtAngle(rac.Angle.left).draw(rac.Stroke(5, palette.tiffanyBlue));
     circle.radiusSegmentAtAngle(rac.Angle.nw).draw(rac.Stroke(null, palette.orangePeel));
     circle.radiusSegmentAtAngle(rac.Angle.n).draw(rac.Stroke(15));
-    circle.radiusSegmentAtAngle(rac.Angle.se).draw(rac.Stroke.none);
+    circle.radiusSegmentAtAngle(rac.Angle.ne).draw(rac.Stroke.none);
 
-    circleTop.ray(rac.Angle.left).draw();
-    circleTop.ray(3/8).draw();
-    circleTop.ray(7/16).draw();
+    circle.radiusSegmentAtAngle(rac.Angle.e).draw(palette.orangePeel.stroke());
+    circle.radiusSegmentAtAngle(rac.Angle.see).draw(palette.orangePeel.stroke(5));
+    circle.radiusSegmentAtAngle(rac.Angle.se).draw(Rac.Stroke.from(rac, palette.orangePeel));
+    circle.radiusSegmentAtAngle(rac.Angle.ses).draw(Rac.Stroke.from(rac, palette.orangePeel.stroke(5)));
+    circle.radiusSegmentAtAngle(rac.Angle.s).draw(Rac.Stroke.from(rac, rac.Stroke(10)));
+
+    circle.radiusSegmentAtAngle(rac.Angle.sw).draw(palette.orangePeel.stroke(5).withWeight(10));
+    circle.radiusSegmentAtAngle(rac.Angle.sww).draw(palette.orangePeel.stroke(5).withAlpha(0.5));
+    circle.radiusSegmentAtAngle(rac.Angle.sws).draw(rac.Stroke(10).withAlpha(0.5));
+
+
+    // Tests for linearTransition
+
+    let transCircle = center.addY(250).arc(150).draw();
+    let totalIndex = 20;
+    for (let index = 0; index <= totalIndex; index++) {
+      let ratio = index / totalIndex;
+      let angle = ratio * 0.5;
+
+      let transColor = palette.roseMadder.linearTransition(ratio, palette.tiffanyBlue);
+      let stroke = transColor.stroke(5);
+
+      transCircle.radiusSegmentAtAngle(angle).draw(stroke);
+    }
 
     // Example 1 - A
     makeExampleContext(center, rac.Angle.nw, controlAngle, controlDistance,
@@ -220,8 +251,14 @@ function buildSketch(sketch, Rac) {
         .addX(100).debugAngle(controlAngle, verbose)
         .addY(-100).push();
       // Angle through angle
-      controlAngle.negative().debug(Rac.stack.pop());
+      controlAngle.inverse().debug(Rac.stack.pop());
 
+      egCenter
+        .addY(-100)
+        .ray(controlAngle.inverse()).debug()
+        .start
+        .addX(-70)
+        .ray(controlAngle.inverse()).debug(true);
     }); // Example 2
 
 
