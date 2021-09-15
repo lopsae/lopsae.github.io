@@ -46,12 +46,10 @@ function buildSketch(sketch, Rac) {
 
     distanceControl = new Rac.SegmentControl(rac, 0, 300);
     distanceControl.setValueWithLength(140);
-    rac.controller.controls.push(distanceControl);
 
-    angleControl = new Rac.ArcControl(rac, 0, 1);
+    angleControl = new Rac.ArcControl(rac, 0, 1/2);
     angleControl.setValueWithAngleDistance(1/4);
     angleControl.addMarkerAtCurrentValue();
-    rac.controller.controls.push(angleControl);
 
     sketch.createCanvas(sketch.windowWidth, sketch.windowHeight);
     sketch.noLoop();
@@ -132,27 +130,24 @@ function buildSketch(sketch, Rac) {
     // Text style
     let textStroke = palette.richBlack.withAlpha(0.6).stroke(3);
     palette.orangePeel.fill()
-      .containerWithStroke(textStroke)
+      .appendStroke(textStroke)
       .applyToClass(Rac.Text);
 
     // debug style
     rac.drawer.debugStyle = palette.purpleX11.stroke(2);
     rac.drawer.debugTextStyle = palette
       .richBlack.withAlpha(0.5).stroke(2)
-      .containerWithFill(palette.purpleX11);
-
-    // Styles
-    let tangentStroke =          palette.orangePeel.stroke(4);
-    let tangentSecondaryStroke = tangentStroke.withAlpha(.5);
-    let triangleTangentStroke =  palette.tiffanyBlue.stroke(3);
-    let triangleStroke =         palette.tiffanyBlue.stroke(2).withAlpha(.7);
-    let circleStroke =           palette.roseMadder.stroke(2);
+      .appendFill(palette.purpleX11);
 
 
-    let controlStyle = circleStroke.withWeight(3)
-      .containerWithFill(palette.babyPowder);
+    let controlStyle = palette.roseMadder.stroke(3)
+      .appendFill(palette.babyPowder);
 
-    rac.controller.controls.forEach(item => item.style = controlStyle);
+
+    rac.controller.controlStyle = palette.babyPowder.fill();
+    angleControl.style = palette.roseMadder.stroke(3)
+    distanceControl.style = palette.roseMadder.stroke(3)
+
     rac.controller.pointerStyle = palette.orangePeel.withAlpha(.5).stroke(2);
     // rac.controller.pointerStyle = null;
 
@@ -184,7 +179,7 @@ function buildSketch(sketch, Rac) {
     distanceControl.anchor = center
       .segmentToAngle(controlAngle, 300);
 
-    let distanceTextFormat = rac.Text.Format.topRight
+    let distanceTextFormat = rac.Text.Format.topLeft
       .withAngle(controlAngle);
     distanceControl.anchor.endPoint()
       .text(`${controlDistance.toFixed(3)}`, distanceTextFormat).draw();
