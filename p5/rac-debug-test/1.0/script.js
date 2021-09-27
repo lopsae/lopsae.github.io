@@ -184,7 +184,7 @@ function buildSketch(sketch, Rac) {
 
     let distanceTextFormat = rac.Text.Format.topLeft
       .withAngle(controlAngle);
-    distanceControl.copyAnchor()
+    distanceControl.affixAnchor()
       .endPoint()
       .text(`${controlDistance.toFixed(3)}`, distanceTextFormat).draw();
 
