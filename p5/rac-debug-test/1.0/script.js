@@ -44,11 +44,14 @@ function buildSketch(sketch, Rac) {
     console.log(`📚 New RAC:${rac.version}`);
     rac.setupDrawer(sketch);
 
-    distanceControl = new Rac.SegmentControl(rac, 0, 300);
+    distanceControl = new Rac.RayControl(rac, 0, 300);
     distanceControl.setValueWithLength(140);
+    distanceControl.setLimitsWithLengthInsets(10, 10);
+    distanceControl.addMarkerAtCurrentValue();
 
-    angleControl = new Rac.ArcControl(rac, 0, 1/2);
+    angleControl = new Rac.ArcControl(rac, 0, 15/16);
     angleControl.setValueWithAngleDistance(1/4);
+    angleControl.setLimitsWithAngleDistanceInsets(1/32, 1/32);
     angleControl.addMarkerAtCurrentValue();
 
     sketch.createCanvas(sketch.windowWidth, sketch.windowHeight);
@@ -144,9 +147,10 @@ function buildSketch(sketch, Rac) {
       .appendFill(palette.babyPowder);
 
 
-    rac.controller.controlStyle = palette.babyPowder.fill();
-    angleControl.style = palette.roseMadder.stroke(3)
-    distanceControl.style = palette.roseMadder.stroke(3)
+    rac.controller.controlStyle = palette.babyPowder.fill()
+      .appendStroke(palette.roseMadder.stroke(3));
+    // angleControl.style = palette.roseMadder.stroke(3);
+    distanceControl.style = palette.orangePeel.stroke(3);
 
     rac.controller.pointerStyle = palette.orangePeel.withAlpha(.5).stroke(2);
     // rac.controller.pointerStyle = null;
@@ -176,12 +180,12 @@ function buildSketch(sketch, Rac) {
       .segmentToBisector()
       .draw();
 
-    distanceControl.anchor = center
-      .segmentToAngle(controlAngle, 300);
+    distanceControl.anchor = center.ray(controlAngle);
 
     let distanceTextFormat = rac.Text.Format.topLeft
       .withAngle(controlAngle);
-    distanceControl.anchor.endPoint()
+    distanceControl.copyAnchor()
+      .endPoint()
       .text(`${controlDistance.toFixed(3)}`, distanceTextFormat).draw();
 
 
