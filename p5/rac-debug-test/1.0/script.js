@@ -124,6 +124,9 @@ function buildSketch(sketch, Rac) {
       purpleX11:   rac.Color.fromHex("#9e22f1")//(158, 34, 241)
     };
 
+    // Stroke weigth
+    rac.drawer.strokeWeightFactor = 1.5;
+
     // Root styles
     palette.richBlack.applyBackground();
     // Default style mostly used for reticules
@@ -152,7 +155,8 @@ function buildSketch(sketch, Rac) {
     // angleControl.style = palette.roseMadder.stroke(3);
     distanceControl.style = palette.orangePeel.stroke(3);
 
-    rac.controller.pointerStyle = palette.orangePeel.withAlpha(.5).stroke(2);
+    rac.controller.pointerStyle = palette.orangePeel.withAlpha(.5).stroke(2)
+      .appendFill(palette.babyPowder.withAlpha(1/3));
     // rac.controller.pointerStyle = null;
 
 
