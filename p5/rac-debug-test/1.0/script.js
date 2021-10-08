@@ -172,7 +172,7 @@ function buildSketch(sketch, Rac) {
     angleControl.anchor = center
       .segmentToAngle(rac.Angle.w, endArcRadius)
       .arc();
-    angleControl.center()
+    angleControl.knob()
       .segmentToPoint(angleControl.anchor.center)
       .draw();
     angleControl.anchor.startSegment()
