@@ -250,7 +250,7 @@ function buildSketch(sketch, Rac) {
         .addX(100).debugAngle(controlAngle, verbose)
         .addY(-100).push();
       // Angle through angle
-      controlAngle.inverse().debug(Rac.stack.pop());
+      controlAngle.inverse().debug(rac.popStack());
 
       egCenter
         .addY(-100)
