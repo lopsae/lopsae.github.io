@@ -49,7 +49,7 @@ function buildSketch(sketch, Rac) {
     distanceControl.setLimitsWithLengthInsets(10, 10);
     distanceControl.addMarkerAtCurrentValue();
 
-    angleControl = new Rac.ArcControl(rac, 0, 15/16);
+    angleControl = new Rac.ArcControl(rac, 0, rac.Angle.from(15/16));
     angleControl.setValueWithAngleDistance(1/4);
     angleControl.setLimitsWithAngleDistanceInsets(1/32, 1/32);
     angleControl.addMarkerAtCurrentValue();
