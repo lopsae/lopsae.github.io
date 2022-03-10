@@ -42,14 +42,14 @@ function buildSketch(sketch) {
     console.log(`📚 New RAC:${rac.version}`);
     rac.setupDrawer(sketch);
 
-    distanceControl = new Rac.SegmentControl(rac, 0, 300);
+    distanceControl = new Rac.RayControl(rac, 0, 300);
     distanceControl.setValueWithLength(140);
-    Rac.Control.controls.push(distanceControl);
+    // rac.controller.add(distanceControl);
 
-    angleControl = new Rac.ArcControl(rac, 0, 1);
+    angleControl = new Rac.ArcControl(rac, 0, rac.Angle(1));
     angleControl.setValueWithAngleDistance(1/4);
     angleControl.addMarkerAtCurrentValue();
-    Rac.Control.controls.push(angleControl);
+    // rac.controller.add(angleControl);
 
     sketch.createCanvas(sketch.windowWidth, sketch.windowHeight);
     sketch.noLoop();
@@ -64,14 +64,14 @@ function buildSketch(sketch) {
 
 
   sketch.mousePressed = function(event) {
-    Rac.Control.pointerPressed(rac, rac.Point.pointer());
+    rac.controller.pointerPressed(rac.Point.pointer());
     sketch.redraw();
   }
 
 
   let lapses = [];
   sketch.mouseDragged = function(event) {
-    Rac.Control.pointerDragged(rac, rac.Point.pointer());
+    rac.controller.pointerDragged(rac.Point.pointer());
 
 
     let start = performance.now();
@@ -90,7 +90,7 @@ function buildSketch(sketch) {
 
 
   sketch.mouseReleased = function(event) {
-    Rac.Control.pointerReleased(rac, rac.Point.pointer());
+    rac.controller.pointerReleased(rac.Point.pointer());
     sketch.redraw();
   }
 
@@ -128,14 +128,14 @@ function buildSketch(sketch) {
 
     // Text style
     palette.richBlack.withAlpha(.6).stroke(3)
-      .styleWithFill(palette.tiffanyBlue)
+      .appendFill(palette.tiffanyBlue)
       .applyToClass(Rac.Text);
 
     // debug style
     rac.drawer.debugStyle = palette.purpleX11.stroke(2);
     rac.drawer.debugTextStyle = palette
       .richBlack.withAlpha(0.5).stroke(2)
-      .styleWithFill(palette.purpleX11);
+      .appendFill(palette.purpleX11);
 
     // Styles
     let tangentStroke =          palette.orangePeel.stroke(4);
@@ -147,10 +147,10 @@ function buildSketch(sketch) {
 
     let controlStyle = circleStroke
       .withWeight(3)
-      .styleWithFill(palette.babyPowder.fill());
+      .appendFill(palette.babyPowder.fill());
 
-    Rac.Control.controls.forEach(item => item.style = controlStyle);
-    Rac.Control.pointerStyle = palette.babyPowder.withAlpha(.5).stroke(2);
+    rac.controller.controlStyle = controlStyle;
+    rac.controller.pointerStyle = palette.babyPowder.withAlpha(.5).stroke(2);
 
 
     // General measurements
@@ -166,7 +166,7 @@ function buildSketch(sketch) {
     angleControl.anchor = center
       .segmentToAngle(rac.Angle.w, endArcRadius)
       .arc();
-    angleControl.center()
+    angleControl.knob()
       .segmentToPoint(angleControl.anchor.center)
       .draw();
     angleControl.anchor.startSegment()
@@ -174,8 +174,7 @@ function buildSketch(sketch) {
       .segmentToBisector()
       .draw();
 
-    distanceControl.anchor = center
-      .segmentToAngle(angleControl.distance(), 100);
+    distanceControl.anchor = center.ray(angleControl.distance());
 
     let controlAngle = angleControl.distance();
     let controlDistance = distanceControl.distance();
@@ -217,7 +216,7 @@ function buildSketch(sketch) {
         .addX(100).debugAngle(controlAngle, verbose)
         .addY(-100).push();
       // Angle through angle
-      controlAngle.negative().debug(Rac.stack.pop());
+      controlAngle.negative().debug(rac.stack.pop());
 
     }); // Example 2
 
@@ -270,7 +269,7 @@ function buildSketch(sketch) {
 
 
     // Controls draw on top
-    Rac.Control.drawControls(rac);
+    rac.controller.drawControls();
 
 
     // console.log(`👑 ~finis coronat opus ${sketch.frameCount}`);
