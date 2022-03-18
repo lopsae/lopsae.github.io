@@ -5,13 +5,15 @@ console.log(`❎ Running`);
 let Rac = null;
 
 const racLocation = window.location.hostname == 'localhost'
-  ? 'http://localhost:9001/rac.js'
+  ? 'http://localhost:9001/rac.dev.js'
+  // ? 'http://localhost:9001/rac.js'
   : 'https://cdn.jsdelivr.net/gh/lopsae/rac@instanceMode/dist/rac.js';
 
 if (typeof requirejs === "function") {
   console.log(`📚 Requesting rac from: ${racLocation}`);
   requirejs([racLocation], racConstructor => {
-    console.log(`📚 Loaded RAC:${racConstructor.version}`);
+    console.log(`📚 Loaded RAC`);
+    console.log(`🗃 ${racConstructor.version} ${racConstructor.build}`);
     Rac = racConstructor;
     requirejs(['https://cdn.jsdelivr.net/npm/p5@1.2.0/lib/p5.min.js'], p5Func => {
       console.log(`📚 Loaded p5:${typeof p5Func}`);
@@ -39,7 +41,7 @@ function buildSketch(sketch) {
 
   sketch.setup = function() {
     rac = new Rac();
-    console.log(`📚 New RAC:${rac.version}`);
+    console.log(`📚 New RAC constructed`);
     rac.setupDrawer(sketch);
 
     distanceControl = new Rac.RayControl(rac, 0, 300);
