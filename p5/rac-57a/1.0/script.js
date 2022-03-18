@@ -23,20 +23,10 @@ if (typeof requirejs === "function") {
 }
 
 
-// d3.require("p5@1.0.0").then(p5 => {
-//   console.log(`loaded p5`);
-//   d3.require("./rac-0.9.9.x.js").then(rac => {
-//     window.rac = rac;
-//     console.log(`loaded rac`);
-//   });
-// });
-
-
 function buildSketch(sketch) {
 
   let rac = null;
 
-  let distanceControl = null;
   let angleControl = null;
 
   sketch.setup = function() {
@@ -44,14 +34,9 @@ function buildSketch(sketch) {
     console.log(`📚 New RAC constructed`);
     rac.setupDrawer(sketch);
 
-    distanceControl = new Rac.RayControl(rac, 0, 300);
-    distanceControl.setValueWithLength(140);
-    // rac.controller.add(distanceControl);
-
     angleControl = new Rac.ArcControl(rac, 0, rac.Angle(1));
     angleControl.setValueWithAngleDistance(1/4);
     angleControl.addMarkerAtCurrentValue();
-    // rac.controller.add(angleControl);
 
     sketch.createCanvas(sketch.windowWidth, sketch.windowHeight);
     sketch.noLoop();
@@ -71,23 +56,9 @@ function buildSketch(sketch) {
   }
 
 
-  let lapses = [];
   sketch.mouseDragged = function(event) {
     rac.controller.pointerDragged(rac.Point.pointer());
-
-
-    let start = performance.now();
     sketch.redraw();
-    let elapsed = performance.now() - start;
-    if (lapses.length > 40) {
-      lapses.shift();
-    }
-
-    lapses.push(elapsed*1000);
-    let sum = lapses.reduce((accumulator, currentValue) => {
-      return accumulator + currentValue
-    });
-    console.log(`⏰ mouseDragged count: ${lapses.length} avg-elapsed:${sum/lapses.length}`);
   }
 
 
@@ -95,19 +66,6 @@ function buildSketch(sketch) {
     rac.controller.pointerReleased(rac.Point.pointer());
     sketch.redraw();
   }
-
-
-  function makeExampleContext(center, exampleAngle, arcsAngle, arcsDistance, closure) {
-    let distanceToExample = 250;
-    let egCenter = center.pointToAngle(exampleAngle, distanceToExample);
-    let movingCenter = egCenter.pointToAngle(arcsAngle, arcsDistance);
-
-    closure(egCenter, movingCenter);
-  }
-
-
-  // Debug verbose
-  let verbose = true;
 
 
   sketch.draw = function() {
@@ -147,12 +105,9 @@ function buildSketch(sketch) {
     let circleStroke =           palette.roseMadder.stroke(2);
 
 
-    let controlStyle = circleStroke
-      .withWeight(3)
-      .appendFill(palette.babyPowder.fill());
-
-    rac.controller.controlStyle = controlStyle;
     rac.controller.pointerStyle = palette.babyPowder.withAlpha(.5).stroke(2);
+    rac.controller.controlStyle = circleStroke.withWeight(3)
+      .appendFill(palette.babyPowder.fill());
 
 
     // General measurements
@@ -176,105 +131,18 @@ function buildSketch(sketch) {
       .segmentToBisector()
       .draw();
 
-    distanceControl.anchor = center.ray(angleControl.distance());
 
-    let controlAngle = angleControl.distance();
-    let controlDistance = distanceControl.distance();
+    let controledAngle = angleControl.distance();
 
 
-    rac.Segment.canvasTop().draw(tangentStroke);
-    rac.Segment.canvasLeft().draw(tangentStroke);
-    rac.Segment.canvasBottom().draw(tangentStroke);
-    rac.Segment.canvasRight().draw(tangentStroke);
-
-    rac.Ray(center.x, 200, controlAngle.add(rac.Angle.se)).draw(tangentStroke);
-    rac.Ray(center.x, 200, controlAngle.add(rac.Angle.ses)).draw();
-    rac.Ray(center.x, 200, controlAngle.add(rac.Angle.see)).draw(tangentSecondaryStroke);
-
-    // Example 1 - A
-    makeExampleContext(center, rac.Angle.nw, controlAngle, controlDistance,
-      (egCenter, movingCenter) => {
-
-      // Variable radius arc, clockwise
-      egCenter.arc(controlDistance, rac.Angle.sw, controlAngle)
-        .draw().debug(verbose);
-
-    }); // Example 1
-
-
-    // Example 2 - B
-    makeExampleContext(center, rac.Angle.ne, controlAngle, controlDistance,
-      (egCenter, movingCenter) => {
-
-      egCenter.segmentToPoint(movingCenter, controlAngle)
-        // Segment
-        .draw().debug()
-        // Segment verbose
-        .translatePerpendicular(70, true)
-        .draw().debug(verbose);
-
-      egCenter
-        // Angle through point
-        .addX(100).debugAngle(controlAngle, verbose)
-        .addY(-100).push();
-      // Angle through angle
-      controlAngle.negative().debug(rac.stack.pop());
-
-    }); // Example 2
-
-
-    // Example 3 - C
-    makeExampleContext(center, rac.Angle.sw, controlAngle, controlDistance,
-      (egCenter, movingCenter) => {
-
-      // Variable radius arc, counter-clockwise
-      egCenter.arc(controlDistance, rac.Angle.sw, controlAngle, false)
-        .draw().debug(verbose);
-
-    }); // Example 3
-
-
-    // Example 4 - D
-    makeExampleContext(center, rac.Angle.se, controlAngle, controlDistance,
-      (egCenter, movingCenter) => {
-
-      // Point
-      egCenter.debug();
-      // Point verbose
-      movingCenter.debug(verbose);
-
-      let translatedSegment = egCenter
-        .segmentToPoint(movingCenter, controlAngle)
-        .translatePerpendicular(100, true)
-        .draw();
-
-      // Small complete-circle arc
-      translatedSegment.startPoint()
-        .arc(10).draw().debug();
-      // Tiny complete-circle arc
-      translatedSegment.endPoint()
-        .arc(1, rac.Angle.w, rac.Angle.w, false).draw().debug();
-
-      translatedSegment = egCenter
-        .segmentToPoint(movingCenter, controlAngle)
-        .translatePerpendicular(100, false)
-        .draw();
-
-      // Small arc
-      translatedSegment.startPoint()
-        .arc(10, rac.Angle.w, rac.Angle.n).draw().debug();
-      // Tiny arc
-      translatedSegment.endPoint()
-        .arc(1, rac.Angle.w, rac.Angle.n, false).draw().debug();
-
-    }); // Example 4
+    center.segmentToAngle(rac.Angle.se, 200).draw();
 
 
     // Controls draw on top
     rac.controller.drawControls();
 
 
-    // console.log(`👑 ~finis coronat opus ${sketch.frameCount}`);
+    console.log(`👑 ~finis coronat opus ${sketch.frameCount}`);
   } // draw
 
 } // buildSketch
