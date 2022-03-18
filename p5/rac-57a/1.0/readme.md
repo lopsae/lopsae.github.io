@@ -1,5 +1,3 @@
-# Debug Test
+# Number 57A
 
-Playground for the debuging of drawable objects using a hosted version of RAC.
-
-Development for RAC, a library to express ruler-and-compass constructions.
+Stylization of the number 57A, testing grounds for exporting a drawing into a format useful for 3d printing.
