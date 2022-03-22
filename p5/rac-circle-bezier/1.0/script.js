@@ -27,16 +27,21 @@ function buildSketch(sketch) {
 
   let rac = null;
 
-  let angleControl = null;
+  let angleAControl = null;
+  let angleBControl = null;
 
   sketch.setup = function() {
     rac = new Rac();
     console.log('📚 New RAC constructed');
     rac.setupDrawer(sketch);
 
-    angleControl = new Rac.ArcControl(rac, 0, rac.Angle(1));
-    angleControl.setValueWithAngleDistance(5/8);
-    angleControl.addMarkerAtCurrentValue();
+    angleAControl = new Rac.ArcControl(rac, 0, rac.Angle(1));
+    angleAControl.setValueWithAngleDistance(0/4);
+    angleAControl.addMarkerAtCurrentValue();
+
+    angleBControl = new Rac.ArcControl(rac, 0, rac.Angle(1));
+    angleBControl.setValueWithAngleDistance(1/4);
+    angleBControl.addMarkerAtCurrentValue();
 
     sketch.createCanvas(sketch.windowWidth, sketch.windowHeight);
     sketch.noLoop();
@@ -121,23 +126,24 @@ function buildSketch(sketch) {
     let angleA = rac.Angle(0)
     let angleB = rac.Angle(1/4);
 
-    // let startArcRadius = 30;
-    // let endArcRadius = 80;
 
-    // // Controls
-    // angleControl.anchor = center
-    //   .segmentToAngle(rac.Angle.zero, endArcRadius)
-    //   .arc();
-    // angleControl.knob()
-    //   .segmentToPoint(angleControl.anchor.center)
-    //   .draw();
-    // angleControl.anchor.startSegment()
-    //   .reverse()
-    //   .segmentToBisector()
-    //   .draw();
+    // Controls
+    angleAControl.anchor = center
+      .segmentToAngle(rac.Angle.half, 70)
+      .arc();
+    angleAControl.knob()
+      .segmentToPoint(center)
+      .draw();
 
+    angleBControl.anchor = center
+      .segmentToAngle(rac.Angle.half, 120)
+      .arc();
+    angleBControl.knob()
+      .segmentToPoint(center)
+      .draw();
 
-    let controledAngle = angleControl.distance();
+    let controledAngleA = angleAControl.distance();
+    let controledAngleB = angleBControl.distance();
 
 
     // Radius A
@@ -176,7 +182,7 @@ function buildSketch(sketch) {
 
 
     // Controls draw on top
-    // rac.controller.drawControls();
+    rac.controller.drawControls();
 
 
     console.log(`👑 ~finis coronat opus ${sketch.frameCount}`);
