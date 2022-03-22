@@ -12,8 +12,8 @@ const racLocation = window.location.hostname == 'localhost'
 if (typeof requirejs === "function") {
   console.log(`📚 Requesting rac from: ${racLocation}`);
   requirejs([racLocation], racConstructor => {
-    console.log(`📚 Loaded RAC`);
-    console.log(`🗃 ${racConstructor.version} ${racConstructor.build}`);
+    console.log('📚 Loaded RAC');
+    console.log(`🗃 Rac.version: ${racConstructor.version} ${racConstructor.build}`);
     Rac = racConstructor;
     requirejs(['https://cdn.jsdelivr.net/npm/p5@1.2.0/lib/p5.min.js'], p5Func => {
       console.log(`📚 Loaded p5:${typeof p5Func}`);
@@ -35,7 +35,7 @@ function buildSketch(sketch) {
     rac.setupDrawer(sketch);
 
     angleControl = new Rac.ArcControl(rac, 0, rac.Angle(1));
-    angleControl.setValueWithAngleDistance(1/4);
+    angleControl.setValueWithAngleDistance(5/8);
     angleControl.addMarkerAtCurrentValue();
 
     sketch.createCanvas(sketch.windowWidth, sketch.windowHeight);
@@ -73,12 +73,12 @@ function buildSketch(sketch) {
 
     // https://coolors.co/011627-fdfffc-2ec4b6-e71d36-ff9f1c-9e22f1
     let palette = {
-      richBlack:   rac.Color.fromRgba(1, 22, 39),
-      babyPowder:  rac.Color.fromRgba(253, 255, 252),
-      tiffanyBlue: rac.Color.fromRgba(46, 196, 182),
-      roseMadder:  rac.Color.fromRgba(231, 29, 54),
-      orangePeel:  rac.Color.fromRgba(255, 159, 28),
-      purpleX11:   rac.Color.fromRgba(158, 34, 241)
+      richBlack:   rac.Color.fromHex('011627'),
+      babyPowder:  rac.Color.fromHex('fdfffc'),
+      tiffanyBlue: rac.Color.fromHex('2ec4b6'),
+      roseMadder:  rac.Color.fromHex('e71d36'),
+      orangePeel:  rac.Color.fromHex('ff9f1c'),
+      purpleX11:   rac.Color.fromHex('9e22f1')
     };
 
     // Root styles
@@ -110,18 +110,26 @@ function buildSketch(sketch) {
       .appendFill(palette.babyPowder.fill());
 
 
-    // General measurements
-    let startArcRadius = 30;
-    let endArcRadius = 80;
-
-
     // Center point
     let center = rac.Point.canvasCenter();
 
 
+    // General measurements
+    let wideUnit = 40;
+    let thinUnit = wideUnit/4;
+
+    let diagHorizontal = center
+      .segmentToPoint(center.add(wideUnit, -thinUnit));
+    let diagUnit = diagHorizontal.length;
+    let diagHorizontalAngle = diagHorizontal.angle();
+
+    let startArcRadius = 30;
+    let endArcRadius = 80;
+
+
     // Controls
     angleControl.anchor = center
-      .segmentToAngle(rac.Angle.w, endArcRadius)
+      .segmentToAngle(rac.Angle.zero, endArcRadius)
       .arc();
     angleControl.knob()
       .segmentToPoint(angleControl.anchor.center)
@@ -135,7 +143,33 @@ function buildSketch(sketch) {
     let controledAngle = angleControl.distance();
 
 
-    center.segmentToAngle(rac.Angle.se, 200).draw();
+    // Angle ruler
+    diagHorizontal.ray.draw();
+
+
+    // Five
+    let fiveAnchor = // top left corner of five
+      center;
+    let fiveAscenderBottom = fiveAnchor
+      .segmentToAngle(rac.Angle.s, wideUnit * 2).draw()
+      .endPoint();
+
+    let fiveCurveAnchorOne = fiveAscenderBottom
+      .add(wideUnit *4, wideUnit * 2);
+    let fiveCurveControlOne = fiveAscenderBottom
+      .ray(diagHorizontalAngle).draw()
+      .pointAtIntersection(fiveCurveAnchorOne.ray(rac.Angle.n).draw()).debug();
+    let fiveCurveOneControlSegmentOne =
+      fiveAscenderBottom.segmentToPoint(fiveCurveControlOne);
+    let fiveCurveOneControlSegmentTwo =
+      fiveCurveAnchorOne.segmentToPoint(fiveCurveControlOne);
+
+    let fiveCurveOne = new Rac.Bezier(rac,
+      fiveAscenderBottom,
+      fiveCurveOneControlSegmentOne.pointAtLengthRatio(0.552284749831).debug(),
+      fiveCurveOneControlSegmentTwo.pointAtLengthRatio(0.552284749831).debug(),
+      fiveCurveAnchorOne);
+    fiveCurveOne.draw();
 
 
     // Controls draw on top
