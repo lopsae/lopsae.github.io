@@ -1,3 +1,3 @@
-# Number 57A
+# Circle Bezier
 
-Stylization of the number 57A, testing grounds for exporting a drawing into a format useful for 3d printing.
+Playground for an aproximation of a circle using bezier curves, and for smooth bezier curves based on any two rays.

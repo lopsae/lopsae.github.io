@@ -31,7 +31,7 @@ function buildSketch(sketch) {
 
   sketch.setup = function() {
     rac = new Rac();
-    console.log(`📚 New RAC constructed`);
+    console.log('📚 New RAC constructed');
     rac.setupDrawer(sketch);
 
     angleControl = new Rac.ArcControl(rac, 0, rac.Angle(1));
