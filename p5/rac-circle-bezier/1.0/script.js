@@ -120,11 +120,8 @@ function buildSketch(sketch) {
 
 
     // General measurements
-    let radiusA = 200;
-    let radiusB = 200;
-
-    let angleA = rac.Angle(0)
-    let angleB = rac.Angle(1/4);
+    let lengthA = 200;
+    let lengthB = 200;
 
 
     // Controls
@@ -142,20 +139,32 @@ function buildSketch(sketch) {
       .segmentToPoint(center)
       .draw();
 
-    let controledAngleA = angleAControl.distance();
-    let controledAngleB = angleBControl.distance();
+    let angleA = angleAControl.distance();
+    let angleB = angleBControl.distance();
+
+
+    // Angle dividers
+    let quarterAngle = angleA.distance(angleB).mult(1/4);
+    center.ray(angleA.shift(quarterAngle.mult(1))).draw();
+    center.ray(angleA.shift(quarterAngle.mult(2))).draw();
+    center.ray(angleA.shift(quarterAngle.mult(3))).draw();
 
 
     // Radius A
     let rayA = center
-      .segmentToAngle(angleA, radiusA).draw()
-      .endPoint().ray(angleA.perpendicular()).draw();
+      .segmentToAngle(angleA, lengthA).draw()
+      .endPoint().ray(angleA.perpendicular()).draw(tangentSecondaryStroke);
+
+    rayA.segment(quarterAngle.tan() * lengthA * 4/3).draw(tangentStroke);
+
 
 
     // Radius B
     let rayB = center
-      .segmentToAngle(angleB, radiusB).draw()
-      .endPoint().ray(angleB.perpendicular(false)).draw();
+      .segmentToAngle(angleB, lengthB).draw()
+      .endPoint().ray(angleB.perpendicular(false)).draw(tangentSecondaryStroke);
+
+    rayB.segment(quarterAngle.tan() * lengthB * 4/3).draw(tangentStroke);
 
 
     // Ray intersection
@@ -163,13 +172,6 @@ function buildSketch(sketch) {
     if (rayIntersection !== null) {
       rayIntersection.debug();
     }
-
-
-    // Angle dividers
-    let distanceAngle = angleA.distance(angleB);
-    center.ray(angleA.shift(distanceAngle.mult(1/4))).draw();
-    center.ray(angleA.shift(distanceAngle.mult(2/4))).draw();
-    center.ray(angleA.shift(distanceAngle.mult(3/4))).draw();
 
 
 
