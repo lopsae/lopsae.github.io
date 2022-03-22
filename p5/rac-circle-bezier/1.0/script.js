@@ -115,65 +115,48 @@ function buildSketch(sketch) {
 
 
     // General measurements
-    let wideUnit = 40;
-    let thinUnit = wideUnit/4;
+    let radiusA = 200;
+    let radiusB = 200;
+    let angle = rac.Angle(1/4);
 
-    let diagHorizontal = center
-      .segmentToPoint(center.add(wideUnit, -thinUnit));
-    let diagUnit = diagHorizontal.length;
-    let diagHorizontalAngle = diagHorizontal.angle();
+    // let startArcRadius = 30;
+    // let endArcRadius = 80;
 
-    let startArcRadius = 30;
-    let endArcRadius = 80;
-
-
-    // Controls
-    angleControl.anchor = center
-      .segmentToAngle(rac.Angle.zero, endArcRadius)
-      .arc();
-    angleControl.knob()
-      .segmentToPoint(angleControl.anchor.center)
-      .draw();
-    angleControl.anchor.startSegment()
-      .reverse()
-      .segmentToBisector()
-      .draw();
+    // // Controls
+    // angleControl.anchor = center
+    //   .segmentToAngle(rac.Angle.zero, endArcRadius)
+    //   .arc();
+    // angleControl.knob()
+    //   .segmentToPoint(angleControl.anchor.center)
+    //   .draw();
+    // angleControl.anchor.startSegment()
+    //   .reverse()
+    //   .segmentToBisector()
+    //   .draw();
 
 
     let controledAngle = angleControl.distance();
 
 
-    // Angle ruler
-    diagHorizontal.ray.draw();
+    // Radius A
+    center.segmentToAngle(rac.Angle.zero, radiusA).draw();
 
 
-    // Five
-    let fiveAnchor = // top left corner of five
-      center;
-    let fiveAscenderBottom = fiveAnchor
-      .segmentToAngle(rac.Angle.s, wideUnit * 2).draw()
-      .endPoint();
+    // Radius B
+    center.segmentToAngle(angle, radiusB).draw();
 
-    let fiveCurveAnchorOne = fiveAscenderBottom
-      .add(wideUnit *4, wideUnit * 2);
-    let fiveCurveControlOne = fiveAscenderBottom
-      .ray(diagHorizontalAngle).draw()
-      .pointAtIntersection(fiveCurveAnchorOne.ray(rac.Angle.n).draw()).debug();
-    let fiveCurveOneControlSegmentOne =
-      fiveAscenderBottom.segmentToPoint(fiveCurveControlOne);
-    let fiveCurveOneControlSegmentTwo =
-      fiveCurveAnchorOne.segmentToPoint(fiveCurveControlOne);
 
-    let fiveCurveOne = new Rac.Bezier(rac,
-      fiveAscenderBottom,
-      fiveCurveOneControlSegmentOne.pointAtLengthRatio(0.552284749831).debug(),
-      fiveCurveOneControlSegmentTwo.pointAtLengthRatio(0.552284749831).debug(),
-      fiveCurveAnchorOne);
-    fiveCurveOne.draw();
+
+    // let fiveCurveOne = new Rac.Bezier(rac,
+    //   fiveAscenderBottom,
+    //   fiveCurveOneControlSegmentOne.pointAtLengthRatio(0.552284749831).debug(),
+    //   fiveCurveOneControlSegmentTwo.pointAtLengthRatio(0.552284749831).debug(),
+    //   fiveCurveAnchorOne);
+    // fiveCurveOne.draw();
 
 
     // Controls draw on top
-    rac.controller.drawControls();
+    // rac.controller.drawControls();
 
 
     console.log(`👑 ~finis coronat opus ${sketch.frameCount}`);
