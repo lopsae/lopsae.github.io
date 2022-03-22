@@ -7,7 +7,9 @@ let Rac = null;
 const racLocation = window.location.hostname == 'localhost'
   ? 'http://localhost:9001/rac.dev.js'
   // ? 'http://localhost:9001/rac.js'
-  : 'https://cdn.jsdelivr.net/gh/lopsae/rac@instanceMode/dist/rac.js';
+  // ? 'http://localhost:9001/rac.min.js'
+  // ? 'https://cdn.jsdelivr.net/gh/lopsae/rac/dist/rac.js'
+  : 'https://cdn.jsdelivr.net/gh/lopsae/rac/dist/rac.js'
 
 if (typeof requirejs === "function") {
   console.log(`📚 Requesting rac from: ${racLocation}`);

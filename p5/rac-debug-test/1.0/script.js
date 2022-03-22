@@ -8,6 +8,7 @@ const racLocation = window.location.hostname == 'localhost'
   ? 'http://localhost:9001/rac.dev.js'
   // ? 'http://localhost:9001/rac.js'
   // ? 'http://localhost:9001/rac.min.js'
+  // ? 'https://cdn.jsdelivr.net/gh/lopsae/rac/dist/rac.js'
   : 'https://cdn.jsdelivr.net/gh/lopsae/rac@develop/dist/rac.js';
 
 if (typeof requirejs === "function") {
