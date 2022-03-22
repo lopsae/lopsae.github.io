@@ -117,7 +117,9 @@ function buildSketch(sketch) {
     // General measurements
     let radiusA = 200;
     let radiusB = 200;
-    let angle = rac.Angle(1/4);
+
+    let angleA = rac.Angle(0)
+    let angleB = rac.Angle(1/4);
 
     // let startArcRadius = 30;
     // let endArcRadius = 80;
@@ -139,11 +141,29 @@ function buildSketch(sketch) {
 
 
     // Radius A
-    center.segmentToAngle(rac.Angle.zero, radiusA).draw();
+    let rayA = center
+      .segmentToAngle(angleA, radiusA).draw()
+      .endPoint().ray(angleA.perpendicular()).draw();
 
 
     // Radius B
-    center.segmentToAngle(angle, radiusB).draw();
+    let rayB = center
+      .segmentToAngle(angleB, radiusB).draw()
+      .endPoint().ray(angleB.perpendicular(false)).draw();
+
+
+    // Ray intersection
+    let rayIntersection = rayA.pointAtIntersection(rayB);
+    if (rayIntersection !== null) {
+      rayIntersection.debug();
+    }
+
+
+    // Angle dividers
+    let distanceAngle = angleA.distance(angleB);
+    center.ray(angleA.shift(distanceAngle.mult(1/4))).draw();
+    center.ray(angleA.shift(distanceAngle.mult(2/4))).draw();
+    center.ray(angleA.shift(distanceAngle.mult(3/4))).draw();
 
 
 
