@@ -129,6 +129,10 @@ function buildSketch(sketch, Rac) {
     // Stroke weigth
     rac.drawer.strokeWeightFactor = 1.5;
 
+    // Default font
+    Rac.Text.Format.defaultFont = "Spot Mono Medium, Spot Mono, Menlo, monospace";
+    Rac.Text.Format.defaultSize = 15;
+
     // Root styles
     palette.richBlack.applyBackground();
     // Default style mostly used for reticules
@@ -192,6 +196,31 @@ function buildSketch(sketch, Rac) {
     distanceControl.affixAnchor()
       .endPoint()
       .text(`${controlDistance.toFixed(3)}`, distanceTextFormat).draw();
+
+
+    // Tests for default text format
+    rac.Point(10, 10)
+      .text("Default Text", rac.Text.Format.topLeft)
+      .draw();
+    rac.Point(10, 30)
+      .text("Text with empty format", rac.Text.Format())
+      .draw();
+    rac.Point(10, 50)
+      .text("Text without format")
+      .draw();
+    rac.Point(10, 70)
+      .text("Mutating format")
+      .withSize(20)
+      .withFont("Futura")
+      .withAngle(0.1)
+      .draw();
+
+    Rac.Text.Format.defaultFont = null;
+    Rac.Text.Format.defaultSize = 12;
+
+    rac.Point(10, 100)
+      .text("Text after removing defaults")
+      .draw();
 
 
     // Tests for divideToSegments
