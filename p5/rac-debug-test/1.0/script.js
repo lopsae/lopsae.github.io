@@ -130,8 +130,8 @@ function buildSketch(sketch, Rac) {
     rac.drawer.strokeWeightFactor = 1.5;
 
     // Default font
-    Rac.Text.Format.defaultFont = "Spot Mono Medium, Spot Mono, Menlo, monospace";
-    Rac.Text.Format.defaultSize = 15;
+    rac.textFormatDefaults.font = "Spot Mono Medium, Spot Mono, Menlo, monospace";
+    rac.textFormatDefaults.size = 15;
 
     // Root styles
     palette.richBlack.applyBackground();
@@ -199,11 +199,13 @@ function buildSketch(sketch, Rac) {
 
 
     // Tests for default text format
+    let hEnum = Rac.Text.Format.horizontalAlign;
+    let vEnum = Rac.Text.Format.verticalAlign;
     rac.Point(10, 10)
       .text("Default Text", rac.Text.Format.topLeft)
       .draw();
     rac.Point(10, 30)
-      .text("Text with empty format", rac.Text.Format())
+      .text("Text with empty format", rac.Text.Format(hEnum.left, vEnum.top))
       .draw();
     rac.Point(10, 50)
       .text("Text without format")
@@ -215,11 +217,11 @@ function buildSketch(sketch, Rac) {
       .withAngle(0.1)
       .draw();
 
-    Rac.Text.Format.defaultFont = null;
-    Rac.Text.Format.defaultSize = 12;
+    rac.textFormatDefaults.font = null;
+    rac.textFormatDefaults.size = 12;
 
     rac.Point(10, 100)
-      .text("Text after removing defaults")
+      .text("Text after changing defaults")
       .draw();
 
 
