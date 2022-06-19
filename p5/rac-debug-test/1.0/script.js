@@ -198,6 +198,11 @@ function buildSketch(sketch, Rac) {
       .text(`${controlDistance.toFixed(3)}`, distanceTextFormat).draw();
 
 
+    rac.Angle.n.log();
+    rac.Point.canvasCenter().log("Canvas center")
+    console.log(`Ray zero: ${rac.Ray.zero}`)
+
+
     // Tests for default text format
     let hEnum = Rac.Text.Format.horizontalAlign;
     let vEnum = Rac.Text.Format.verticalAlign;
