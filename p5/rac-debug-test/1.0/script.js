@@ -219,13 +219,20 @@ function buildSketch(sketch, Rac) {
       .text("Mutating format")
       .withSize(20)
       .withFont("Futura")
-      .withAngle(0.1)
+      .withAngle(0.01)
+      .draw();
+    let reversableFormat = rac.Text.Format(hEnum.left, vEnum.top, 0.01)
+    rac.Point(50, 100).debug()
+      .text("reversable text", reversableFormat)
+      .draw();
+    rac.Point(50, 120)
+      .text("reverse text", reversableFormat.reverse())
       .draw();
 
     rac.textFormatDefaults.font = null;
     rac.textFormatDefaults.size = 12;
 
-    rac.Point(10, 100)
+    rac.Point(10, 150)
       .text("Text after changing defaults")
       .draw();
 
