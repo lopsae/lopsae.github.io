@@ -210,7 +210,7 @@ function buildSketch(sketch, Rac) {
       .text("Default Text", rac.Text.Format.topLeft)
       .draw();
     rac.Point(10, 30)
-      .text("Text with empty format", rac.Text.Format(hEnum.left, vEnum.top))
+      .text("Text with font-size-less format", rac.Text.Format(hEnum.left, vEnum.top))
       .draw();
     rac.Point(10, 50)
       .text("Text without format")
