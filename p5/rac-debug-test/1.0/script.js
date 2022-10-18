@@ -52,7 +52,7 @@ function buildSketch(sketch, Rac) {
     // rac.controller.add(distanceControl);
 
     angleControl = new Rac.ArcControl(rac, 0, rac.Angle(1));
-    angleControl.setValueWithAngleDistance(1/4);
+    angleControl.setValueWithAngleDistance(-1/32);
     angleControl.addMarkerAtCurrentValue();
     // rac.controller.add(angleControl);
 
@@ -193,9 +193,19 @@ function buildSketch(sketch, Rac) {
 
     let distanceTextFormat = rac.Text.Format.topLeft
       .withAngle(controlAngle);
-    distanceControl.affixAnchor()
+    let distanceAffixAnchor = distanceControl.affixAnchor();
+
+    distanceAffixAnchor.withLengthAdd(30)
       .endPoint()
       .text(`${controlDistance.toFixed(3)}`, distanceTextFormat).draw();
+    distanceAffixAnchor.withLengthAdd(30)
+      .nextSegmentPerpendicular(false, 15)
+      .endPoint()
+      .text(`sll: ${distanceControl.startLimitLength().toFixed(3)}`, distanceTextFormat).draw();
+    distanceAffixAnchor.withLengthAdd(30)
+      .nextSegmentPerpendicular(false, 30)
+      .endPoint()
+      .text(`ell: ${distanceControl.endLimitLength().toFixed(3)}`, distanceTextFormat).draw();
 
 
     rac.Angle.n.log();
