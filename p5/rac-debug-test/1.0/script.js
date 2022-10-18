@@ -16,6 +16,7 @@ if (typeof requirejs === "function") {
   requirejs([racLocation], racConstructor => {
     console.log('📚 Loaded RAC');
     console.log(`🗃 ${racConstructor.version} ${racConstructor.build}`);
+    console.log(`🕰 ${racConstructor.dated}`);
     requirejs(['https://cdn.jsdelivr.net/npm/p5@1.2.0/lib/p5.min.js'], p5Func => {
       console.log(`📚 Loaded p5:${typeof p5Func}`);
       new p5Func(sketch => buildSketch(sketch, racConstructor));
