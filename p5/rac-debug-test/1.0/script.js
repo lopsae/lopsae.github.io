@@ -46,16 +46,16 @@ function buildSketch(sketch, Rac) {
     console.log(`📚 New RAC constructed`);
     rac.setupDrawer(sketch);
 
+    // rac.unitaryEqualityThreshold = 0.1;
+
     distanceControl = new Rac.RayControl(rac, 0, 300);
     distanceControl.setValueWithLength(140);
     distanceControl.setLimitsWithLengthInsets(10, 10);
     distanceControl.addMarkerAtCurrentValue();
-    // rac.controller.add(distanceControl);
 
     angleControl = new Rac.ArcControl(rac, 0, rac.Angle(1));
     angleControl.setValueWithAngleDistance(-1/32);
     angleControl.addMarkerAtCurrentValue();
-    // rac.controller.add(angleControl);
 
     sketch.createCanvas(sketch.windowWidth, sketch.windowHeight);
     sketch.noLoop();
@@ -91,7 +91,7 @@ function buildSketch(sketch, Rac) {
     let sum = lapses.reduce((accumulator, currentValue) => {
       return accumulator + currentValue
     });
-    console.log(`⏰ mouseDragged count: ${lapses.length} avg-elapsed:${sum/lapses.length}`);
+    // console.log(`⏰ mouseDragged count: ${lapses.length} avg-elapsed:${sum/lapses.length}`);
   }
 
 
@@ -207,11 +207,6 @@ function buildSketch(sketch, Rac) {
       .nextSegmentPerpendicular(false, 30)
       .endPoint()
       .text(`ell: ${distanceControl.endLimitLength().toFixed(3)}`, distanceTextFormat).draw();
-
-
-    rac.Angle.n.log();
-    rac.Point.canvasCenter().log("Canvas center")
-    console.log(`Ray zero: ${rac.Ray.zero}`)
 
 
     // Tests for default text format
