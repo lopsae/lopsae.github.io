@@ -1,6 +1,4 @@
-# lopsae.github.io
+lopsae.github.io
+================
 
-To run local webserver:
-```
-ruby -run -e httpd
-```
+Source for the website at https://lopsae.com.
