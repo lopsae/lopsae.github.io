@@ -2,3 +2,5 @@ theme: jekyll-theme-minimal
 
 title: LopSae
 description: LopSae Homepage.
+
+show_downloads: false

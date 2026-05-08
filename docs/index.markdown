@@ -1,18 +1,16 @@
 ---
-# Feel free to add content and custom Front Matter to this file.
-# To modify the layout, see https://jekyllrb.com/docs/themes/#overriding-theme-defaults
-
 layout: default
 ---
 
-This is the root homepage.
+Projects
+--------
+
+Some projects, past and present:
++ [Ruler and Compass](https://rulerandcompass.org).
 
 
-### Projects
+Experiments
+-----------
 
-These are some of the projects past and present.
-
-
-### Experiments
-
-These are some standalone visual experiments.
+Some standalone visual experiments.
++ [P5 Experiments](/p5/)
