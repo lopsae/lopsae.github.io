@@ -1,9 +1,10 @@
 Development Notes
 =================
 
-To run local webserver:
+To run local server:
 ```
-ruby -run -e httpd
+# From docs folder
+bundle exec jekyll serve
 ```
 
 
