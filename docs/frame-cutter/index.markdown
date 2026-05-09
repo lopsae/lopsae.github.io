@@ -13,3 +13,5 @@ Frame Cutter is an iOS app that can extract a frame from any video in the Photos
 + The time of the frame is adjusted based on the time of the video and the time of the frame itself.
 
 Available in the App Store.
+
+<a href="./privacy-policy/">Privacy Policy</a>
