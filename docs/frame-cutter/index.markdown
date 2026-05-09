@@ -1,5 +1,5 @@
 ---
-layout: default
+title: FrameCutter
 ---
 
 <img src="/assets/frame-cutter-icon.png" alt="Frame Cutter App Icon" style="width:200px; margin: 5px; filter: drop-shadow(2px 2px 5px gray);"/>
