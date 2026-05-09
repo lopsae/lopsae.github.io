@@ -5,3 +5,9 @@ description: Projects and Experiments.
 logo: /assets/logo.png
 
 show_downloads: false
+
+defaults:
+  - scope:
+      path: "" # empty string includesd all files
+    values:
+      layout: "ls-default"
