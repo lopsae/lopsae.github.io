@@ -6,7 +6,7 @@ Projects
 --------
 
 Some projects, past and present:
-+ [Frame Cutter](/frame-cutter/)
++ [FrameCutter](/frame-cutter/)
 + [Ruler and Compass](https://rulerandcompass.org).
 
 
