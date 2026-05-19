@@ -1,8 +1,10 @@
 ---
-layout: default
 title: About
 permalink: /about/
 ---
+
+About
+-----
 
 LopSae is the pseudonym of Maic Lopez Saenz, a software developer and ceramicist living in the San Francisco Bay area.
 

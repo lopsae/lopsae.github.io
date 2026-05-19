@@ -1,11 +1,12 @@
 ---
-layout: default
+layout: ls-default
 ---
 
 Projects
 --------
 
 Some projects, past and present:
++ [FrameCutter](/frame-cutter/)
 + [Ruler and Compass](https://rulerandcompass.org).
 
 
