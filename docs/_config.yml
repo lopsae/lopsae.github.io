@@ -8,6 +8,6 @@ show_downloads: false
 
 defaults:
   - scope:
-      path: "" # empty string includesd all files
+      path: "" # empty string includes all files
     values:
       layout: "ls-default"
