@@ -14,3 +14,7 @@ defaults:
 
 lopsae:
   github-profile-url: https://github.com/lopsae
+
+# Github deploy workflow overrides these values.
+build_date: now
+build_run_id: local
