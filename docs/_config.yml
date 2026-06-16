@@ -11,3 +11,6 @@ defaults:
       path: "" # empty string includes all files
     values:
       layout: "ls-default"
+
+lopsae:
+  github-profile-url: https://github.com/lopsae
