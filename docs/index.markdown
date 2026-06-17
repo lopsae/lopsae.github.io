@@ -7,6 +7,7 @@ Projects
 
 Some projects, past and present:
 + [FrameCutter](/frame-cutter/)
++ [Preview Utilities](https://github.com/lopsae/preview-utilities)
 + [Ruler and Compass](https://rulerandcompass.org).
 
 

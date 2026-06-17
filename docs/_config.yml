@@ -8,6 +8,13 @@ show_downloads: false
 
 defaults:
   - scope:
-      path: "" # empty string includesd all files
+      path: "" # empty string includes all files
     values:
       layout: "ls-default"
+
+lopsae:
+  github-profile-url: https://github.com/lopsae
+
+# Github deploy workflow overrides these values.
+build_date: now
+build_run_id: local
