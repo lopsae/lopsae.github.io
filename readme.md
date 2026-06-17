@@ -1,4 +1,4 @@
-lopsae.github.io
-================
+lopsae-site
+===========
 
-Source for the website at https://lopsae.com.
+Source for https://lopsae.com.
